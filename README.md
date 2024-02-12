@@ -29,7 +29,7 @@
       </ul>
     </li>
     <li>
-      <a href="#getting-started(prerequisites)">Getting Started (Prerequisites)</a>
+      <a href="#getting-started-prerequisites">Getting Started (Prerequisites)</a>
     </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#license">License</a></li>
