@@ -33,7 +33,7 @@
     </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#license">License</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
+    <li><a href="#references">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -141,8 +141,8 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 
 
 
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
+<!-- REFERENCES -->
+## References
 
 * [Readme Template](https://github.com/othneildrew/Best-README-Template)
 * [FIWARE DS example](https://github.com/FIWARE-Ops/fiware-gitops/tree/master/aws/dsba)
