@@ -71,6 +71,72 @@ variable "orion_ld" {
   }
 }
 
+# Trusted Participants Registry
+variable "trusted_participants_registry" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "Trusted Participants Registry Service"
+  default = {
+    version    = "0.0.3"
+    chart_name = "trusted-issuers-registry"
+    repository = "https://fiware.github.io/helm-charts"
+  }
+}
+
+# Keyrock (Authorization Registry)
+variable "keyrock" {
+  type = object({
+    version        = string
+    chart_name     = string
+    repository     = string
+    admin_password = string
+    admin_email    = string
+  })
+  description = "Keyrock"
+  default = {
+    version        = "0.7.5"
+    chart_name     = "keyrock"
+    repository     = "https://fiware.github.io/helm-charts"
+    admin_password = "admin"
+    admin_email    = "admin@ds-operator.org"
+  }
+}
+
+# PDP
+variable "pdp" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "PDP Service"
+  default = {
+    version    = "0.0.16"
+    chart_name = "dsba-pdp"
+    repository = "https://fiware.github.io/helm-charts"
+  }
+
+}
+
+# Kong
+variable "kong" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "Kong Service"
+  default = {
+    version    = "2.8.0"
+    chart_name = "kong"
+    repository = "https://charts.konghq.com"
+  }
+
+}
+
 # Credentials Config Service
 variable "credentials_config_service" {
   type = object({
@@ -93,7 +159,7 @@ variable "trusted_issuers_list" {
     chart_name = string
     repository = string
   })
-  description = "Trusted Issuers List"
+  description = "Trusted Issuers List service"
   default = {
     version    = "0.5.3"
     chart_name = "trusted-issuers-list"
@@ -108,7 +174,7 @@ variable "walt_id" {
     chart_name = string
     repository = string
   })
-  description = "Walt-ID"
+  description = "Walt-ID Service"
   default = {
     version    = "0.0.17"
     chart_name = "vcwaltid"
@@ -116,21 +182,33 @@ variable "walt_id" {
   }
 }
 
-# Keyrock (Authorization Registry)
-variable "keyrock" {
+# Verifier
+variable "verifier" {
   type = object({
-    version        = string
-    chart_name     = string
-    repository     = string
-    admin_password = string
-    admin_email    = string
+    version    = string
+    chart_name = string
+    repository = string
   })
-  description = "Keyrock"
+  description = "Verifier Service"
   default = {
-    version        = "0.7.5"
-    chart_name     = "keyrock"
-    repository     = "https://fiware.github.io/helm-charts"
-    admin_password = "admin"
-    admin_email    = "admin@ds-operator.org"
+    version    = "1.0.15"
+    chart_name = "vcverifier"
+    repository = "https://i4Trust.github.io/helm-charts"
   }
+}
+
+# Portal
+variable "portal" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "Portal Service"
+  default = {
+    version    = "0.0.5"
+    chart_name = "vcportal"
+    repository = "https://i4Trust.github.io/helm-charts"
+  }
+
 }
