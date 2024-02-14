@@ -101,6 +101,21 @@ variable "trusted_issuers_list" {
   }
 }
 
+# Walt-ID
+variable "walt_id" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "Walt-ID"
+  default = {
+    version    = "0.0.17"
+    chart_name = "vcwaltid"
+    repository = "https://i4Trust.github.io/helm-charts"
+  }
+}
+
 # Keyrock (Authorization Registry)
 variable "keyrock" {
   type = object({

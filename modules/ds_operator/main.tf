@@ -1,10 +1,11 @@
 locals {
   mongo_service   = "${var.namespace}-mongodb"
   orionld_service = "${var.namespace}-orion-ld"
+  keyrock_service = "${var.namespace}-keyrock"
   mysql_service   = "${var.namespace}-mysql"
   ccs_service     = "${var.namespace}-cred-conf-service"
   til_service     = "${var.namespace}-trusted-issuers-list"
-  keyrock_service = "${var.namespace}-keyrock"
+  waltid_service  = "${var.namespace}-waltid"
 }
 
 #* DONE
@@ -110,117 +111,6 @@ resource "helm_release" "orion_ld" {
 
   depends_on = [helm_release.mongodb]
 }
-
-#* DONE
-resource "helm_release" "credentials_config_service" {
-  chart      = var.credentials_config_service.chart_name
-  version    = var.credentials_config_service.version
-  repository = var.credentials_config_service.repository
-  name       = local.ccs_service
-  namespace  = var.namespace
-
-  set {
-    name  = "service.type"
-    value = "ClusterIP"
-  }
-
-  values = [<<EOF
-        database:
-            persistence: true
-            host: ${local.mysql_service}
-            name: ${var.mysql.ccs_db}
-            username: root
-            password: ${var.mysql.root_password}
-        EOF
-  ]
-
-  depends_on = [helm_release.mysql]
-}
-
-#? Ingress is needed?
-resource "helm_release" "trusted_issuers_list" {
-  chart      = var.trusted_issuers_list.chart_name
-  version    = var.trusted_issuers_list.version
-  repository = var.trusted_issuers_list.repository
-  name       = local.til_service
-  namespace  = var.namespace
-
-  set {
-    name  = "service.type"
-    value = "ClusterIP"
-  }
-
-  values = [
-    <<EOF
-        database:
-            persistence: true
-            host: ${local.mysql_service}
-            name: ${var.mysql.til_db}
-            username: root
-            password: ${var.mysql.root_password}
-
-        # ingress:
-        #     til:
-        #         enabled: true
-        #         annotations:
-        #             kubernetes.io/ingress.class: "nginx"
-        #             # forcing everything to use ssl
-        #             ingress.kubernetes.io/ssl-redirect: "true"
-        #             # example annotations, allowing cert-manager to automatically create tls-certs
-        #             # kubernetes.io/tls-acme: "true"
-        #         hosts:
-        #             - host: til.${var.ds_domain}
-        #               paths:
-        #                 - /
-        #         # configure the ingress' tls
-        #         # tls:
-        #         #     - secretName: til-tls
-        #         #       hosts:
-        #         #           - til.fiware.org
-        #     tir:
-        #         enabled: true
-        #         annotations:
-        #             kubernetes.io/ingress.class: "nginx"
-        #             # forcing everything to use ssl
-        #             ingress.kubernetes.io/ssl-redirect: "true"
-        #             # example annotations, allowing cert-manager to automatically create tls-certs
-        #             # kubernetes.io/tls-acme: "true"
-        #         hosts:
-        #             - host: tir.${var.ds_domain}
-        #               paths:
-        #                 - /
-        #         # configure the ingress' tls
-        #         # tls:
-        #         #     - secretName: tir-tls
-        #         #       hosts:
-        #         #           - tir.fiware.org
-    EOF
-  ]
-
-  depends_on = [helm_release.mysql]
-}
-
-# resource "helm_release" "walt_id" {
-#     chart       = "vcwaltid"
-#     version     = "0.0.17"
-#     repository  = "https://i4Trust.github.io/helm-charts"
-#     name        = local.waltid_service_name
-#     namespace   = module.vars.operator_namespace
-
-#     set {
-#         name = "service.type"
-#         value = "ClusterIP"
-#     }
-
-#     values = [
-#         <<EOF
-
-#         EOF
-#     ]
-
-#     depends_on = [ null_resource.loadBalancer_installation ]
-
-# }
 
 #? DONE (any other configuration?)
 resource "helm_release" "keyrock" {
@@ -334,3 +224,186 @@ resource "helm_release" "keyrock" {
 
   depends_on = [helm_release.mysql]
 }
+
+#* DONE
+resource "helm_release" "credentials_config_service" {
+  chart      = var.credentials_config_service.chart_name
+  version    = var.credentials_config_service.version
+  repository = var.credentials_config_service.repository
+  name       = local.ccs_service
+  namespace  = var.namespace
+
+  set {
+    name  = "service.type"
+    value = "ClusterIP"
+  }
+
+  values = [<<EOF
+        database:
+            persistence: true
+            host: ${local.mysql_service}
+            name: ${var.mysql.ccs_db}
+            username: root
+            password: ${var.mysql.root_password}
+        EOF
+  ]
+
+  depends_on = [helm_release.mysql]
+}
+
+#? Ingress is needed?
+resource "helm_release" "trusted_issuers_list" {
+  chart      = var.trusted_issuers_list.chart_name
+  version    = var.trusted_issuers_list.version
+  repository = var.trusted_issuers_list.repository
+  name       = local.til_service
+  namespace  = var.namespace
+
+  set {
+    name  = "service.type"
+    value = "ClusterIP"
+  }
+
+  values = [
+    <<EOF
+        database:
+            persistence: true
+            host: ${local.mysql_service}
+            name: ${var.mysql.til_db}
+            username: root
+            password: ${var.mysql.root_password}
+
+        # ingress:
+        #     til:
+        #         enabled: true
+        #         annotations:
+        #             kubernetes.io/ingress.class: "nginx"
+        #             # forcing everything to use ssl
+        #             ingress.kubernetes.io/ssl-redirect: "true"
+        #             # example annotations, allowing cert-manager to automatically create tls-certs
+        #             # kubernetes.io/tls-acme: "true"
+        #         hosts:
+        #             - host: til.${var.ds_domain}
+        #               paths:
+        #                 - /
+        #         # configure the ingress' tls
+        #         # tls:
+        #         #     - secretName: til-tls
+        #         #       hosts:
+        #         #           - til.fiware.org
+        #     tir:
+        #         enabled: true
+        #         annotations:
+        #             kubernetes.io/ingress.class: "nginx"
+        #             # forcing everything to use ssl
+        #             ingress.kubernetes.io/ssl-redirect: "true"
+        #             # example annotations, allowing cert-manager to automatically create tls-certs
+        #             # kubernetes.io/tls-acme: "true"
+        #         hosts:
+        #             - host: tir.${var.ds_domain}
+        #               paths:
+        #                 - /
+        #         # configure the ingress' tls
+        #         # tls:
+        #         #     - secretName: tir-tls
+        #         #       hosts:
+        #         #           - tir.fiware.org
+    EOF
+  ]
+
+  depends_on = [helm_release.mysql]
+}
+
+#? Ingress is needed? did configuration?
+resource "helm_release" "walt_id" {
+  chart      = var.walt_id.chart_name
+  version    = var.walt_id.version
+  repository = var.walt_id.repository
+  name       = local.waltid_service
+  namespace  = var.namespace
+
+  set {
+    name  = "service.type"
+    value = "ClusterIP"
+  }
+
+  values = [
+    <<EOF
+        # Organisation DID
+        # did: did:web:my-did:did
+
+        # Walt-id config
+        vcwaltid:
+          # API config
+          api:
+            core: 
+              enabled: true
+            auditor: 
+              enabled: true
+            signatory: 
+              enabled: true
+            custodian: 
+              enabled: true
+            essif: 
+              enabled: true
+          # Persistence
+          persistence: 
+            enabled: true
+            pvc:
+              size: 1Gi
+        
+        # # Ingress configuration
+        # ingress:
+        #     enabled: true
+        #     annotations:
+        #         kubernetes.io/ingress.class: "nginx"
+        #         # forcing everything to use ssl
+        #         ingress.kubernetes.io/ssl-redirect: "true"
+        #         # example annotations, allowing cert-manager to automatically create tls-certs
+        #         # kubernetes.io/tls-acme: "true"
+        #     hosts:
+        #       - host: waltid.${var.ds_domain}
+        #         paths:
+        #         - /
+        #     # configure the ingress' tls
+        #     # tls:
+        #       # - secretName: keyrock-tls
+        #         # hosts:
+        #           # - keyrock.fiware.org
+        
+
+          # # List of templates to be created
+          # templates:
+          #   GaiaXParticipantCredential.json: |
+          #     {
+          #       "@context": [
+          #         "https://www.w3.org/2018/credentials/v1",
+          #         "https://registry.lab.dsba.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#"
+          #       ],
+          #       "type": [
+          #         "VerifiableCredential"
+          #       ],
+          #       "id": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
+          #       "issuer": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
+          #       "issuanceDate": "2023-03-21T12:00:00.148Z",
+          #       "credentialSubject": {
+          #         "id": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
+          #         "type": "gx:LegalParticipant",
+          #         "gx:legalName": "dsba compliant participant",
+          #         "gx:legalRegistrationNumber": {
+          #           "gx:vatID": "MYVATID"
+          #         },
+          #         "gx:headquarterAddress": {
+          #           "gx:countrySubdivisionCode": "BE-BRU"
+          #         },
+          #         "gx:legalAddress": {
+          #           "gx:countrySubdivisionCode": "BE-BRU"
+          #         },
+          #         "gx-terms-and-conditions:gaiaxTermsAndConditions": "70c1d713215f95191a11d38fe2341faed27d19e083917bc8732ca4fea4976700"
+          #       }
+          #     }
+    EOF
+  ]
+
+}
+
