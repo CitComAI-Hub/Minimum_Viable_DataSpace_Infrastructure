@@ -7,6 +7,7 @@ locals {
   keyrock_service = "${var.namespace}-keyrock"
 }
 
+#* DONE
 resource "helm_release" "mongodb" {
   chart            = var.mongodb.chart_name
   version          = var.mongodb.version
@@ -41,6 +42,7 @@ resource "helm_release" "mongodb" {
 
 }
 
+#* DONE
 resource "helm_release" "mysql" {
   chart            = var.mysql.chart_name
   version          = var.mysql.version
@@ -67,6 +69,7 @@ resource "helm_release" "mysql" {
   ]
 }
 
+#TODO: test API
 resource "helm_release" "orion_ld" {
   chart      = var.orion_ld.chart_name
   version    = var.orion_ld.version
@@ -108,6 +111,7 @@ resource "helm_release" "orion_ld" {
   depends_on = [helm_release.mongodb]
 }
 
+#* DONE
 resource "helm_release" "credentials_config_service" {
   chart      = var.credentials_config_service.chart_name
   version    = var.credentials_config_service.version
@@ -133,6 +137,7 @@ resource "helm_release" "credentials_config_service" {
   depends_on = [helm_release.mysql]
 }
 
+#? Ingress is needed?
 resource "helm_release" "trusted_issuers_list" {
   chart      = var.trusted_issuers_list.chart_name
   version    = var.trusted_issuers_list.version
@@ -145,58 +150,51 @@ resource "helm_release" "trusted_issuers_list" {
     value = "ClusterIP"
   }
 
-  values = [<<EOF
+  values = [
+    <<EOF
         database:
             persistence: true
             host: ${local.mysql_service}
             name: ${var.mysql.til_db}
             username: root
             password: ${var.mysql.root_password}
-            
-        #TODO: Falta configurar Ingress (según algunos repos)
-        # -> https://github.com/FIWARE-Ops/data-space-connector/blob/main/applications/trusted-issuers-list/values.yaml
-        # -> https://github.com/FIWARE-Ops/fiware-gitops/blob/master/aws/dsba/onboarding-portal/trusted-issuers-list/values.yaml
-        # ## ingress configuration
+
         # ingress:
-        # # -- route config for the trusted issuers list endpoint
-        # til:
-        #     # -- should there be an ingress to connect til with the public internet
-        #     enabled: false
-        #     # -- annotations to be added to the ingress
-        #     annotations: {}
-        #     # kubernetes.io/ingress.class: "ambassador"
-        #     ## example annotations, allowing cert-manager to automatically create tls-certs and forcing everything to use ssl.
-        #     # kubernetes.io/tls-acme: "true"
-        #     # ingress.kubernetes.io/ssl-redirect: "true"
-        #     # -- all hosts to be provided
-        #     hosts: []
-        #     ## provide a hosts and the paths that should be available
-        #     # - host: localhost
-        #     # -- configure the ingress' tls
-        #     tls: []
-        #     # - secretName: til-tls
-        #         # hosts:
-        #         # - til.fiware.org
-        # # -- route config for the trusted issuers registry endpoint
-        # tir:
-        #     # -- should there be an ingress to connect til with the public internet
-        #     enabled: false
-        #     # -- annotations to be added to the ingress
-        #     annotations: {}
-        #     # kubernetes.io/ingress.class: "ambassador"
-        #     ## example annotations, allowing cert-manager to automatically create tls-certs and forcing everything to use ssl.
-        #     # kubernetes.io/tls-acme: "true"
-        #     # ingress.kubernetes.io/ssl-redirect: "true"
-        #     # -- all hosts to be provided
-        #     hosts: []
-        #     ## provide a hosts and the paths that should be available
-        #     # - host: localhost
-        #     # -- configure the ingress' tls
-        #     tls: []
-        #     # - secretName: til-tls
-        #         # hosts:
-        #         # - til.fiware.org
-        EOF
+        #     til:
+        #         enabled: true
+        #         annotations:
+        #             kubernetes.io/ingress.class: "nginx"
+        #             # forcing everything to use ssl
+        #             ingress.kubernetes.io/ssl-redirect: "true"
+        #             # example annotations, allowing cert-manager to automatically create tls-certs
+        #             # kubernetes.io/tls-acme: "true"
+        #         hosts:
+        #             - host: til.${var.ds_domain}
+        #               paths:
+        #                 - /
+        #         # configure the ingress' tls
+        #         # tls:
+        #         #     - secretName: til-tls
+        #         #       hosts:
+        #         #           - til.fiware.org
+        #     tir:
+        #         enabled: true
+        #         annotations:
+        #             kubernetes.io/ingress.class: "nginx"
+        #             # forcing everything to use ssl
+        #             ingress.kubernetes.io/ssl-redirect: "true"
+        #             # example annotations, allowing cert-manager to automatically create tls-certs
+        #             # kubernetes.io/tls-acme: "true"
+        #         hosts:
+        #             - host: tir.${var.ds_domain}
+        #               paths:
+        #                 - /
+        #         # configure the ingress' tls
+        #         # tls:
+        #         #     - secretName: tir-tls
+        #         #       hosts:
+        #         #           - tir.fiware.org
+    EOF
   ]
 
   depends_on = [helm_release.mysql]
@@ -216,55 +214,68 @@ resource "helm_release" "trusted_issuers_list" {
 
 #     values = [
 #         <<EOF
-        
+
 #         EOF
 #     ]
 
 #     depends_on = [ null_resource.loadBalancer_installation ]
-  
+
 # }
 
+#? DONE (any other configuration?)
 resource "helm_release" "keyrock" {
-    chart = var.keyrock.chart_name
-    version = var.keyrock.version
-    repository = var.keyrock.repository
-    name = local.keyrock_service
-    namespace = var.namespace
+  chart      = var.keyrock.chart_name
+  version    = var.keyrock.version
+  repository = var.keyrock.repository
+  name       = local.keyrock_service
+  namespace  = var.namespace
 
-    set {
-        name = "service.type"
-        value = "ClusterIP"
-    }
+  set {
+    name  = "service.type"
+    value = "ClusterIP" # LoadBalancer for external access.
+  }
 
-    values = [
-        <<EOF
+  values = [
+    <<EOF
         fullnameOverride: ${local.keyrock_service}
-
-        # External hostname of Keyrock
-        host: https://keyrock.${var.ds_domain}
-
-        # Port that the keyrock container uses
-        port: 8080 # default port
 
         # Admin keyrock user
         admin:
             user: admin
             password: ${var.keyrock.admin_password}
-            email: admin@ds-operator.org
+            email: ${var.keyrock.admin_email}
         
         # MySQL Database configuration
         db:
             user: root
             password: ${var.mysql.root_password}
             host: ${local.mysql_service}
+        
+        # External hostname of Keyrock
+        host: https://keyrock.${var.ds_domain}
 
-        # # Image
-        # statefulset:
-        #     image:
-        #     repository: quay.io/wi_stefan/keyrock
-        #     tag: sn-fix-2
-        #     pullPolicy: Always
+        # Port that the keyrock container uses
+        port: 8080 # default port
 
+        # Ingress configuration
+        ingress:
+            enabled: true
+            annotations:
+                kubernetes.io/ingress.class: "nginx"
+                # forcing everything to use ssl
+                ingress.kubernetes.io/ssl-redirect: "true"
+                # example annotations, allowing cert-manager to automatically create tls-certs
+                # kubernetes.io/tls-acme: "true"
+            hosts:
+              - host: keyrock.${var.ds_domain}
+                paths:
+                - /
+            # configure the ingress' tls
+            # tls:
+              # - secretName: keyrock-tls
+                # hosts:
+                  # - keyrock.fiware.org
+        
         # ## Configuration of Authorisation Registry (AR)
         # authorisationRegistry:
         #     # -- Enable usage of authorisation registry
@@ -288,9 +299,9 @@ resource "helm_release" "keyrock" {
         #     partiesEndpoint: "https://https://tir.dataspace.com/parties"
 
         ## -- Configuration of local key and certificate for validation and generation of tokens
-        token:
-            # -- Enable storage of local key and certificate
-            enabled: false
+        # token:
+        #     # -- Enable storage of local key and certificate
+        #     enabled: false
 
         # # ENV variables for Keyrock
         # additionalEnvVars:
@@ -318,35 +329,8 @@ resource "helm_release" "keyrock" {
         #         secretKeyRef:
         #             name: vcwaltid-tls-sec
         #             key: tls.crt
-        EOF
-    ]
+    EOF
+  ]
 
-    depends_on = [ helm_release.mysql ]
+  depends_on = [helm_release.mysql]
 }
-# resource "kubernetes_ingress_v1" "keyrock_ingress" {
-#     metadata {
-#         name = "keyrock-ingress"
-#         namespace = module.vars.operator_namespace
-#     }
-
-#     spec {
-#         rule {
-#             host = "keyrock.${module.vars.ds_operator_domain}"
-
-#             http {
-#                 path {
-#                     path = "/"
-#                     path_type = "Prefix"
-#                     backend {
-#                         service {
-#                             name = local.keyrock_service_name
-#                             port {
-#                                 number = 8080
-#                             }
-#                         }
-#                     }
-#                 }
-#             }
-#         }
-#     }
-# }

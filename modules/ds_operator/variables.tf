@@ -11,9 +11,9 @@ variable "namespace" {
 }
 
 variable "ds_domain" {
-  type = string
-  description = "Data Space domain" 
-  default = "ds-operator.io"
+  type        = string
+  description = "Data Space domain"
+  default     = "ds-operator.io"
 }
 
 # MongoDB service
@@ -104,16 +104,18 @@ variable "trusted_issuers_list" {
 # Keyrock (Authorization Registry)
 variable "keyrock" {
   type = object({
-    version    = string
-    chart_name = string
-    repository = string
+    version        = string
+    chart_name     = string
+    repository     = string
     admin_password = string
+    admin_email    = string
   })
   description = "Keyrock"
   default = {
-    version = "0.7.5"
-    chart_name = "keyrock"
-    repository = "https://fiware.github.io/helm-charts"
+    version        = "0.7.5"
+    chart_name     = "keyrock"
+    repository     = "https://fiware.github.io/helm-charts"
     admin_password = "admin"
+    admin_email    = "admin@ds-operator.org"
   }
 }
