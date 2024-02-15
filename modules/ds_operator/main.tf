@@ -74,7 +74,7 @@ resource "helm_release" "mysql" {
   ]
 }
 
-#TODO: test API
+#* DONE
 resource "helm_release" "orion_ld" {
   chart      = var.orion_ld.chart_name
   version    = var.orion_ld.version
@@ -84,7 +84,7 @@ resource "helm_release" "orion_ld" {
 
   set {
     name  = "service.type"
-    value = "LoadBalancer" # ClusterIP for internal access only.
+    value = "ClusterIP"
   }
 
   values = [<<EOF
@@ -116,6 +116,7 @@ resource "helm_release" "orion_ld" {
   depends_on = [helm_release.mongodb]
 }
 
+#? SATELLITE ???
 resource "helm_release" "trusted_participants_registry" {
   chart      = var.trusted_participants_registry.chart_name
   version    = var.trusted_participants_registry.version
@@ -130,12 +131,12 @@ resource "helm_release" "trusted_participants_registry" {
 
   values = [
     <<EOF
-        deployment:
-          # image:
-          #   tag: 0.6.0
-          #   pullPolicy: Always
-          additionalLabels:
-            participant: onboarding
+        # deployment:
+        #   # image:
+        #   #   tag: 0.6.0
+        #   #   pullPolicy: Always
+        #   additionalLabels:
+        #     participant: onboarding
         # route:
         #   enabled: true
         #   host: tir.dsba.fiware.dev
@@ -363,7 +364,7 @@ resource "helm_release" "trusted_participants_registry" {
   depends_on = [helm_release.orion_ld]
 }
 
-#? DONE (any other configuration?)
+#? DONE (authorisationRegistry?? & satellite??)
 resource "helm_release" "keyrock" {
   chart      = var.keyrock.chart_name
   version    = var.keyrock.version
@@ -418,7 +419,7 @@ resource "helm_release" "keyrock" {
                   # - keyrock.fiware.org
         
         # ## Configuration of Authorisation Registry (AR)
-        # authorisationRegistry:
+        # authorisationRegistry: #! What is this??
         #     # -- Enable usage of authorisation registry
         #     enabled: true
         #     # -- Identifier (EORI) of AR
@@ -427,7 +428,7 @@ resource "helm_release" "keyrock" {
         #     url: "internal"
 
         # ## Configuration of iSHARE Satellite
-        # satellite:
+        # satellite: #! What is this??
         #     # -- Enable usage of satellite
         #     enabled: true
         #     # -- Identifier (EORI) of satellite
@@ -461,12 +462,12 @@ resource "helm_release" "keyrock" {
         #     - name: IDM_PR_CLIENT_ID
         #     value: "did:web:my-did:did"
         #     - name: IDM_PR_CLIENT_KEY
-        #     valueFrom:
+        #     valueFrom: #! What is this??
         #         secretKeyRef:
         #             name: vcwaltid-tls-sec
         #             key: tls.key
         #     - name: IDM_PR_CLIENT_CRT
-        #     valueFrom:
+        #     valueFrom: #! What is this??
         #         secretKeyRef:
         #             name: vcwaltid-tls-sec
         #             key: tls.crt
@@ -502,7 +503,7 @@ resource "helm_release" "dsba_pdp" {
         enabled: false
         migrate:
           enabled: false
-      # deployment:
+      deployment:
         # image:  
         #   pullPolicy: Always
         #   repository: quay.io/fiware/dsba-pdp 
@@ -532,7 +533,7 @@ resource "helm_release" "dsba_pdp" {
 
         # providerId: "did:web:onboarding.dsba.fiware.dev:did"
         
-      # additionalEnvVars:
+      # additionalEnvVars: #! What is this??
       #   - name: ISHARE_CERTIFICATE_PATH
       #     value: /iShare/tls.crt
       #   - name: ISHARE_KEY_PATH
@@ -565,11 +566,10 @@ resource "helm_release" "kong" {
         #   repository: quay.io/fiware/kong
         #   tag: "0.5.2"
         #   pullPolicy: IfNotPresent
-
-        # replicaCount: 1
-
+        
         autoscaling:
           enabled: false
+        replicaCount: 1
 
         admin:
           enabled: true
@@ -616,7 +616,7 @@ resource "helm_release" "kong" {
         ingressController:
           enabled: false
           installCRDs: false
-        
+        #! Ingress configuration correct??
         proxy:
           type: ClusterIP
           enabled: true
@@ -674,7 +674,7 @@ resource "helm_release" "credentials_config_service" {
   depends_on = [helm_release.mysql]
 }
 
-#? Ingress is needed?
+#? Ingress is needed? Ingress is configured for the Trusted Issuers List and Trusted Participant List??
 resource "helm_release" "trusted_issuers_list" {
   chart      = var.trusted_issuers_list.chart_name
   version    = var.trusted_issuers_list.version
@@ -758,7 +758,6 @@ resource "helm_release" "walt_id" {
 
         # Walt-id config
         vcwaltid:
-          # API config
           api:
             core: 
               enabled: true
@@ -770,7 +769,6 @@ resource "helm_release" "walt_id" {
               enabled: true
             essif: 
               enabled: true
-          # Persistence
           persistence: 
             enabled: true
             pvc:
@@ -797,7 +795,7 @@ resource "helm_release" "walt_id" {
         
 
           # # List of templates to be created
-          # templates:
+          # templates: #! What is this??
           #   GaiaXParticipantCredential.json: |
           #     {
           #       "@context": [
@@ -857,12 +855,12 @@ resource "helm_release" "verifier" {
               - "/health"
           server:
             host: https://verifier.${var.ds_domain}
-          ssikit:
+          ssikit: #! What is this??
             auditorUrl: http://${local.waltid_service}:7003
           verifier:
             tirAddress: https://${local.tpr_service}/v3/issuers
             # did: did:web:onboarding.dsba.fiware.dev:did
-          # m2m:
+          # m2m: #! What is this??
           #   authEnabled: true
           #   keyPath: /opt/did/secret/tls.key
           #   credentialPath: /opt/credential/c127.0.0.1       waltid.ds-operator.ioredential.json
@@ -870,7 +868,7 @@ resource "helm_release" "verifier" {
           #   verificationMethod: did:web:onboarding.dsba.fiware.dev:did#54134df8357d4aaea1e600f3d0ebe7fb
           configRepo:
             configEndpoint: http://${local.ccs_service}:8080/
-          # initContainers:
+          # initContainers: #! What is this??
           #   - name: load-did
           #     image: quay.io/opencloudio/curl:4.2.0-build.8
           #     imagePullPolicy: Always
