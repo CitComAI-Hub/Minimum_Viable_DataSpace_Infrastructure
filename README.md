@@ -96,9 +96,14 @@ These are the necessary requirements to be able to execute the project:
   sudo apt-get install helm
   ```
 * [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) (v. 1.28.3)
+* [Terraform](https://developer.hashicorp.com/terraform/install?product_intent=terraform) (v. 1.7.3)
+  ```bash
+  wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+  sudo apt update && sudo apt install terraform
+  ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- USAGE EXAMPLES -->
