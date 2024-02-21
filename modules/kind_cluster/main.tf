@@ -36,6 +36,10 @@ resource "null_resource" "ingress_installation" {
 
   provisioner "local-exec" {
     command = <<-EOF
+        until kind get clusters | grep -q ${var.cluster_name}; do
+          echo "Waiting for Kubernetes components to be ready..."
+          sleep 5
+        done
         kubectl apply -f ${var.ingress_config_file}
         kubectl wait --namespace ingress-nginx \
             --for=condition=ready pod \

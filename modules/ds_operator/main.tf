@@ -21,6 +21,8 @@ resource "helm_release" "mongodb" {
   namespace        = var.namespace
   create_namespace = true
 
+  wait = true
+
   set {
     name  = "service.type"
     value = "LoadBalancer" # ClusterIP for internal access only.
@@ -56,6 +58,8 @@ resource "helm_release" "mysql" {
   namespace        = var.namespace
   create_namespace = true
 
+  wait = true
+
   set {
     name  = "service.type"
     value = "ClusterIP"
@@ -74,6 +78,100 @@ resource "helm_release" "mysql" {
   ]
 }
 
+#? Ingress is needed? did configuration?
+resource "helm_release" "walt_id" {
+  chart            = var.walt_id.chart_name
+  version          = var.walt_id.version
+  repository       = var.walt_id.repository
+  name             = local.waltid_service
+  namespace        = var.namespace
+  create_namespace = true
+
+  wait = true
+
+  set {
+    name  = "service.type"
+    value = "ClusterIP"
+  }
+
+  values = [
+    <<EOF
+        # Organisation DID
+        # did: did:web:my-did:did
+
+        # Walt-id config
+        vcwaltid:
+          api:
+            core: 
+              enabled: true
+            auditor: 
+              enabled: true
+            signatory: 
+              enabled: true
+            custodian: 
+              enabled: true
+            essif: 
+              enabled: true
+          persistence: 
+            enabled: true
+            pvc:
+              size: 1Gi
+        
+        # # Ingress configuration
+        # ingress:
+        #     enabled: true
+        #     annotations:
+        #         kubernetes.io/ingress.class: "nginx"
+        #         # forcing everything to use ssl
+        #         ingress.kubernetes.io/ssl-redirect: "true"
+        #         # example annotations, allowing cert-manager to automatically create tls-certs
+        #         # kubernetes.io/tls-acme: "true"
+        #     hosts:
+        #       - host: waltid.${var.ds_domain}
+        #         paths:
+        #         - /
+        #     # configure the ingress' tls
+        #     # tls:
+        #       # - secretName: keyrock-tls
+        #         # hosts:
+        #           # - keyrock.fiware.org
+        
+
+          # # List of templates to be created
+          # templates: #! What is this??
+          #   GaiaXParticipantCredential.json: |
+          #     {
+          #       "@context": [
+          #         "https://www.w3.org/2018/credentials/v1",
+          #         "https://registry.lab.dsba.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#"
+          #       ],
+          #       "type": [
+          #         "VerifiableCredential"
+          #       ],
+          #       "id": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
+          #       "issuer": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
+          #       "issuanceDate": "2023-03-21T12:00:00.148Z",
+          #       "credentialSubject": {
+          #         "id": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
+          #         "type": "gx:LegalParticipant",
+          #         "gx:legalName": "dsba compliant participant",
+          #         "gx:legalRegistrationNumber": {
+          #           "gx:vatID": "MYVATID"
+          #         },
+          #         "gx:headquarterAddress": {
+          #           "gx:countrySubdivisionCode": "BE-BRU"
+          #         },
+          #         "gx:legalAddress": {
+          #           "gx:countrySubdivisionCode": "BE-BRU"
+          #         },
+          #         "gx-terms-and-conditions:gaiaxTermsAndConditions": "70c1d713215f95191a11d38fe2341faed27d19e083917bc8732ca4fea4976700"
+          #       }
+          #     }
+    EOF
+  ]
+
+}
+
 #* DONE
 resource "helm_release" "orion_ld" {
   chart      = var.orion_ld.chart_name
@@ -81,6 +179,8 @@ resource "helm_release" "orion_ld" {
   repository = var.orion_ld.repository
   name       = local.orionld_service
   namespace  = var.namespace
+
+  wait = true
 
   set {
     name  = "service.type"
@@ -123,6 +223,8 @@ resource "helm_release" "trusted_participants_registry" {
   repository = var.trusted_participants_registry.repository
   name       = local.tpr_service
   namespace  = var.namespace
+
+  wait = true
 
   set {
     name  = "service.type"
@@ -372,6 +474,8 @@ resource "helm_release" "keyrock" {
   name       = local.keyrock_service
   namespace  = var.namespace
 
+  wait = true
+
   set {
     name  = "service.type"
     value = "ClusterIP" # LoadBalancer for external access.
@@ -492,6 +596,8 @@ resource "helm_release" "dsba_pdp" {
   name       = local.pdp_service
   namespace  = var.namespace
 
+  wait = true
+
   set {
     name  = "service.type"
     value = "ClusterIP"
@@ -554,6 +660,8 @@ resource "helm_release" "kong" {
   repository = var.kong.repository
   name       = local.kong_service
   namespace  = var.namespace
+
+  wait = true
 
   set {
     name  = "service.type"
@@ -656,6 +764,8 @@ resource "helm_release" "credentials_config_service" {
   name       = local.ccs_service
   namespace  = var.namespace
 
+  wait = true
+
   set {
     name  = "service.type"
     value = "ClusterIP"
@@ -681,6 +791,8 @@ resource "helm_release" "trusted_issuers_list" {
   repository = var.trusted_issuers_list.repository
   name       = local.til_service
   namespace  = var.namespace
+
+  wait = true
 
   set {
     name  = "service.type"
@@ -737,98 +849,6 @@ resource "helm_release" "trusted_issuers_list" {
   depends_on = [helm_release.mysql]
 }
 
-#? Ingress is needed? did configuration?
-resource "helm_release" "walt_id" {
-  chart            = var.walt_id.chart_name
-  version          = var.walt_id.version
-  repository       = var.walt_id.repository
-  name             = local.waltid_service
-  namespace        = var.namespace
-  create_namespace = true
-
-  set {
-    name  = "service.type"
-    value = "ClusterIP"
-  }
-
-  values = [
-    <<EOF
-        # Organisation DID
-        # did: did:web:my-did:did
-
-        # Walt-id config
-        vcwaltid:
-          api:
-            core: 
-              enabled: true
-            auditor: 
-              enabled: true
-            signatory: 
-              enabled: true
-            custodian: 
-              enabled: true
-            essif: 
-              enabled: true
-          persistence: 
-            enabled: true
-            pvc:
-              size: 1Gi
-        
-        # # Ingress configuration
-        # ingress:
-        #     enabled: true
-        #     annotations:
-        #         kubernetes.io/ingress.class: "nginx"
-        #         # forcing everything to use ssl
-        #         ingress.kubernetes.io/ssl-redirect: "true"
-        #         # example annotations, allowing cert-manager to automatically create tls-certs
-        #         # kubernetes.io/tls-acme: "true"
-        #     hosts:
-        #       - host: waltid.${var.ds_domain}
-        #         paths:
-        #         - /
-        #     # configure the ingress' tls
-        #     # tls:
-        #       # - secretName: keyrock-tls
-        #         # hosts:
-        #           # - keyrock.fiware.org
-        
-
-          # # List of templates to be created
-          # templates: #! What is this??
-          #   GaiaXParticipantCredential.json: |
-          #     {
-          #       "@context": [
-          #         "https://www.w3.org/2018/credentials/v1",
-          #         "https://registry.lab.dsba.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#"
-          #       ],
-          #       "type": [
-          #         "VerifiableCredential"
-          #       ],
-          #       "id": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
-          #       "issuer": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
-          #       "issuanceDate": "2023-03-21T12:00:00.148Z",
-          #       "credentialSubject": {
-          #         "id": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
-          #         "type": "gx:LegalParticipant",
-          #         "gx:legalName": "dsba compliant participant",
-          #         "gx:legalRegistrationNumber": {
-          #           "gx:vatID": "MYVATID"
-          #         },
-          #         "gx:headquarterAddress": {
-          #           "gx:countrySubdivisionCode": "BE-BRU"
-          #         },
-          #         "gx:legalAddress": {
-          #           "gx:countrySubdivisionCode": "BE-BRU"
-          #         },
-          #         "gx-terms-and-conditions:gaiaxTermsAndConditions": "70c1d713215f95191a11d38fe2341faed27d19e083917bc8732ca4fea4976700"
-          #       }
-          #     }
-    EOF
-  ]
-
-}
-
 #? Ingress is needed? certificates configuration?
 resource "helm_release" "verifier" {
   chart      = var.verifier.chart_name
@@ -836,6 +856,8 @@ resource "helm_release" "verifier" {
   repository = var.verifier.repository
   name       = local.verifier_service
   namespace  = var.namespace
+
+  wait = true
 
   set {
     name  = "service.type"
