@@ -16,6 +16,12 @@ variable "kubernetes_local_path" {
   default     = "~/.kube/config"
 }
 
+variable "kindest_version" {
+  type        = string
+  description = "The version of the kind cluster to be created"
+  default     = "kindest/node:v1.29.2"
+}
+
 variable "ingress_config_file" {
   type        = string
   description = "The path to the ingress config file"

@@ -1,6 +1,7 @@
 resource "kind_cluster" "k8s_cluster" {
   name            = var.cluster_name
   kubeconfig_path = pathexpand(var.kubernetes_local_path)
+  node_image      = var.kindest_version
   wait_for_ready  = true
 
   kind_config {
