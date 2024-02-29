@@ -1,34 +1,23 @@
-SHELL := /bin/bash
-
-.DEFAULT_GOAL := help
-
-define remove_tmp_tf
-	rm -rf .terraform && \
-	rm -rf .terraform.lock.hcl && \
-	rm -rf terraform.tfstate && \
-	rm -rf terraform.tfstate.backup
-endef
+FUNCTIONS_FILE?=./common.mk
+include $(FUNCTIONS_FILE)
 
 ################################################################################
-# Self Documenting Commands                                                    #
+# COMMANDS                                                                     #
 ################################################################################
-# Inspired by <http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html>
-# sed script explained:
-# /^##/:
-# 	* save line in hold space
-# 	* purge line
-# 	* Loop:
-# 		* append newline + line to hold space
-# 		* go to next line
-# 		* if line starts with doc comment, strip comment character off and loop
-# 	* remove target prerequisites
-# 	* append hold space (+ newline) to line
-# 	* replace newline plus comments by `---`
-# 	* print line
-# Separate expressions are necessary because labels cannot be delimited by
-# semicolon; see <http://stackoverflow.com/a/11799865/1968>
-.PHONY: help
-help:
+
+.PHONY: init_apply, destroy
+
+## Init & apply Terraform resources.
+init_apply:
+	terraform init -upgrade
+	terraform apply -auto-approve 
+
+## Destroy all Terraform resources.
+destroy:
+	terraform destroy -auto-approve
+	$(remove_tmp_tf)
+	rm -rf terraform.tfvars		
+
 	@echo "$$(tput bold)Available rules:$$(tput sgr0)"
 	@echo
 	@sed -n -e "/^## / { \
