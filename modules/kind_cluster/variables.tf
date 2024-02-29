@@ -23,13 +23,16 @@ variable "kindest_version" {
 }
 
 variable "add_extra_ports" {
+  type = list(
+    object(
+      {
+        container_port = number
+        host_port      = number
+        protocol       = string
+      }
+    )
+  )
   description = "Extra ports to be added to control-plane node"
-  type = list(object({
-    container_port = number
-    host_port      = number
-    protocol       = string
-  }))
-
   default = [
     {
       container_port = 80
@@ -42,16 +45,18 @@ variable "add_extra_ports" {
       protocol       = "TCP"
     }
   ]
-
 }
 
 variable "add_extra_mounts" {
+  type = list(
+    object(
+      {
+        host_path      = string
+        container_path = string
+      }
+    )
+  )
   description = "Extra mounts to be added to all nodes"
-  type = list(object({
-    host_path      = string
-    container_path = string
-  }))
-
   default = []
 }
 
@@ -65,5 +70,4 @@ variable "loadbalancer_config_file" {
   type        = string
   description = "The path to the loadbalancer config file"
   default     = "https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml"
-
 }

@@ -7,7 +7,7 @@ module "local_k8s_cluster" {
 
   kubernetes_local_path = local.kubernetes_path
   path_module           = "../../modules/kind_cluster"
-  cluster_name          = var.cluster_name
+  cluster_name          = "ds-local-cluster"
 }
 
 module "portainerce_docker" {

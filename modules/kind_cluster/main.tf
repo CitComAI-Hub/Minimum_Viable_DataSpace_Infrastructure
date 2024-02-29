@@ -7,6 +7,7 @@ resource "kind_cluster" "k8s_cluster" {
   kind_config {
     kind        = "Cluster"
     api_version = "kind.x-k8s.io/v1alpha4"
+
     node {
       role = "control-plane"
       kubeadm_config_patches = [
@@ -20,7 +21,6 @@ resource "kind_cluster" "k8s_cluster" {
           protocol       = extra_port_mappings.value.protocol
         }
       }
-
       dynamic "extra_mounts" {
         for_each = var.add_extra_mounts
         content {
@@ -29,6 +29,7 @@ resource "kind_cluster" "k8s_cluster" {
         }
       }
     }
+
     node {
       role = "worker"
       dynamic "extra_mounts" {
@@ -39,6 +40,7 @@ resource "kind_cluster" "k8s_cluster" {
         }
       }
     }
+
     node {
       role = "worker"
       dynamic "extra_mounts" {
@@ -87,7 +89,7 @@ resource "null_resource" "loadBalancer_installation" {
   provisioner "local-exec" {
     command = <<-EOF
         TEMPFILE=$(mktemp)
-        cp ${var.path_module}/files/metallb-config.yaml $TEMPFILE
+        cp ${var.path_module}/config/metallb-config.yaml $TEMPFILE
         VALUE=$(${var.path_module}/scripts/ips_for_loadBalancer.sh)
         sed -i "s|172.19.255.200-172.19.255.250|$VALUE|" $TEMPFILE
         kubectl apply -f $TEMPFILE
