@@ -1,3 +1,3 @@
-FUNCTIONS_FILE?=../common.mk
+FUNCTIONS_FILE?=../config/common.mk
 
-include ../deploy_tf.mk
+include ../config/deploy_tf.mk

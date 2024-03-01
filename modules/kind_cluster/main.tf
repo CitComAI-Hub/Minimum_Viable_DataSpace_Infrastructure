@@ -7,27 +7,49 @@ resource "kind_cluster" "k8s_cluster" {
   kind_config {
     kind        = "Cluster"
     api_version = "kind.x-k8s.io/v1alpha4"
+
     node {
       role = "control-plane"
       kubeadm_config_patches = [
         "kind: InitConfiguration\nnodeRegistration:\n  kubeletExtraArgs:\n    node-labels: \"ingress-ready=true\"\n"
       ]
-      extra_port_mappings {
-        container_port = 80
-        host_port      = 80
-        protocol       = "TCP"
+      dynamic "extra_port_mappings" {
+        for_each = var.add_extra_ports
+        content {
+          container_port = extra_port_mappings.value.container_port
+          host_port      = extra_port_mappings.value.host_port
+          protocol       = extra_port_mappings.value.protocol
+        }
       }
-      extra_port_mappings {
-        container_port = 443
-        host_port      = 443
-        protocol       = "TCP"
+      dynamic "extra_mounts" {
+        for_each = var.add_extra_mounts
+        content {
+          host_path      = extra_mounts.value.host_path
+          container_path = extra_mounts.value.container_path
+        }
       }
     }
+
     node {
       role = "worker"
+      dynamic "extra_mounts" {
+        for_each = var.add_extra_mounts
+        content {
+          host_path      = extra_mounts.value.host_path
+          container_path = extra_mounts.value.container_path
+        }
+      }
     }
+
     node {
       role = "worker"
+      dynamic "extra_mounts" {
+        for_each = var.add_extra_mounts
+        content {
+          host_path      = extra_mounts.value.host_path
+          container_path = extra_mounts.value.container_path
+        }
+      }
     }
   }
 }
@@ -67,7 +89,7 @@ resource "null_resource" "loadBalancer_installation" {
   provisioner "local-exec" {
     command = <<-EOF
         TEMPFILE=$(mktemp)
-        cp ${var.path_module}/files/metallb-config.yaml $TEMPFILE
+        cp ${var.path_module}/config/metallb-config.yaml $TEMPFILE
         VALUE=$(${var.path_module}/scripts/ips_for_loadBalancer.sh)
         sed -i "s|172.19.255.200-172.19.255.250|$VALUE|" $TEMPFILE
         kubectl apply -f $TEMPFILE

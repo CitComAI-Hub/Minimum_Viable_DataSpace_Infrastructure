@@ -22,6 +22,44 @@ variable "kindest_version" {
   default     = "kindest/node:v1.29.2"
 }
 
+variable "add_extra_ports" {
+  type = list(
+    object(
+      {
+        container_port = number
+        host_port      = number
+        protocol       = string
+      }
+    )
+  )
+  description = "Extra ports to be added to control-plane node"
+  default = [
+    {
+      container_port = 80
+      host_port      = 80
+      protocol       = "TCP"
+    },
+    {
+      container_port = 443
+      host_port      = 443
+      protocol       = "TCP"
+    }
+  ]
+}
+
+variable "add_extra_mounts" {
+  type = list(
+    object(
+      {
+        host_path      = string
+        container_path = string
+      }
+    )
+  )
+  description = "Extra mounts to be added to all nodes"
+  default = []
+}
+
 variable "ingress_config_file" {
   type        = string
   description = "The path to the ingress config file"
@@ -32,5 +70,4 @@ variable "loadbalancer_config_file" {
   type        = string
   description = "The path to the loadbalancer config file"
   default     = "https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml"
-
 }
