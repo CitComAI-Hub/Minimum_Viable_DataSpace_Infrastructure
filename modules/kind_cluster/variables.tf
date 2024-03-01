@@ -1,9 +1,3 @@
-variable "path_module" {
-  type        = string
-  description = "The path to the kind directory"
-  default     = "./"
-}
-
 variable "cluster_name" {
   type        = string
   description = "The name of the kind cluster"

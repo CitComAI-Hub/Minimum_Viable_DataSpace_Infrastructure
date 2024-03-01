@@ -89,8 +89,8 @@ resource "null_resource" "loadBalancer_installation" {
   provisioner "local-exec" {
     command = <<-EOF
         TEMPFILE=$(mktemp)
-        cp ${var.path_module}/config/metallb-config.yaml $TEMPFILE
-        VALUE=$(${var.path_module}/scripts/ips_for_loadBalancer.sh)
+        cp ${path.module}/config/metallb-config.yaml $TEMPFILE
+        VALUE=$(${path.module}/scripts/ips_for_loadBalancer.sh)
         sed -i "s|172.19.255.200-172.19.255.250|$VALUE|" $TEMPFILE
         kubectl apply -f $TEMPFILE
         rm $TEMPFILE
