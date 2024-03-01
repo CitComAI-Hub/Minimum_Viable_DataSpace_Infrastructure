@@ -6,7 +6,6 @@ module "local_k8s_cluster" {
   source = "../../modules/kind_cluster"
 
   kubernetes_local_path = local.kubernetes_path
-  path_module           = "../../modules/kind_cluster"
   cluster_name          = "ds-local-cluster"
 }
 

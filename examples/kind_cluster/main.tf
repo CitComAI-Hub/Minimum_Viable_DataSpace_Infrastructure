@@ -1,7 +1,6 @@
 module "local_k8s_cluster" {
   source = "../../modules/kind_cluster/"
 
-  path_module      = "../../modules/kind_cluster"
   cluster_name     = var.cluster_name
   add_extra_mounts = var.add_extra_mounts
 }
