@@ -1,0 +1,3 @@
+!/nginx
+**/.well-known/*
+!**/.well-known/.gitkeep
