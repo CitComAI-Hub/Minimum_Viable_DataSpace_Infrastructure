@@ -7,8 +7,16 @@ module "local_k8s_cluster" {
 
 module "portainerce_docker" {
   source     = "../../modules/portainer_ce/"
-  count      = var.deploy_portainer ? 1 : 0 # count =: number of instances to create
+  count      = var.flags_deployment.portainer ? 1 : 0 # count =: number of instances to create
   depends_on = [module.local_k8s_cluster]
 
   img_version = "2.19.4"
+}
+
+module "cert_trust_manager" {
+  source = "../../modules/cert_trust_manager/"
+  count      = var.flags_deployment.cert_trust_manager ? 1 : 0
+  depends_on = [module.local_k8s_cluster]
+
+  namespace = "cert-manager"
 }

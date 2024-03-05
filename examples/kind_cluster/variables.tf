@@ -17,8 +17,14 @@ variable "add_extra_mounts" {
   default     = []
 }
 
-variable "deploy_portainer" {
-  type        = bool
-  description = "Whether to deploy Portainer CE"
-  default     = false
+variable "flags_deployment" {
+  type = object({
+    portainer          = bool
+    cert_trust_manager = bool
+  })
+  description = "Whether to deploy resources."
+  default = {
+    portainer          = false
+    cert_trust_manager = false
+  }
 }
