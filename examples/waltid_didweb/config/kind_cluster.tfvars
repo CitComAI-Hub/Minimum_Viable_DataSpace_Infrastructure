@@ -9,3 +9,7 @@ add_extra_mounts = [
         container_path = "/etc/kubernetes/data/nginx"
     }
 ]
+flags_deployment = {
+    portainer = false,
+    cert_trust_manager = true
+}
