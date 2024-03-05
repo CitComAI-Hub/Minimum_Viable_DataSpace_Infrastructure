@@ -6,11 +6,12 @@ module "local_k8s_cluster" {
   source = "../../modules/kind_cluster"
 
   kubernetes_local_path = local.kubernetes_path
-  cluster_name          = "ds-local-cluster"
+  cluster_name          = var.cluster_name
 }
 
 module "portainerce_docker" {
   source     = "../../modules/portainer_ce/"
+  count      = var.deploy_portainer ? 1 : 0
   depends_on = [module.local_k8s_cluster]
 
   img_version = "2.19.4"
