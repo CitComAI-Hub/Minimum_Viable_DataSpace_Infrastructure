@@ -4,19 +4,6 @@ variable "cluster_name" {
   default     = "ds-local-cluster"
 }
 
-variable "add_extra_mounts" {
-  type = list(
-    object(
-      {
-        host_path      = string
-        container_path = string
-      }
-    )
-  )
-  description = "Extra mounts to be added to all nodes"
-  default     = []
-}
-
 variable "deploy_portainer" {
   type        = bool
   description = "Whether to deploy Portainer CE"
