@@ -10,7 +10,7 @@ WALTID_SCRIPTS_DIR = ../../modules/waltid_ssikit/scripts
 
 ## Init & apply ALL Terraform resources (cluster + services).
 init_apply:
-	$(deploy_cluster)
+	$(call deploy_cluster,"ds_fully_local")
 	$(deploy_services)
 
 ## Destroy ALL Terraform resources (cluster + services).
@@ -20,7 +20,7 @@ destroy:
 
 ## Deploy services only.
 services_init_apply:
-	$(call deploy_services,$(WALTID_SCRIPTS_DIR))
+	$(deploy_services)
 
 ## Destroy services only.
 services_destroy:
@@ -28,7 +28,7 @@ services_destroy:
 
 ## Deploy cluster only.
 cluster_init_apply:
-	$(deploy_cluster)
+	$(call deploy_cluster,"waltid_didweb")
 
 ## Destroy cluster only.
 cluster_destroy:

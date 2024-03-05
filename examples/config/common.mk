@@ -10,9 +10,10 @@ define remove_tmp_tf
 endef
 
 define deploy_cluster
-	@cd ../kind_cluster && \
+	@export module=$(1) && \
+		cd ../kind_cluster && \
 		terraform init -upgrade && \
-		terraform apply -auto-approve -var-file="../waltid_didweb/config/kind_cluster.tfvars"
+		terraform apply -auto-approve -var-file="../$$module/config/kind_cluster.tfvars"
 endef
 
 define destroy_cluster
@@ -23,9 +24,8 @@ define destroy_cluster
 endef
 
 define deploy_services
-	@export waltid_scripts_dir=$(1) && \
-		export CLUSTER_NAME=`grep 'cluster_name' ./config/kind_cluster.tfvars | cut -d'=' -f2 | tr -d ' "'` && \
-		bash $$waltid_scripts_dir/get_kind_cluster_properties.sh $$CLUSTER_NAME && \
+	@export CLUSTER_NAME=`grep 'cluster_name' ./config/kind_cluster.tfvars | cut -d'=' -f2 | tr -d ' "'` && \
+		bash ../../modules/kind_cluster/scripts/get_cluster_properties.sh $$CLUSTER_NAME && \
 		terraform init -upgrade && \
 		terraform apply -auto-approve 
 endef
