@@ -40,4 +40,5 @@ terraform.rc
 
 **/data/*
 !**.gitkeep
+!**.gitignore
 !**/config/*
