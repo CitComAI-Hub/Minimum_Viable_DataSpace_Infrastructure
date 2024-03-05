@@ -1,0 +1,9 @@
+fullnameOverride: ${service_name}
+
+auth:
+  rootPassword: ${root_password}
+
+initdbScripts:
+  create.sql: |
+    CREATE DATABASE ${til_db};
+    CREATE DATABASE ${ccs_db};
