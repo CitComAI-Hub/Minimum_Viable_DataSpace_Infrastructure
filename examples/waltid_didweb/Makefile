@@ -2,32 +2,6 @@ include ../config/common.mk
 
 WALTID_SCRIPTS_DIR = ../../modules/waltid_ssikit/scripts
 
-define deploy_cluster
-	@cd ../kind_cluster && \
-		terraform init -upgrade && \
-		terraform apply -auto-approve -var-file="../waltid_didweb/config/kind_cluster.tfvars"
-endef
-
-define destroy_cluster
-	@cd ../kind_cluster && \
-		terraform destroy -auto-approve && \
-		$(remove_tmp_tf) && \
-		rm -rf terraform.tfvars
-endef
-
-define deploy_services
-	@export CLUSTER_NAME=`grep 'cluster_name' ./config/kind_cluster.tfvars | cut -d'=' -f2 | tr -d ' "'` && \
-		bash $(WALTID_SCRIPTS_DIR)/get_kind_cluster_properties.sh $$CLUSTER_NAME && \
-		terraform init -upgrade && \
-		terraform apply -auto-approve 
-endef
-
-define destroy_services
-	terraform destroy -auto-approve
-	$(remove_tmp_tf)
-	rm -rf terraform.tfvars
-endef
-
 ################################################################################
 # COMMANDS                                                                     #
 ################################################################################
@@ -46,7 +20,7 @@ destroy:
 
 ## Deploy services only.
 services_init_apply:
-	$(deploy_services)
+	$(call deploy_services,$(WALTID_SCRIPTS_DIR))
 
 ## Destroy services only.
 services_destroy:
