@@ -86,6 +86,35 @@ resource "helm_release" "walt_id" {
 }
 
 ################################################################################
+# Depends on: mongodb                                                          #
+################################################################################
+
+#* DONE
+resource "helm_release" "orion_ld" {
+  depends_on = [helm_release.mongodb]
+
+  chart      = var.orion_ld.chart_name
+  version    = var.orion_ld.version
+  repository = var.orion_ld.repository
+  name       = local.orionld_service
+  namespace  = var.namespace
+  wait       = true
+  count      = var.flags_deployment.orion_ld ? 1 : 0
+
+  set {
+    name  = "service.type"
+    value = "ClusterIP"
+  }
+
+  values = [
+    templatefile("${local.helm_conf_yaml_path}/orionld.yaml", {
+      service_name  = local.mongo_service,
+      root_password = var.mongodb.root_password
+    })
+  ]
+}
+
+################################################################################
 # Depends on: mysql                                                            #
 ################################################################################
 
@@ -168,35 +197,6 @@ resource "helm_release" "trusted_issuers_list" {
       mysql_service = local.mysql_service,
       til_db        = var.mysql.til_db,
       root_password = var.mysql.root_password
-    })
-  ]
-}
-
-################################################################################
-# Depends on: mongodb                                                          #
-################################################################################
-
-#* DONE
-resource "helm_release" "orion_ld" {
-  depends_on = [helm_release.mongodb]
-
-  chart      = var.orion_ld.chart_name
-  version    = var.orion_ld.version
-  repository = var.orion_ld.repository
-  name       = local.orionld_service
-  namespace  = var.namespace
-  wait       = true
-  count      = var.flags_deployment.orion_ld ? 1 : 0
-
-  set {
-    name  = "service.type"
-    value = "ClusterIP"
-  }
-
-  values = [
-    templatefile("${local.helm_conf_yaml_path}/orionld.yaml", {
-      service_name  = local.mongo_service,
-      root_password = var.mongodb.root_password
     })
   ]
 }

@@ -21,12 +21,12 @@ variable "flags_deployment" {
     mongodb = bool
     mysql   = bool
     walt_id = bool
+    # depends on: mongodb
+    orion_ld = bool
     # depends on: mysql
     keyrock                    = bool
     credentials_config_service = bool
     trusted_issuers_list       = bool
-    # depends on: mongodb
-    orion_ld = bool
     # depends on: walt_id, credentials_config_service, trusted_issuers_list
     verifier = bool
     # depends on: orion_ld
@@ -40,12 +40,12 @@ variable "flags_deployment" {
     mongodb = true
     mysql   = true
     walt_id = true
+    # depends on: mongodb
+    orion_ld = true
     # depends on: mysql
     keyrock                       = true
     credentials_config_service    = true
     trusted_participants_registry = true
-    # depends on: mongodb
-    orion_ld = true
     # depends on: walt_id, credentials_config_service, trusted_issuers_list
     verifier = true
     # depends on: orion_ld
