@@ -6,8 +6,7 @@ deployment:
 broker:
   db:
     # The db to use. if running in multiservice mode, its used as a prefix.
-    #! maximum 10 characters
-    name: orion-oper
+    name: ${orion_db_name}
     auth: 
       user: root
       password: ${root_password}

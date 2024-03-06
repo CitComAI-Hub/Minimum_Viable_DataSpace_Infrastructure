@@ -1,10 +1,3 @@
-database:
-  persistence: true
-  host: ${mysql_service}
-  name: ${til_db}
-  username: root
-  password: ${root_password}
-
 # ingress:
 #   til:
 #     enabled: true
@@ -20,12 +13,7 @@ database:
 #           - /
 #     # configure the ingress' tls
 #     # tls:
-#     #     - secretName: til-tls
-#     #       hosts:
-#     #           - til.fiware.org
-#   tir:
-#     enabled: true
-#     annotations:
+#     false
 #       kubernetes.io/ingress.class: "nginx"
 #       # forcing everything to use ssl
 #       ingress.kubernetes.io/ssl-redirect: "true"
@@ -40,3 +28,11 @@ database:
 #     #     - secretName: tir-tls
 #     #       hosts:
 #     #           - tir.fiware.org
+
+database:
+  persistence: true
+  host: ${mysql_service}
+  name: ${til_db}
+  username: root
+  password: ${root_password}
+

@@ -3,24 +3,24 @@ route:
   enabled: false
 #* Ingress configuration (should there be an ingress to connect the activation service
 #* with the public internet)
-# ingress:
-#     enabled: true
-#     annotations:
-#       kubernetes.io/ingress.class: "nginx"
-#       # forcing everything to use ssl
-#       ingress.kubernetes.io/ssl-redirect: "true"
-#       # example annotations, allowing cert-manager to automatically create tls-certs
-#       kubernetes.io/tls-acme: "true"
-#     hosts:
-#       # in fiware example it's: onboarding.dsba.fiware.dev (localhost by default)
-#       - host: waltid.${ds_domain}
-#         paths:
-#         - /
-#     # configure the ingress' tls
-#     # tls:
-#       - secretName: bae-as-tls
-#         hosts:
-#           - vcbackend.fiware.org
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    # forcing everything to use ssl
+    ingress.kubernetes.io/ssl-redirect: "true"
+    # example annotations, allowing cert-manager to automatically create tls-certs
+    kubernetes.io/tls-acme: "true"
+  hosts:
+    # in fiware example it's: onboarding.dsba.fiware.dev (localhost by default)
+    - host: ${dns_names}
+      paths:
+      - /
+  # configure the ingress' tls
+  tls:
+    - secretName: ${secret_tls_name}
+      hosts:
+        - ${dns_names}
 
 #* Walt-id config
 vcwaltid:
@@ -72,45 +72,45 @@ vcwaltid:
       enabled: true
       port: 7010
 
-  config:
-    datasource:
-      # database configuaration, see hikari docu for options
-      jdbcUrl: jdbc:sqlite:data/walt.db
-      maximumPoolSize: 5
-      autoCommit: false
-      dataSource:
-          journalMode: WAL
-          fullColumnNames: false
-    additionalConfig:
-    serviceConf:
-      signatory.conf: |
-        proofConfig {
-          issuerDid="To-be-decided"
-          issuerVerificationMethod="todo"
-          proofType="LD_PROOF"
-          domain="TEST"
-          nonce="todo"
-        }
-        templatesFolder: "/vc-templates-runtime"
-    # Service matrix config, see waltID documentation for more details
-    # In order to change the config of a service, set the config path to
-    # the mounted file
-    serviceMatrix:
-      id.walt.services.ecosystems.essif.didebsi.DidEbsiService=id.walt.services.ecosystems.essif.didebsi.WaltIdDidEbsiService
-      id.walt.services.ecosystems.essif.jsonrpc.JsonRpcService=id.walt.services.ecosystems.essif.jsonrpc.WaltIdJsonRpcService
-      id.walt.services.vc.JsonLdCredentialService=id.walt.services.vc.WaltIdJsonLdCredentialService
-      id.walt.services.vc.JwtCredentialService=id.walt.services.vc.WaltIdJwtCredentialService
-      id.walt.services.crypto.CryptoService=id.walt.services.crypto.SunCryptoService
-      id.walt.services.keystore.KeyStoreService=id.walt.services.keystore.SqlKeyStoreService
-      id.walt.services.key.KeyService=id.walt.services.key.WaltIdKeyService
-      id.walt.services.jwt.JwtService=id.walt.services.jwt.WaltIdJwtService
-      id.walt.services.vcstore.VcStoreService=id.walt.services.vcstore.FileSystemVcStoreService
-      id.walt.services.hkvstore.HKVStoreService=id.walt.services.hkvstore.FileSystemHKVStore:config/fsStore.conf
-      id.walt.services.context.ContextManager=id.walt.services.context.WaltIdContextManager
-      id.walt.signatory.Signatory=id.walt.signatory.WaltIdSignatory:/config/signatory.conf
-      id.walt.custodian.Custodian=id.walt.custodian.WaltIdCustodian
-      id.walt.auditor.Auditor=id.walt.auditor.WaltIdAuditor
-      id.walt.services.ecosystems.gaiax.GaiaxService=id.walt.services.ecosystems.gaiax.WaltIdGaiaxService
+  # config:
+  #   datasource:
+  #     # database configuaration, see hikari docu for options
+  #     jdbcUrl: jdbc:sqlite:data/walt.db
+  #     maximumPoolSize: 5
+  #     autoCommit: false
+  #     dataSource:
+  #         journalMode: WAL
+  #         fullColumnNames: false
+  #   additionalConfig:
+  #   serviceConf:
+  #     signatory.conf: |
+  #       proofConfig {
+  #         issuerDid="To-be-decided"
+  #         issuerVerificationMethod="todo"
+  #         proofType="LD_PROOF"
+  #         domain="TEST"
+  #         nonce="todo"
+  #       }
+  #       templatesFolder: "/vc-templates-runtime"
+  #   # Service matrix config, see waltID documentation for more details
+  #   # In order to change the config of a service, set the config path to
+  #   # the mounted file
+  #   serviceMatrix:
+  #     id.walt.services.ecosystems.essif.didebsi.DidEbsiService=id.walt.services.ecosystems.essif.didebsi.WaltIdDidEbsiService
+  #     id.walt.services.ecosystems.essif.jsonrpc.JsonRpcService=id.walt.services.ecosystems.essif.jsonrpc.WaltIdJsonRpcService
+  #     id.walt.services.vc.JsonLdCredentialService=id.walt.services.vc.WaltIdJsonLdCredentialService
+  #     id.walt.services.vc.JwtCredentialService=id.walt.services.vc.WaltIdJwtCredentialService
+  #     id.walt.services.crypto.CryptoService=id.walt.services.crypto.SunCryptoService
+  #     id.walt.services.keystore.KeyStoreService=id.walt.services.keystore.SqlKeyStoreService
+  #     id.walt.services.key.KeyService=id.walt.services.key.WaltIdKeyService
+  #     id.walt.services.jwt.JwtService=id.walt.services.jwt.WaltIdJwtService
+  #     id.walt.services.vcstore.VcStoreService=id.walt.services.vcstore.FileSystemVcStoreService
+  #     id.walt.services.hkvstore.HKVStoreService=id.walt.services.hkvstore.FileSystemHKVStore:config/fsStore.conf
+  #     id.walt.services.context.ContextManager=id.walt.services.context.WaltIdContextManager
+  #     id.walt.signatory.Signatory=id.walt.signatory.WaltIdSignatory:/config/signatory.conf
+  #     id.walt.custodian.Custodian=id.walt.custodian.WaltIdCustodian
+  #     id.walt.auditor.Auditor=id.walt.auditor.WaltIdAuditor
+  #     id.walt.services.ecosystems.gaiax.GaiaxService=id.walt.services.ecosystems.gaiax.WaltIdGaiaxService
   
   #* VC templates to be used by waltId
   # templates: #! What is this??

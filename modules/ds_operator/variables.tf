@@ -4,6 +4,19 @@ variable "kubernetes_local_path" {
   default     = "~/.kube/config"
 }
 
+################################################################################
+# Certs Configuration Module                                                   #
+################################################################################
+variable "ca_clusterissuer_name" {
+  type        = string
+  description = "The name of the clusterissuer"
+  default     = "ca-certificates"
+}
+
+################################################################################
+# Services Configuration                                                       #
+################################################################################
+
 variable "namespace" {
   type        = string
   description = "Namespace for the DS operator deployment"
@@ -56,6 +69,36 @@ variable "flags_deployment" {
   }
 }
 
+variable "services_names" {
+  type = object({
+    mongo = string
+    mysql = string
+    walt_id = string
+    orion_ld = string
+    keyrock = string
+    tpr = string
+    pdp = string
+    kong = string
+    ccs = string
+    til = string
+    verifier = string
+  })
+  description = "values for the namespace of the services"
+  default = {
+    mongo = "mongodb"
+    mysql = "mysql"
+    walt_id = "waltid"
+    orion_ld = "orionld"
+    keyrock = "keyrock"
+    tpr = "trusted-participants-registry"
+    pdp = "pdp"
+    kong = "kong"
+    ccs = "cred-conf-service"
+    til = "trusted-issuers-list"
+    verifier = "verifier"
+  }
+  
+}
 
 # MongoDB service
 variable "mongodb" {
@@ -138,7 +181,7 @@ variable "keyrock" {
   })
   description = "Keyrock"
   default = {
-    version        = "0.7.5"
+    version        = "0.7.5" # latest version 0.7.7
     chart_name     = "keyrock"
     repository     = "https://fiware.github.io/helm-charts"
     admin_password = "admin"
@@ -171,7 +214,7 @@ variable "kong" {
   })
   description = "Kong Service"
   default = {
-    version    = "2.8.0"
+    version    = "2.38.0"
     chart_name = "kong"
     repository = "https://charts.konghq.com"
   }

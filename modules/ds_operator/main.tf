@@ -1,24 +1,9 @@
-locals {
-  helm_conf_yaml_path = "${path.module}/conf/helm_values"
-  mongo_service       = "mongodb"
-  mysql_service       = "mysql"
-  waltid_service      = "waltid"
-  orionld_service     = "orion-ld"
-  keyrock_service     = "keyrock"
-  tpr_service         = "trusted-participants-registry"
-  pdp_service         = "pdp"
-  kong_service        = "kong"
-  ccs_service         = "cred-conf-service"
-  til_service         = "trusted-issuers-list"
-  verifier_service    = "verifier"
-}
-
 #* DONE
 resource "helm_release" "mongodb" {
   chart            = var.mongodb.chart_name
   version          = var.mongodb.version
   repository       = var.mongodb.repository
-  name             = local.mongo_service
+  name             = var.services_names.mongo
   namespace        = var.namespace
   create_namespace = true
   wait             = true
@@ -41,7 +26,7 @@ resource "helm_release" "mysql" {
   chart            = var.mysql.chart_name
   version          = var.mysql.version
   repository       = var.mysql.repository
-  name             = local.mysql_service
+  name             = var.services_names.mysql
   namespace        = var.namespace
   create_namespace = true
   wait             = true
@@ -54,7 +39,7 @@ resource "helm_release" "mysql" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/mysql.yaml", {
-      service_name  = local.mysql_service,
+      service_name  = var.services_names.mysql,
       root_password = var.mysql.root_password,
       til_db        = var.mysql.til_db,
       ccs_db        = var.mysql.ccs_db
@@ -62,12 +47,14 @@ resource "helm_release" "mysql" {
   ]
 }
 
-#? Ingress is needed? did configuration?
+#? DONE Ingress is needed? configuration datasource?
 resource "helm_release" "walt_id" {
+  depends_on = [kubernetes_manifest.certs_creation]
+
   chart            = var.walt_id.chart_name
   version          = var.walt_id.version
   repository       = var.walt_id.repository
-  name             = local.waltid_service
+  name             = var.services_names.walt_id
   namespace        = var.namespace
   create_namespace = true
   wait             = true
@@ -80,7 +67,8 @@ resource "helm_release" "walt_id" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/waltid.yaml", {
-      ds_domain = var.ds_domain
+      dns_names       = local.dns_dir[var.services_names.walt_id],
+      secret_tls_name = local.secrets_tls[var.services_names.walt_id],
     })
   ]
 }
@@ -96,7 +84,7 @@ resource "helm_release" "orion_ld" {
   chart      = var.orion_ld.chart_name
   version    = var.orion_ld.version
   repository = var.orion_ld.repository
-  name       = local.orionld_service
+  name       = var.services_names.orion_ld
   namespace  = var.namespace
   wait       = true
   count      = var.flags_deployment.orion_ld ? 1 : 0
@@ -108,8 +96,9 @@ resource "helm_release" "orion_ld" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/orionld.yaml", {
-      service_name  = local.mongo_service,
-      root_password = var.mongodb.root_password
+      service_name  = var.services_names.mongo,
+      root_password = var.mongodb.root_password,
+      orion_db_name = "orion-oper" #! maximum 10 characters
     })
   ]
 }
@@ -118,14 +107,14 @@ resource "helm_release" "orion_ld" {
 # Depends on: mysql                                                            #
 ################################################################################
 
-#? DONE (authorisationRegistry?? & satellite??)
+#? DONE
 resource "helm_release" "keyrock" {
-  depends_on = [helm_release.mysql]
+  depends_on = [helm_release.mysql, kubernetes_manifest.certs_creation]
 
   chart      = var.keyrock.chart_name
   version    = var.keyrock.version
   repository = var.keyrock.repository
-  name       = local.keyrock_service
+  name       = var.services_names.keyrock
   namespace  = var.namespace
   wait       = true
   count      = var.flags_deployment.keyrock ? 1 : 0
@@ -137,12 +126,14 @@ resource "helm_release" "keyrock" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/keyrock.yaml", {
-      service_name        = local.keyrock_service,
-      ds_domain           = var.ds_domain,
+      service_name        = var.services_names.keyrock,
+      dns_names           = local.dns_dir[var.services_names.keyrock],
+      secret_tls_name     = local.secrets_tls[var.services_names.keyrock],
+      waltid_secret_tls   = local.secrets_tls[var.services_names.walt_id],
       admin_password      = var.keyrock.admin_password,
-      admin_email         = var.keyrock.admin_email
-      mysql_root_password = var.mysql.root_password
-      mysql_service       = local.mysql_service
+      admin_email         = var.keyrock.admin_email,
+      mysql_root_password = var.mysql.root_password,
+      mysql_service       = var.services_names.mysql
     })
   ]
 }
@@ -154,7 +145,7 @@ resource "helm_release" "credentials_config_service" {
   chart      = var.credentials_config_service.chart_name
   version    = var.credentials_config_service.version
   repository = var.credentials_config_service.repository
-  name       = local.ccs_service
+  name       = var.services_names.ccs
   namespace  = var.namespace
   wait       = true
   count      = var.flags_deployment.credentials_config_service ? 1 : 0
@@ -166,7 +157,7 @@ resource "helm_release" "credentials_config_service" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/credentials_config_service.yaml", {
-      mysql_service = local.mysql_service,
+      mysql_service = var.services_names.mysql,
       ccs_db        = var.mysql.ccs_db,
       root_password = var.mysql.root_password
     })
@@ -180,7 +171,7 @@ resource "helm_release" "trusted_issuers_list" {
   chart      = var.trusted_issuers_list.chart_name
   version    = var.trusted_issuers_list.version
   repository = var.trusted_issuers_list.repository
-  name       = local.til_service
+  name       = var.services_names.til
   namespace  = var.namespace
   wait       = true
   count      = var.flags_deployment.trusted_issuers_list ? 1 : 0
@@ -192,9 +183,9 @@ resource "helm_release" "trusted_issuers_list" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/trusted_issuers_list.yaml", {
-      service_name  = local.til_service,
+      service_name  = var.services_names.til,
       ds_domain     = var.ds_domain,
-      mysql_service = local.mysql_service,
+      mysql_service = var.services_names.mysql,
       til_db        = var.mysql.til_db,
       root_password = var.mysql.root_password
     })
@@ -212,7 +203,7 @@ resource "helm_release" "verifier" {
   chart      = var.verifier.chart_name
   version    = var.verifier.version
   repository = var.verifier.repository
-  name       = local.verifier_service
+  name       = var.services_names.verifier
   namespace  = var.namespace
   wait       = true
   count      = var.flags_deployment.verifier ? 1 : 0
@@ -225,12 +216,12 @@ resource "helm_release" "verifier" {
   values = [
     templatefile("${local.helm_conf_yaml_path}/verifier.yaml", {
       namespace        = var.namespace,
-      service_name     = local.verifier_service,
+      service_name     = var.services_names.verifier,
       ds_domain        = var.ds_domain,
-      waltid_service   = local.waltid_service,
-      tpr_service      = local.tpr_service,
-      ccs_service      = local.ccs_service,
-      verifier_service = local.verifier_service
+      waltid_service   = var.services_names.walt_id,
+      tpr_service      = var.services_names.tpr,
+      ccs_service      = var.services_names.ccs,
+      verifier_service = var.services_names.verifier
     })
   ]
 }
@@ -244,12 +235,12 @@ resource "helm_release" "verifier" {
 # Defaulted container "proxy" out of: proxy, clear-stale-pid (init)
 # Error from server (BadRequest): container "proxy" in pod "ds-operator-kong-kong-67fc695f5d-pfgkv" is waiting to start: PodInitializing
 resource "helm_release" "kong" {
-  depends_on = [helm_release.orion_ld] #, helm_release.dsba_pdp]
+  depends_on = [helm_release.orion_ld, kubernetes_manifest.certs_creation] #, helm_release.pdp
 
   chart      = var.kong.chart_name
   version    = var.kong.version
   repository = var.kong.repository
-  name       = local.kong_service
+  name       = var.services_names.kong
   namespace  = var.namespace
   wait       = true
   count      = var.flags_deployment.kong ? 1 : 0
@@ -260,8 +251,8 @@ resource "helm_release" "kong" {
   }
 
   values = [
-    templatefile("${local.helm_conf_yaml_path}/kong.yaml", {
-      service_name = local.kong_service,
+    templatefile("${local.helm_conf_yaml_path}/kong_conf.yaml", {
+      service_name = var.services_names.kong,
       ds_domain    = var.ds_domain
     })
   ]
@@ -274,7 +265,7 @@ resource "helm_release" "trusted_participants_registry" {
   chart      = var.trusted_participants_registry.chart_name
   version    = var.trusted_participants_registry.version
   repository = var.trusted_participants_registry.repository
-  name       = local.tpr_service
+  name       = var.services_names.tpr
   namespace  = var.namespace
   wait       = true
   count      = var.flags_deployment.trusted_participants_registry ? 1 : 0
@@ -290,9 +281,9 @@ resource "helm_release" "trusted_participants_registry" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/trusted_participants_registry.yaml", {
-      service_name       = local.tpr_service,
+      service_name       = var.services_names.tpr,
       ds_domain          = var.ds_domain,
-      orion_service_name = local.orionld_service
+      orion_service_name = var.services_names.orion_ld
     })
   ]
 }
@@ -315,7 +306,7 @@ resource "helm_release" "pdp" {
   chart      = var.pdp.chart_name
   version    = var.pdp.version
   repository = var.pdp.repository
-  name       = local.pdp_service
+  name       = var.services_names.pdp
   namespace  = var.namespace
   wait       = true
   count      = var.flags_deployment.pdp ? 1 : 0
@@ -327,7 +318,7 @@ resource "helm_release" "pdp" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/pdp.yaml", {
-      verifier_service = local.verifier_service
+      verifier_service = var.services_names.verifier
     })
   ]
 }

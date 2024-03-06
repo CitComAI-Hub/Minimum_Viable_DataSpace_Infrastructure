@@ -29,15 +29,15 @@ module "local_ds_operator" {
     # depends on: mongodb
     orion_ld = true
     # depends on: mysql
-    keyrock                       = false
-    credentials_config_service    = false
-    trusted_participants_registry = false
+    keyrock                       = true
+    credentials_config_service    = true
+    trusted_participants_registry = true
     # depends on: credentials_config_service, wallet_id, trusted_issuers_list
-    verifier = false
+    verifier = true
     # depends on: orion_ld
-    kong                 = false
-    trusted_issuers_list = false
+    kong                 = true
+    trusted_issuers_list = true
     # depends on: keyrock, verifier
-    pdp = false
+    pdp = true
   }
 }
