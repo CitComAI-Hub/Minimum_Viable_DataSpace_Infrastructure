@@ -16,6 +16,47 @@ variable "ds_domain" {
   default     = "ds-operator.io"
 }
 
+variable "flags_deployment" {
+  type = object({
+    mongodb = bool
+    mysql   = bool
+    walt_id = bool
+    # depends on: mysql
+    keyrock                    = bool
+    credentials_config_service = bool
+    trusted_issuers_list       = bool
+    # depends on: mongodb
+    orion_ld = bool
+    # depends on: walt_id, credentials_config_service, trusted_issuers_list
+    verifier = bool
+    # depends on: orion_ld
+    kong                          = bool
+    trusted_participants_registry = bool
+    # depends on: keyrock, verifier
+    pdp = bool
+  })
+  description = "Whether to deploy resources."
+  default = {
+    mongodb = true
+    mysql   = true
+    walt_id = true
+    # depends on: mysql
+    keyrock                       = true
+    credentials_config_service    = true
+    trusted_participants_registry = true
+    # depends on: mongodb
+    orion_ld = true
+    # depends on: walt_id, credentials_config_service, trusted_issuers_list
+    verifier = true
+    # depends on: orion_ld
+    kong                 = true
+    trusted_issuers_list = true
+    # depends on: keyrock, verifier
+    pdp = true
+  }
+}
+
+
 # MongoDB service
 variable "mongodb" {
   type = object({
