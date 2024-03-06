@@ -2,8 +2,8 @@ locals {
   ca_clusterissuer_name = "ca-certificates"
 }
 
-module "cert_manager_certificates" {
-  source = "../../modules/cert_manager_certificates/"
+module "ca_configuration" {
+  source = "../../modules/ca_configuration/"
 
   namespace          = "cert-manager"
   clusterissuer_name = local.ca_clusterissuer_name
@@ -12,7 +12,7 @@ module "cert_manager_certificates" {
 
 module "waltid_didweb" {
   source     = "../../modules/waltid_ssikit/"
-  depends_on = [module.cert_manager_certificates]
+  depends_on = [module.ca_configuration]
 
   providers = {
     kubernetes = kubernetes
