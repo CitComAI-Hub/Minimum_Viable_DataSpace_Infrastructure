@@ -7,8 +7,8 @@ locals {
 
 
 module "ca_configuration" {
-  source = "../../modules/ca_configuration/"
-
+  source              = "../../modules/ca_configuration/"
+  count               = var.flags_deployment.ca_configuration ? 1 : 0 # count =: number of instances to create
   namespace           = "cert-manager"
   clusterissuer_name  = local.ca_clusterissuer_name
   secret_ca_container = "ca-cert-manager"
@@ -29,9 +29,9 @@ module "local_ds_operator" {
     # depends on: mongodb
     orion_ld = true
     # depends on: mysql
-    keyrock                       = false
-    credentials_config_service    = false
-    trusted_participants_registry = false
+    keyrock                       = true
+    credentials_config_service    = true
+    trusted_participants_registry = true
     # depends on: credentials_config_service, wallet_id, trusted_issuers_list
     verifier = false
     # depends on: orion_ld
