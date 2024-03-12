@@ -102,6 +102,10 @@ These are the necessary requirements to be able to execute the project:
   echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
   sudo apt update && sudo apt install terraform
   ```
+* [Make](https://www.gnu.org/software/make/) (v. 4.3)
+  ```bash
+  sudo apt install make
+  ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -119,11 +123,9 @@ These are the necessary requirements to be able to execute the project:
 
 3. From the example folder, deploy the infrastructure using terraform.
   ```bash
-  terraform init
+  make init_apply
 
-  terraform apply # or terraform apply -auto-approve
-
-  # terraform destroy 
+  # make destroy
   ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
