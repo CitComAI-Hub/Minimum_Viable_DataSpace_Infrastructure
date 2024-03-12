@@ -1,4 +1,6 @@
+# ## ingress configuration
 # ingress:
+#   # Route config for the trusted issuers list endpoint
 #   til:
 #     enabled: true
 #     annotations:
@@ -7,32 +9,40 @@
 #       ingress.kubernetes.io/ssl-redirect: "true"
 #       # example annotations, allowing cert-manager to automatically create tls-certs
 #       # kubernetes.io/tls-acme: "true"
+#     # -- all hosts to be provided
 #     hosts:
 #       - host: ${service_name}.${ds_domain}
 #         paths:
 #           - /
-#     # configure the ingress' tls
-#     # tls:
-#     false
+#     # -- configure the ingress' tls
+#     tls: []
+#       # - secretName: til-tls
+#         # hosts:
+#           # - til.fiware.org
+#   # Route config for the trusted issuers registry endpoint
+#   tir:
+#     enabled: true
+#     # -- annotations to be added to the ingress
+#     annotations:
 #       kubernetes.io/ingress.class: "nginx"
 #       # forcing everything to use ssl
 #       ingress.kubernetes.io/ssl-redirect: "true"
 #       # example annotations, allowing cert-manager to automatically create tls-certs
 #       # kubernetes.io/tls-acme: "true"
-#     hosts:
-#       - host: tir.${ds_domain}
-#         paths:
-#           - /
-#     # configure the ingress' tls
-#     # tls:
-#     #     - secretName: tir-tls
-#     #       hosts:
-#     #           - tir.fiware.org
+#     # -- all hosts to be provided
+#     hosts: []
+#       ## provide a hosts and the paths that should be available
+#       # - host: localhost
+#     # -- configure the ingress' tls
+#     tls: []
+#       # - secretName: til-tls
+#         # hosts:
+#           # - til.fiware.org
 
 database:
   persistence: true
   host: ${mysql_service}
+  port: 3306
   name: ${til_db}
   username: root
   password: ${root_password}
-
