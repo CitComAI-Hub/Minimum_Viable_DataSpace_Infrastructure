@@ -1,5 +1,5 @@
 locals {
-  helm_conf_yaml_path = "${path.module}/conf/helm_values"
+  helm_conf_yaml_path = "${path.module}/config/helm_values"
   mongo_service       = "mongodb"
   mysql_service       = "mysql"
   waltid_service      = "waltid"
