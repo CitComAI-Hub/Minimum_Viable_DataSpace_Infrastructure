@@ -34,70 +34,76 @@ variable "flags_deployment" {
     mongodb = bool
     mysql   = bool
     walt_id = bool
+    kong    = bool
     # depends on: mongodb
     orion_ld = bool
     # depends on: mysql
-    keyrock                    = bool
     credentials_config_service = bool
     trusted_issuers_list       = bool
+    # depends on: orion_ld
+    trusted_participants_registry = bool
+    # depends on: credentials_config_service, kong, verifier
+    portal = bool
     # depends on: walt_id, credentials_config_service, trusted_issuers_list
     verifier = bool
-    # depends on: orion_ld
-    kong                          = bool
-    trusted_participants_registry = bool
-    # depends on: keyrock, verifier
-    pdp = bool
+
+    keyrock = bool
+    pdp     = bool
   })
   description = "Whether to deploy resources."
   default = {
     mongodb = true
     mysql   = true
     walt_id = true
+    kong    = true
     # depends on: mongodb
     orion_ld = true
     # depends on: mysql
-    keyrock                       = true
     credentials_config_service    = true
     trusted_participants_registry = true
+    # depends on: orion_ld
+    trusted_issuers_list = true
+    # depends on: credentials_config_service, kong, verifier
+    portal = true
     # depends on: walt_id, credentials_config_service, trusted_issuers_list
     verifier = true
-    # depends on: orion_ld
-    kong                 = true
-    trusted_issuers_list = true
-    # depends on: keyrock, verifier
-    pdp = true
+
+    keyrock = true
+    pdp     = true
   }
 }
 
 variable "services_names" {
   type = object({
-    mongo = string
-    mysql = string
-    walt_id = string
+    mongo    = string
+    mysql    = string
+    walt_id  = string
+    kong     = string
     orion_ld = string
-    keyrock = string
-    tpr = string
-    pdp = string
-    kong = string
-    ccs = string
-    til = string
+    ccs      = string
+    til      = string
+    tpr      = string
+    portal   = string
     verifier = string
+    keyrock  = string
+    pdp      = string
   })
   description = "values for the namespace of the services"
   default = {
-    mongo = "mongodb"
-    mysql = "mysql"
-    walt_id = "waltid"
+    mongo    = "mongodb"
+    mysql    = "mysql"
+    walt_id  = "waltid"
+    kong     = "kong"
     orion_ld = "orionld"
-    keyrock = "keyrock"
-    tpr = "trusted-participants-registry"
-    pdp = "pdp"
-    kong = "kong"
-    ccs = "cred-conf-service"
-    til = "trusted-issuers-list"
+    ccs      = "cred-conf-service"
+    til      = "trusted-issuers-list"
+    tpr      = "trusted-participants-registry"
+    portal   = "portal"
     verifier = "verifier"
+    keyrock  = "keyrock"
+    pdp      = "pdp"
   }
-  
+
 }
 
 # MongoDB service
@@ -214,7 +220,7 @@ variable "kong" {
   })
   description = "Kong Service"
   default = {
-    version    = "2.38.0"
+    version    = "2.8.0"
     chart_name = "kong"
     repository = "https://charts.konghq.com"
   }
@@ -290,8 +296,8 @@ variable "portal" {
   })
   description = "Portal Service"
   default = {
-    version    = "0.0.5"
-    chart_name = "vcportal"
+    version    = "2.2.5"
+    chart_name = "pdc-portal"
     repository = "https://i4Trust.github.io/helm-charts"
   }
 

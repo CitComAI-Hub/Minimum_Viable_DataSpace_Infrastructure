@@ -1,3 +1,21 @@
+# Ingress configuration
+ingress:
+    enabled: true
+    annotations:
+        kubernetes.io/ingress.class: "nginx"
+        # forcing everything to use ssl
+        ingress.kubernetes.io/ssl-redirect: "true"
+        # example annotations, allowing cert-manager to automatically create tls-certs
+        kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: ${ds_domain}
+        paths:
+        - /
+    # configure the ingress' tls
+    tls:
+      - secretName: ${secret_tls_name}
+        hosts:
+          - ${ds_domain}
 deployment:
   image:
     repository: quay.io/fiware/vcverifier
@@ -8,7 +26,7 @@ deployment:
     pathsToSkip: 
       - "/health"
   server:
-    host: https://${service_name}.${ds_domain}
+    host: https://${ds_domain}
   ssikit: #! What is this??
     auditorUrl: http://${waltid_service}:7003
   verifier:
@@ -32,42 +50,23 @@ deployment:
   #     env:
   #       - name: WALTID_CORE_ADDRESS
   #         value: "${waltid_service}:7000"
-  #     volumeMounts:
-  #       - name: dsba-onboarding-did-config
-  #         mountPath: /opt/did/script
-  #       - name: did-secret
-  #         mountPath: /opt/did/secret
-  # additionalVolumeMounts:
-  #   - name: ${service_name}
-  #     mountPath: /opt/credential
-  #   - name: did-secret
-  #     mountPath: /opt/did/secret
-  # additionalVolumes:
-  #   - name: ${namespace}-did-config
-  #     configMap:
-  #       name: ${namespace}-did-config
-  #   - name: ${service_name}
-  #     configMap:
-  #       name: ${service_name}
-  #   # - name: did-secret
-  #   #   secret: 
-  #   #     secretName: dsba-onboarding-portal-verifier-vcverifier-tls-sec
-
-# Ingress configuration
-ingress:
-    enabled: true
-    annotations:
-        kubernetes.io/ingress.class: "nginx"
-        # forcing everything to use ssl
-        ingress.kubernetes.io/ssl-redirect: "true"
-        # example annotations, allowing cert-manager to automatically create tls-certs
-        # kubernetes.io/tls-acme: "true"
-    hosts:
-      - host: ${service_name}.${ds_domain}
-        paths:
-        - /
-    # configure the ingress' tls
-    # tls:
-      # - secretName: keyrock-tls
-        # hosts:
-          # - keyrock.fiware.org
+  #     # volumeMounts:
+  #     #   - name: dsba-onboarding-did-config
+  #     #     mountPath: /opt/did/script
+  #     #   - name: did-secret
+  #     #     mountPath: /opt/did/secret
+  # # additionalVolumeMounts:
+  # #   - name: ${service_name}
+  # #     mountPath: /opt/credential
+  # #   - name: did-secret
+  # #     mountPath: /opt/did/secret
+  # # additionalVolumes:
+  # #   - name: ${namespace}-did-config
+  # #     configMap:
+  # #       name: ${namespace}-did-config
+  # #   - name: ${service_name}
+  # #     configMap:
+  # #       name: ${service_name}
+  # #   # - name: did-secret
+  # #   #   secret: 
+  # #   #     secretName: dsba-onboarding-portal-verifier-vcverifier-tls-sec

@@ -14,24 +14,24 @@ trustedparticipantsregistry:
     enabled: false
   #* Ingress configuration (should there be an ingress to connect the activation
   #* service with the public internet)
-  # ingress:
-  #     enabled: true
-  #     annotations:
-  #       kubernetes.io/ingress.class: "nginx"
-  #       # forcing everything to use ssl
-  #       ingress.kubernetes.io/ssl-redirect: "true"
-  #       # example annotations, allowing cert-manager to automatically create tls-certs
-  #       kubernetes.io/tls-acme: "true"
-  #     hosts:
-  #       # in fiware example it's: onboarding.dsba.fiware.dev (localhost by default)
-  #       - host: ${service_name}.${ds_domain}
-  #         paths:
-  #         - /
-  #     # configure the ingress' tls
-  #     # tls:
-  #       - secretName: bae-as-tls
-  #         hosts:
-  #           - ${service_name}.${ds_domain}
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+    hosts:
+      # in fiware example it's: onboarding.dsba.fiware.dev (localhost by default)
+      - host: ${ds_domain}
+        paths:
+        - /
+    # configure the ingress' tls
+    tls:
+      - secretName: ${secret_tls_name}
+        hosts:
+          - ${ds_domain}
 
   tir:
     ngsiBroker:

@@ -4,7 +4,7 @@ variable "flags_deployment" {
   })
   description = "Whether to deploy resources."
   default = {
-    ca_configuration = false # check the value of flags_deployment.cert_trust_manager in conf/kind_cluster.tfvars
+    ca_configuration = true # check the value of flags_deployment.cert_trust_manager in conf/kind_cluster.tfvars
   }
 }
 
