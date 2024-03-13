@@ -1,6 +1,6 @@
 variable "cluster_name" {
   type        = string
-  description = "The name of the kind cluster"
+  description = "The name of the kind cluster."
   default     = "ds-local-cluster"
 }
 
@@ -13,7 +13,7 @@ variable "add_extra_mounts" {
       }
     )
   )
-  description = "Extra mounts to be added to all nodes"
+  description = "Extra mounts to be added to all nodes."
   default     = []
 }
 

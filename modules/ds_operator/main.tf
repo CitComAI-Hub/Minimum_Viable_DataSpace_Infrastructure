@@ -1,3 +1,18 @@
+locals {
+  helm_conf_yaml_path = "${path.module}/config/helm_values"
+  mongo_service       = "mongodb"
+  mysql_service       = "mysql"
+  waltid_service      = "waltid"
+  orionld_service     = "orion-ld"
+  keyrock_service     = "keyrock"
+  tpr_service         = "trusted-participants-registry"
+  pdp_service         = "pdp"
+  kong_service        = "kong"
+  ccs_service         = "cred-conf-service"
+  til_service         = "trusted-issuers-list"
+  verifier_service    = "verifier"
+}
+
 #* DONE
 resource "helm_release" "mongodb" {
   chart            = var.mongodb.chart_name

@@ -7,8 +7,8 @@ locals {
 
 
 module "ca_configuration" {
-  source = "../../modules/ca_configuration/"
-
+  source              = "../../modules/ca_configuration/"
+  count               = var.flags_deployment.ca_configuration ? 1 : 0 # count =: number of instances to create
   namespace           = "cert-manager"
   clusterissuer_name  = local.ca_clusterissuer_name
   secret_ca_container = "ca-cert-manager"
