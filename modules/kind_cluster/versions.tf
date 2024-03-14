@@ -8,5 +8,9 @@ terraform {
       source  = "tehcyx/kind"
       version = "~> 0.2.1"
     }
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0.1"
+    }
   }
 }
