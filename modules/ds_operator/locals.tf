@@ -2,6 +2,7 @@ locals {
   services_names = [
     var.services_names.walt_id,
     var.services_names.til,
+    var.services_names.tir,
     var.services_names.tpr,
     var.services_names.verifier,
     var.services_names.keyrock,
@@ -21,6 +22,12 @@ locals {
       metadata_name    = "${var.services_names.til}-certificate"
       spec_secret_name = "${var.services_names.til}-tls-secret"
       dns_names        = "${var.services_names.til}.${var.ds_domain}"
+    },
+    {
+      id               = var.services_names.tir
+      metadata_name    = "${var.services_names.tir}-certificate"
+      spec_secret_name = "${var.services_names.tir}-tls-secret"
+      dns_names        = "${var.services_names.tir}.${var.ds_domain}"
     },
     {
       id               = var.services_names.tpr

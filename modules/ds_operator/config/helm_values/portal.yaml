@@ -1,7 +1,9 @@
+fullnameOverride: ${service_name}
+
 deployment:
   image:
     repository: quay.io/i4trust/pdc-portal
-    tag: 2.8.1
+    tag: 2.9.0
     pullPolicy: Always
   livenessProbe:
     initialDelaySeconds: 4
@@ -10,15 +12,6 @@ deployment:
 
 route:
   enabled: false
-  # host: onboarding-portal.dsba.fiware.dev
-  # tls:
-  #   termination: edge
-  #   insecureEdgeTerminationPolicy: Redirect
-  # # should a certificate for the address automatically be generated
-  # certificate:
-  #   issuer:
-  #     kind: ClusterIssuer
-  #     name: letsencrypt-aws-prod
 ingress:
   enabled: true
   annotations:
@@ -42,15 +35,15 @@ debug:
 
 ccs:
   endpoint: "${css_service}:8080/"
-  # id: "4972b082-c3db-414c-afb7-bf48f2fc42f6"
-  # credentials:
-  #   - type: "VerifiableCredential"
-  #     trustedParticipantsLists: [
-  #       "https://tir.dsba.fiware.dev"
-  #     ]
-  #     trustedIssuersLists: [ #! What is this?
-  #       "http://dsba-onboarding-portal-til-trusted-issuers-list:8080"
-  #     ]
+  id: ${client_id}
+  credentials:
+    - type: "VerifiableCredential"
+      trustedParticipantsLists: [
+        "https://${ds_domain_tpr}"
+      ]
+      trustedIssuersLists: [ 
+        "http://${til_service}:8080"
+      ]
 
 config:
   title: "OnBoarding Portal"
@@ -77,10 +70,12 @@ config:
     # SIOP flow enabled
     enabled: true
     # Base uri of the verifier
-    verifier_uri: ${verifier_service}
+    verifier_uri: https://${ds_domain_verifier}
     # # DID of verifier
     # did: "did:web:onboarding.dsba.fiware.dev:did"
-    # # Client ID to be used
-    # client_id: 4972b082-c3db-414c-afb7-bf48f2fc42f6
+    # Client ID to be used
+    client_id: ${client_id}
+    # Show separate Login button which shows the JWT access token only after login
+    jwtOnlyEnabled: true
 
   idp: []

@@ -2,6 +2,7 @@ deployment:
   additionalAnnotations:
     prometheus.io/scrape: 'true'
     prometheus.io/port: '8000'
+
 #* Configuration for the orion-ld service
 broker:
   db:

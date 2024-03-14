@@ -94,9 +94,21 @@ admin:
 #* Configuration of Authorisation Registry (AR)
 authorisationRegistry: 
   enabled: false
+  # # -- Identifier (EORI) of AR
+  # identifier: "did:web:pdc-demo.ds.smartcity-marketplace.com:did"
+  # # -- URL of AR
+  # url: "internal"
 #* Configuration of iSHARE Satellite
 satellite: 
   enabled: false
+  # # -- Identifier (EORI) of satellite
+  # identifier: "EU.EORI.FIWARESATELLITE"
+  # # -- URL of satellite
+  # url: "https://tir.dsba.fiware.dev"
+  # # -- Token endpoint of satellite
+  # tokenEndpoint: "https://tir.dsba.fiware.dev/token"
+  # # -- Parties endpoint of satellite
+  # partiesEndpoint: "https://tir.dsba.fiware.dev/parties"
 #* Configuration of local key and certificate for validation and generation of tokens
 token:
   enabled: false
@@ -127,4 +139,4 @@ additionalEnvVars:
 #   - name: DEBUG
 #     value: "*"
 #   - name: IDM_PR_CLIENT_ID
-#     value: "did:web:my-did:did"
+#     value: "did:web:ds-operator.io:did"

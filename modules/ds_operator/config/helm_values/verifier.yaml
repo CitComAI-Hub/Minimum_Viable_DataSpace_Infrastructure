@@ -1,3 +1,5 @@
+fullnameOverride: ${service_name}
+
 # Ingress configuration
 ingress:
     enabled: true
@@ -16,6 +18,7 @@ ingress:
       - secretName: ${secret_tls_name}
         hosts:
           - ${ds_domain}
+
 deployment:
   image:
     repository: quay.io/fiware/vcverifier
@@ -30,7 +33,7 @@ deployment:
   ssikit: #! What is this??
     auditorUrl: http://${waltid_service}:7003
   verifier:
-    tirAddress: https://${tpr_service}/v3/issuers
+    tirAddress: https://${tir_service}/v3/issuers
     # did: did:web:onboarding.dsba.fiware.dev:did
   # m2m: #! What is this??
   #   authEnabled: true

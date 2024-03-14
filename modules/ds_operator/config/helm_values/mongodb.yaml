@@ -1,15 +1,22 @@
+fullnameOverride: ${service_name}
+
 architecture: standalone
+
 auth:
   enabled: true
   rootPassword: ${root_password}
+
 podSecurityContext:
   enabled: false
+
 containerSecurityContext:
   enabled: false
+
 resources:
   limits:
   cpu: 200m
   memory: 512Mi
+
 persistence:
   enabled: true
   size: 8Gi

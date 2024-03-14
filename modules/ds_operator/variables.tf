@@ -82,6 +82,7 @@ variable "services_names" {
     orion_ld = string
     ccs      = string
     til      = string
+    tir      = string
     tpr      = string
     portal   = string
     verifier = string
@@ -97,6 +98,7 @@ variable "services_names" {
     orion_ld = "orionld"
     ccs      = "cred-conf-service"
     til      = "trusted-issuers-list"
+    tir      = "trusted-issuers-registry" # this is include in the TIL service
     tpr      = "trusted-participants-registry"
     portal   = "portal"
     verifier = "verifier"

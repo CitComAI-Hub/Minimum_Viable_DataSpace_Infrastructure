@@ -1,6 +1,9 @@
-#* OpenShit route configuration
+fullnameOverride: ${service_name}
+
+# OpenShit route configuration
 route:
   enabled: false
+
 #* Ingress configuration (should there be an ingress to connect the activation service
 #* with the public internet)
 ingress:

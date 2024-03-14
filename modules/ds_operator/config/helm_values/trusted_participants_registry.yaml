@@ -1,3 +1,5 @@
+fullnameOverride: ${service_name}
+
 # initialParticipants: 
 #   - did:web:packetdelivery.dsba.fiware.dev:did
 #   - did:web:onboarding.dsba.fiware.dev:did

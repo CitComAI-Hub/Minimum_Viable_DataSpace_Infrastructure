@@ -1,3 +1,5 @@
+fullnameOverride: ${service_name}
+
 ## ingress configuration
 ingress:
   # Route config for the trusted issuers list endpoint
@@ -10,32 +12,30 @@ ingress:
       # example annotations, allowing cert-manager to automatically create tls-certs
       kubernetes.io/tls-acme: "true"
     hosts:
-      - host: ${ds_domain}
+      - host: ${ds_domain_til}
         paths:
           - /
     tls:
-      - secretName: ${secret_tls_name}
+      - secretName: ${secret_tls_name_til}
         hosts:
-          - ${ds_domain}
+          - ${ds_domain_til}
   # Route config for the trusted issuers registry endpoint
   tir:
-    enabled: false
-    # # -- annotations to be added to the ingress
-    # annotations:
-    #   kubernetes.io/ingress.class: "nginx"
-    #   # forcing everything to use ssl
-    #   ingress.kubernetes.io/ssl-redirect: "true"
-    #   # example annotations, allowing cert-manager to automatically create tls-certs
-    #   # kubernetes.io/tls-acme: "true"
-    # # -- all hosts to be provided
-    # hosts: []
-    #   ## provide a hosts and the paths that should be available
-    #   # - host: localhost
-    # # -- configure the ingress' tls
-    # tls: []
-    #   # - secretName: til-tls
-    #     # hosts:
-    #       # - til.fiware.org
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: ${ds_domain_tir}
+        paths:
+          - /
+    tls:
+      - secretName: ${secret_tls_name_tir}
+        hosts:
+          - ${ds_domain_tir}
 
 database:
   persistence: true
