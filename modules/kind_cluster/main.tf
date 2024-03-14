@@ -67,7 +67,7 @@ resource "null_resource" "ingress_installation" {
         kubectl wait --namespace ingress-nginx \
             --for=condition=ready pod \
             --selector=app.kubernetes.io/component=controller \
-            --timeout=90s
+            --timeout=5m
     EOF
   }
 }
@@ -81,7 +81,7 @@ resource "null_resource" "loadBalancer_installation" {
         kubectl wait --namespace metallb-system \
             --for=condition=ready pod \
             --selector=app=metallb \
-            --timeout=90s
+            --timeout=5m
     EOF
   }
 
