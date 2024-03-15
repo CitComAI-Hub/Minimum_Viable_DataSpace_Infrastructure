@@ -248,7 +248,7 @@ resource "helm_release" "portal" {
 # Depends on: WaltID, Credentials Config Service, Trusted Issuers List         #
 ################################################################################
 
-#! m2m?? initContainers??
+#? DONE m2m?? initContainers??
 resource "helm_release" "verifier" {
   depends_on = [
     kubernetes_manifest.certs_creation,
@@ -313,8 +313,9 @@ resource "helm_release" "pdp" {
   values = [
     templatefile("${local.helm_conf_yaml_path}/pdp.yaml", {
       service_name           = var.services_names.pdp,
-      url_domain             = var.ds_domain, #! ds-operator.io <- to revise!
+      didweb_domain          = var.ds_domain,
       verifier_service       = local.dns_dir[var.services_names.verifier],
+      keyrock_service        = local.dns_dir[var.services_names.keyrock],
       secret_tls_name_waltid = local.secrets_tls[var.services_names.walt_id]
     })
   ]
@@ -443,6 +444,7 @@ resource "helm_release" "keyrock" {
   values = [
     templatefile("${local.helm_conf_yaml_path}/keyrock.yaml", {
       service_name        = var.services_names.keyrock,
+      didweb_domain       = var.ds_domain,
       dns_names           = local.dns_dir[var.services_names.keyrock],
       secret_tls_name     = local.secrets_tls[var.services_names.keyrock],
       admin_email         = var.keyrock.admin_email,

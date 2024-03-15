@@ -1,17 +1,24 @@
 fullnameOverride: ${service_name}
 
 statefulset:
-  replicaCount: 1
-  revisionHistoryLimit: 3
-  updateStrategy:
-    type: RollingUpdate
   image:
+    # repository: quay.io/wi_stefan/keyrock
+    # tag: sn-fix
     # ref: https://hub.docker.com/r/fiware/idm
     repository: fiware/idm
-    tag: 8.3.3 # default: 8.3.3, lastest: 8.4.0
+    tag: 8.3.3
     pullPolicy: IfNotPresent
-  additionalLabels: {}
-  additionalAnnotations: {}
+
+  replicaCount: 1
+
+  revisionHistoryLimit: 3
+  
+  updateStrategy:
+    type: RollingUpdate
+    pullPolicy: IfNotPresent
+  
+  # additionalLabels: {}
+  # additionalAnnotations: {}
   ## keyrock resource requests and limits, we leave the default empty to make that a concious choice by the user.
   ## for the autoscaling to make sense, you should configure this.
   # resources:
@@ -21,12 +28,16 @@ statefulset:
     # requests:
       # cpu: 100m
       # memory: 128Mi
+  
   # ref: https://kubernetes.io/docs/user-guide/node-selection/
   nodeSelector: {}
+
   # ref: ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
+
   # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
+
   ## liveness and readiness probes of the keyrock broker, they will be evaluated against the version endpoint
   # ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
   livenessProbe:
@@ -34,11 +45,13 @@ statefulset:
     periodSeconds: 10
     successThreshold: 1
     timeoutSeconds: 30
+  
   readinessProbe:
     initialDelaySeconds: 31
     periodSeconds: 10
     successThreshold: 1
     timeoutSeconds: 30
+  
   startupProbe:
     initialDelaySeconds: 5
     periodSeconds: 5
@@ -48,6 +61,20 @@ statefulset:
 #* Autoscaling configuration
 autoscaling:
   enabled: false
+
+#* MySQL Database configuration
+db:
+  host: ${mysql_service}
+  user: root
+  password: ${mysql_root_password}
+
+#* Admin keyrock user
+admin:
+  user: admin
+  password: ${admin_password}
+  email: ${admin_email}
+
+# existingSecret: keyrock-secret
 
 #* Openshift configuration
 route:
@@ -75,29 +102,17 @@ ingress:
 
 #* External hostname of Keyrock
 host: https://${dns_names}
-
 #* Port that the keyrock container uses
 port: 8080 # default port
-
-#* MySQL Database configuration
-db:
-  user: root
-  password: ${mysql_root_password}
-  host: ${mysql_service}
-
-#* Admin keyrock user
-admin:
-  user: admin
-  password: ${admin_password}
-  email: ${admin_email}
 
 #* Configuration of Authorisation Registry (AR)
 authorisationRegistry: 
   enabled: false
-  # # -- Identifier (EORI) of AR
-  # identifier: "did:web:pdc-demo.ds.smartcity-marketplace.com:did"
-  # # -- URL of AR
-  # url: "internal"
+  # -- Identifier (EORI) of AR
+  identifier: "did:web:${didweb_domain}:did"
+  # -- URL of AR
+  url: "internal"
+
 #* Configuration of iSHARE Satellite
 satellite: 
   enabled: false
@@ -138,5 +153,5 @@ additionalEnvVars:
 #     value: "true"
 #   - name: DEBUG
 #     value: "*"
-#   - name: IDM_PR_CLIENT_ID
-#     value: "did:web:ds-operator.io:did"
+  - name: IDM_PR_CLIENT_ID
+    value: "did:web:${didweb_domain}:did"

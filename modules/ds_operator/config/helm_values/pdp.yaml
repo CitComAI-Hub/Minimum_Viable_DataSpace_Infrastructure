@@ -7,26 +7,28 @@ db:
 
 deployment:
   image:  
-    pullPolicy: Always
     repository: quay.io/fiware/dsba-pdp 
     tag: 1.0.0
+    pullPolicy: Always
   
   logLevel: DEBUG
 
   ishare: #! What is this??
     existingSecret: ${secret_tls_name_waltid}
-    #
-    # clientId: did:web:${url_domain}:did #TODO: Add variable
+    
+    clientId: did:web:${didweb_domain}:did
+
     #* Initial list of fingerprints for trusted CAs. This will be overwritten
     #* after the first update from the trust anchor.
     # trustedFingerprints:
     #   - D2F62092F982CF783D4632BD86FA86C3FBFDB2D8C8A58BC6809163FCF5CD030B
+    
     # ar: #! What is this??
-    #   id: "did:web:${url_domain}:did" #TODO: Add variable
+    #   id: "did:web:${didweb_domain}:did"
     #   delegationPath: "/ar/delegation"
     #   tokenPath: "/oauth2/token"
-    #   url: "https://ar.dsba.fiware.dev" #TODO: Add variable
-    #
+    #   url: "https://${keyrock_service}"
+    
     # trustAnchor: #! What is this??
     #   id: "EU.EORI.FIWARESATELLITE"
     #   tokenPath: "/token"
@@ -36,8 +38,8 @@ deployment:
   trustedVerifiers:
     - https://${verifier_service}/.well-known/jwks
 
-  # # DID of the PDP
-  # providerId: "did:web:${url_domain}:did" #TODO: Add variable
+  # DID of the PDP
+  providerId: "did:web:${didweb_domain}:did"
   
 additionalEnvVars: #! What is this??
   - name: ISHARE_CERTIFICATE_PATH
