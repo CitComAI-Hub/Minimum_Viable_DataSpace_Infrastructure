@@ -75,34 +75,6 @@ resource "helm_release" "walt_id" {
   ]
 }
 
-#? Where are the Orion and PDP services referred to?
-#FIXME: Problem with ingress
-resource "helm_release" "kong" {
-  depends_on = [kubernetes_manifest.certs_creation] #helm_release.orion_ld, helm_release.pdp
-
-  chart      = var.kong.chart_name
-  version    = var.kong.version
-  repository = var.kong.repository
-  name       = var.services_names.kong
-  namespace  = var.namespace
-  wait       = true
-  count      = var.flags_deployment.kong ? 1 : 0
-
-  set {
-    name  = "service.type"
-    value = "ClusterIP"
-  }
-
-  values = [
-    templatefile("${local.helm_conf_yaml_path}/kong_conf.yaml", {
-      namespace       = var.namespace,
-      service_name    = var.services_names.kong,
-      ds_domain       = local.dns_dir[var.services_names.kong],
-      secret_tls_name = local.secrets_tls[var.services_names.kong],
-    })
-  ]
-}
-
 ################################################################################
 # Depends on: MongoDB                                                          #
 ################################################################################
@@ -310,6 +282,7 @@ resource "helm_release" "verifier" {
 ################################################################################
 # Depends on: walt-id, verifier                                                #
 ################################################################################
+
 #? DONE ishare?? did??
 resource "helm_release" "pdp" {
   depends_on = [
@@ -341,6 +314,40 @@ resource "helm_release" "pdp" {
   ]
 }
 
+################################################################################
+# Depends on: OrionLD, pdp                                                     #
+################################################################################
+
+#? Where are the Orion and PDP services referred to? dblessConfig??
+resource "helm_release" "kong" {
+  depends_on = [
+    kubernetes_manifest.certs_creation,
+    helm_release.orion_ld,
+    helm_release.pdp
+  ]
+
+  chart      = var.kong.chart_name
+  version    = var.kong.version
+  repository = var.kong.repository
+  name       = var.services_names.kong
+  namespace  = var.namespace
+  wait       = true
+  count      = var.flags_deployment.kong ? 1 : 0
+
+  set {
+    name  = "service.type"
+    value = "ClusterIP"
+  }
+
+  values = [
+    templatefile("${local.helm_conf_yaml_path}/kong_conf.yaml", {
+      namespace       = var.namespace,
+      service_name    = var.services_names.kong,
+      ds_domain       = local.dns_dir[var.services_names.kong],
+      secret_tls_name = local.secrets_tls[var.services_names.kong],
+    })
+  ]
+}
 
 ################################################################################
 # Depends on: walt-id, mysql, pdp                                              #

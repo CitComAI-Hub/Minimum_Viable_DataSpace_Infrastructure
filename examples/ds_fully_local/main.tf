@@ -26,7 +26,6 @@ module "local_ds_operator" {
     mongodb = true
     mysql   = true
     walt_id = true
-    kong = true
     # depends on: mongodb
     orion_ld = true
     # depends on: mysql
@@ -40,6 +39,8 @@ module "local_ds_operator" {
     verifier = true
     # depends on: walt_id, verifier
     pdp = true
+    # depends on: orion_ld, pdp
+    kong = true
     # depends on: walt_id, mysql, pdp
     keyrock = true
   }

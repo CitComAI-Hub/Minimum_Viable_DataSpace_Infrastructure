@@ -14,7 +14,7 @@ variable "ca_clusterissuer_name" {
 }
 
 ################################################################################
-# Services Configuration                                                       #
+# Cluster Configuration                                                        #
 ################################################################################
 
 variable "namespace" {
@@ -29,47 +29,47 @@ variable "ds_domain" {
   default     = "ds-operator.io"
 }
 
+################################################################################
+# Services Configuration                                                       #
+################################################################################
+
 variable "flags_deployment" {
   type = object({
-    mongodb = bool
-    mysql   = bool
-    walt_id = bool
-    kong    = bool
-    # depends on: mongodb
-    orion_ld = bool
-    # depends on: mysql
-    credentials_config_service = bool
-    trusted_issuers_list       = bool
-    # depends on: orion_ld
+    mongodb                       = bool
+    mysql                         = bool
+    walt_id                       = bool
+    orion_ld                      = bool
+    credentials_config_service    = bool
+    trusted_issuers_list          = bool
     trusted_participants_registry = bool
-    # depends on: credentials_config_service, kong, verifier
-    portal = bool
-    # depends on: walt_id, credentials_config_service, trusted_issuers_list
-    verifier = bool
-
-    keyrock = bool
-    pdp     = bool
+    portal                        = bool
+    verifier                      = bool
+    pdp                           = bool
+    kong                          = bool
+    keyrock                       = bool
   })
   description = "Whether to deploy resources."
   default = {
     mongodb = true
     mysql   = true
     walt_id = true
-    kong    = true
     # depends on: mongodb
     orion_ld = true
     # depends on: mysql
-    credentials_config_service    = true
-    trusted_participants_registry = true
+    credentials_config_service = true
+    trusted_issuers_list       = true
     # depends on: orion_ld
-    trusted_issuers_list = true
+    trusted_participants_registry = true
     # depends on: credentials_config_service, kong, verifier
     portal = true
     # depends on: walt_id, credentials_config_service, trusted_issuers_list
     verifier = true
-
+    # depends on: walt_id, verifier
+    pdp = true
+    # depends on: orion_ld, pdp
+    kong = true
+    # depends on: walt_id, mysql, pdp
     keyrock = true
-    pdp     = true
   }
 }
 
@@ -78,7 +78,6 @@ variable "services_names" {
     mongo    = string
     mysql    = string
     walt_id  = string
-    kong     = string
     orion_ld = string
     ccs      = string
     til      = string
@@ -86,15 +85,15 @@ variable "services_names" {
     tpr      = string
     portal   = string
     verifier = string
-    keyrock  = string
     pdp      = string
+    kong     = string
+    keyrock  = string
   })
   description = "values for the namespace of the services"
   default = {
     mongo    = "mongodb"
     mysql    = "mysql"
     walt_id  = "waltid"
-    kong     = "kong"
     orion_ld = "orionld"
     ccs      = "cred-conf-service"
     til      = "trusted-issuers-list"
@@ -102,13 +101,17 @@ variable "services_names" {
     tpr      = "trusted-participants-registry"
     portal   = "portal"
     verifier = "verifier"
-    keyrock  = "keyrock"
     pdp      = "pdp"
+    kong     = "proxy-kong"
+    keyrock  = "keyrock"
   }
 
 }
 
-# MongoDB service
+################################################################################
+# Helm Configuration                                                           #
+################################################################################
+
 variable "mongodb" {
   type = object({
     version       = string
@@ -125,7 +128,6 @@ variable "mongodb" {
   }
 }
 
-# MySQL database
 variable "mysql" {
   type = object({
     version       = string
@@ -148,7 +150,20 @@ variable "mysql" {
   }
 }
 
-# Orion-LD broker
+variable "walt_id" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "Walt-ID Service"
+  default = {
+    version    = "0.0.17"
+    chart_name = "vcwaltid"
+    repository = "https://i4Trust.github.io/helm-charts"
+  }
+}
+
 variable "orion_ld" {
   type = object({
     version    = string
@@ -163,7 +178,34 @@ variable "orion_ld" {
   }
 }
 
-# Trusted Participants Registry
+variable "credentials_config_service" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "Credentials Config Service"
+  default = {
+    version    = "0.0.4"
+    chart_name = "credentials-config-service"
+    repository = "https://fiware.github.io/helm-charts"
+  }
+}
+
+variable "trusted_issuers_list" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "Trusted Issuers List service"
+  default = {
+    version    = "0.5.3"
+    chart_name = "trusted-issuers-list"
+    repository = "https://fiware.github.io/helm-charts"
+  }
+}
+
 variable "trusted_participants_registry" {
   type = object({
     version    = string
@@ -178,7 +220,63 @@ variable "trusted_participants_registry" {
   }
 }
 
-# Keyrock (Authorization Registry)
+variable "portal" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "Portal Service"
+  default = {
+    version    = "2.2.5"
+    chart_name = "pdc-portal"
+    repository = "https://i4Trust.github.io/helm-charts"
+  }
+}
+
+variable "verifier" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "Verifier Service"
+  default = {
+    version    = "1.0.15"
+    chart_name = "vcverifier"
+    repository = "https://i4Trust.github.io/helm-charts"
+  }
+}
+
+variable "pdp" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "PDP Service"
+  default = {
+    version    = "0.0.16"
+    chart_name = "dsba-pdp"
+    repository = "https://fiware.github.io/helm-charts"
+  }
+
+}
+
+variable "kong" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "Kong Service"
+  default = {
+    version    = "2.8.0"
+    chart_name = "kong"
+    repository = "https://charts.konghq.com"
+  }
+}
+
 variable "keyrock" {
   type = object({
     version        = string
@@ -195,112 +293,4 @@ variable "keyrock" {
     admin_password = "admin"
     admin_email    = "admin@ds-operator.org"
   }
-}
-
-# PDP
-variable "pdp" {
-  type = object({
-    version    = string
-    chart_name = string
-    repository = string
-  })
-  description = "PDP Service"
-  default = {
-    version    = "0.0.16"
-    chart_name = "dsba-pdp"
-    repository = "https://fiware.github.io/helm-charts"
-  }
-
-}
-
-# Kong
-variable "kong" {
-  type = object({
-    version    = string
-    chart_name = string
-    repository = string
-  })
-  description = "Kong Service"
-  default = {
-    version    = "2.8.0"
-    chart_name = "kong"
-    repository = "https://charts.konghq.com"
-  }
-
-}
-
-# Credentials Config Service
-variable "credentials_config_service" {
-  type = object({
-    version    = string
-    chart_name = string
-    repository = string
-  })
-  description = "Credentials Config Service"
-  default = {
-    version    = "0.0.4"
-    chart_name = "credentials-config-service"
-    repository = "https://fiware.github.io/helm-charts"
-  }
-}
-
-# Trusted issuers list
-variable "trusted_issuers_list" {
-  type = object({
-    version    = string
-    chart_name = string
-    repository = string
-  })
-  description = "Trusted Issuers List service"
-  default = {
-    version    = "0.5.3"
-    chart_name = "trusted-issuers-list"
-    repository = "https://fiware.github.io/helm-charts"
-  }
-}
-
-# Walt-ID
-variable "walt_id" {
-  type = object({
-    version    = string
-    chart_name = string
-    repository = string
-  })
-  description = "Walt-ID Service"
-  default = {
-    version    = "0.0.17"
-    chart_name = "vcwaltid"
-    repository = "https://i4Trust.github.io/helm-charts"
-  }
-}
-
-# Verifier
-variable "verifier" {
-  type = object({
-    version    = string
-    chart_name = string
-    repository = string
-  })
-  description = "Verifier Service"
-  default = {
-    version    = "1.0.15"
-    chart_name = "vcverifier"
-    repository = "https://i4Trust.github.io/helm-charts"
-  }
-}
-
-# Portal
-variable "portal" {
-  type = object({
-    version    = string
-    chart_name = string
-    repository = string
-  })
-  description = "Portal Service"
-  default = {
-    version    = "2.2.5"
-    chart_name = "pdc-portal"
-    repository = "https://i4Trust.github.io/helm-charts"
-  }
-
 }
