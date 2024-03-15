@@ -248,7 +248,7 @@ resource "helm_release" "portal" {
 # Depends on: WaltID, Credentials Config Service, Trusted Issuers List         #
 ################################################################################
 
-#? m2m?? initContainers??
+#! m2m?? initContainers??
 resource "helm_release" "verifier" {
   depends_on = [
     kubernetes_manifest.certs_creation,
@@ -275,6 +275,7 @@ resource "helm_release" "verifier" {
       namespace        = var.namespace,
       service_name     = var.services_names.verifier,
       ds_domain        = local.dns_dir[var.services_names.verifier],
+      didweb_domain    = var.ds_domain,
       secret_tls_name  = local.secrets_tls[var.services_names.verifier],
       waltid_service   = var.services_names.walt_id,
       tir_service      = local.dns_dir[var.services_names.tir],
@@ -283,6 +284,7 @@ resource "helm_release" "verifier" {
     })
   ]
 }
+
 ################################################################################
 # Depends on: walt-id, verifier                                                #
 ################################################################################

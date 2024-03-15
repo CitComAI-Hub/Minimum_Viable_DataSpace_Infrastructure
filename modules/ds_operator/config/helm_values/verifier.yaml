@@ -24,25 +24,32 @@ deployment:
     repository: quay.io/fiware/vcverifier
     tag: 2.7.0-pre-26
     pullPolicy: Always
+  
   logging: 
     level: DEBUG
     pathsToSkip: 
       - "/health"
+  
   server:
     host: https://${ds_domain}
+  
   ssikit: #! What is this??
     auditorUrl: http://${waltid_service}:7003
+  
   verifier:
     tirAddress: https://${tir_service}/v3/issuers
-    # did: did:web:onboarding.dsba.fiware.dev:did
+    did: did:web:${didweb_domain}:did
+  
   # m2m: #! What is this??
   #   authEnabled: true
   #   keyPath: /opt/did/secret/tls.key
-  #   credentialPath: /opt/credential/c127.0.0.1       waltid.ds-operator.ioredential.json
+  #   credentialPath: /opt/credential/c127.0.0.1
   #   clientId: tir-res
-  #   verificationMethod: did:web:onboarding.dsba.fiware.dev:did#54134df8357d4aaea1e600f3d0ebe7fb
+  #   verificationMethod: did:web:${didweb_domain}:did#54134df8357d4aaea1e600f3d0ebe7fb
+  
   configRepo:
     configEndpoint: http://${ccs_service}:8080/
+  
   # initContainers: #! What is this??
   #   - name: load-did
   #     image: quay.io/opencloudio/curl:4.2.0-build.8
@@ -53,11 +60,11 @@ deployment:
   #     env:
   #       - name: WALTID_CORE_ADDRESS
   #         value: "${waltid_service}:7000"
-  #     # volumeMounts:
-  #     #   - name: dsba-onboarding-did-config
-  #     #     mountPath: /opt/did/script
-  #     #   - name: did-secret
-  #     #     mountPath: /opt/did/secret
+  #     volumeMounts:
+  #       - name: dsba-onboarding-did-config
+  #         mountPath: /opt/did/script
+  #       - name: did-secret
+  #         mountPath: /opt/did/secret
   # # additionalVolumeMounts:
   # #   - name: ${service_name}
   # #     mountPath: /opt/credential
@@ -65,11 +72,11 @@ deployment:
   # #     mountPath: /opt/did/secret
   # # additionalVolumes:
   # #   - name: ${namespace}-did-config
-  # #     configMap:
+  # #     configMap: #! Where is this defined?
   # #       name: ${namespace}-did-config
   # #   - name: ${service_name}
-  # #     configMap:
+  # #     configMap: #! Where is this defined?
   # #       name: ${service_name}
   # #   # - name: did-secret
-  # #   #   secret: 
-  # #   #     secretName: dsba-onboarding-portal-verifier-vcverifier-tls-sec
+  # #   #   secret:  #! Is this the tls certificate of the domain name?
+  # #   #     secretName: ${secret_tls_name} #dsba-onboarding-portal-verifier-vcverifier-tls-sec
