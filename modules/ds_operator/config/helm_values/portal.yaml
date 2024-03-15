@@ -12,6 +12,7 @@ deployment:
 
 route:
   enabled: false
+
 ingress:
   enabled: true
   annotations:
@@ -58,8 +59,8 @@ config:
     acr: "urn:http://eidas.europa.eu/LoA/NotNotified/high"
 
   cb:
-    endpoint: "${kong_service}/vc/ngsi-ld/v1"
-    endpoint_siop: "${kong_service}/vc/ngsi-ld/v1"
+    endpoint: "https://${ds_domain_kong}/vc/ngsi-ld/v1"
+    endpoint_siop: "https://${ds_domain_kong}/vc/ngsi-ld/v1"
   
   express:
     port: 7000
@@ -71,8 +72,8 @@ config:
     enabled: true
     # Base uri of the verifier
     verifier_uri: https://${ds_domain_verifier}
-    # # DID of verifier
-    # did: "did:web:onboarding.dsba.fiware.dev:did"
+    # DID of verifier
+    did: "did:web:${didweb_domain}:did"
     # Client ID to be used
     client_id: ${client_id}
     # Show separate Login button which shows the JWT access token only after login

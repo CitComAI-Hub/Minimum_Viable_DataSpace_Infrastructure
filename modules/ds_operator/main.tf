@@ -206,7 +206,7 @@ resource "helm_release" "trusted_participants_registry" {
 # Depends on: Credentials Config Service, Kong, Verifier                       #
 ################################################################################
 
-#? DONE? - QR generation error
+#* DONE
 resource "helm_release" "portal" {
   depends_on = [
     kubernetes_manifest.certs_creation,
@@ -231,14 +231,15 @@ resource "helm_release" "portal" {
   values = [
     templatefile("${local.helm_conf_yaml_path}/portal.yaml", {
       service_name       = var.services_names.portal,
+      didweb_domain      = var.ds_domain,
       ds_domain          = local.dns_dir[var.services_names.portal],
       secret_tls_name    = local.secrets_tls[var.services_names.portal],
       ds_domain_tpr      = local.dns_dir[var.services_names.tpr],
       ds_domain_verifier = local.dns_dir[var.services_names.verifier],
+      ds_domain_kong     = local.dns_dir[var.services_names.kong],
       til_service        = var.services_names.til,
       css_service        = var.services_names.ccs,
-      kong_service       = var.services_names.kong,
-      client_id          = "ds-operator-local",
+      client_id          = "ds-operator-local" #TODO: Set as variable
     })
   ]
 }
