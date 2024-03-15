@@ -17,29 +17,31 @@ proxy:
   tls:
     enabled: false
   ingress:
-    enabled: false # default: false
-    # # ingressClassName:
-    # # To specify annotations or labels for the ingress, add them to the respective
-    # # "annotations" or "labels" dictionaries below.
-    # annotations:
-    #   kubernetes.io/ingress.class: "nginx"
-    #   # forcing everything to use ssl
-    #   ingress.kubernetes.io/ssl-redirect: "true"
-    #   # example annotations, allowing cert-manager to automatically create tls-certs
-    #   kubernetes.io/tls-acme: "true"
-    # # Each path in an Ingress is required to have a corresponding path type (when used with hostname above). (ImplementationSpecific/Exact/Prefix)
-    # pathType: ImplementationSpecific
-    # # # Ingress hostname
-    # # hostname: ${ds_domain}
-    # # # Ingress path (when used with hostname above).
-    # # path: /
-    # # Ingress hosts. Use this instead of or in combination with hostname to specify multiple ingress host configurations
+    enabled: true # default: false
+    # ingressClassName:
+    # To specify annotations or labels for the ingress, add them to the respective
+    # "annotations" or "labels" dictionaries below.
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+    # Each path in an Ingress is required to have a corresponding path type 
+    # (when used with hostname above). (ImplementationSpecific/Exact/Prefix)
+    pathType: ImplementationSpecific
+    # Ingress hostname
+    hostname: ${ds_domain}
+    # Ingress path (when used with hostname above).
+    path: /
+    # # Ingress hosts. Use this instead of or in combination with hostname to 
+    # # specify multiple ingress host configurations.
     # hosts:
     #   - host: ${ds_domain}
     #     paths:
     #     - /
-    # # TLS secret(s)
-    # tls: ${secret_tls_name}
+    # TLS secret(s)
+    tls: ${secret_tls_name}
 
 podAnnotations:
   prometheus.io/scrape: 'true'
@@ -47,10 +49,10 @@ podAnnotations:
 
 #* Specify Kong's Docker image and repository details here
 image:
-  # # Official Kong helm chart example: https://github/Kong/charts/blob/kong-2.38.0/charts/kong/values.yaml
+  # #* Official Kong helm chart example: https://github/Kong/charts/blob/kong-2.38.0/charts/kong/values.yaml
   # repository: kong
   # tag: "3.6"
-  # FIWARE example: https://github/FIWARE-Ops/fiware-gitops/tree/master/aws/dsba
+  #* FIWARE example: https://github/FIWARE-Ops/fiware-gitops/tree/master/aws/dsba
   repository: quay.io/fiware/kong
   tag: "0.5.2"
   pullPolicy: IfNotPresent
@@ -89,19 +91,19 @@ env:
   pluginserver_pep_plugin_start_cmd: "/go-plugins/pep-plugin"
   pluginserver_pep_plugin_query_cmd: "/go-plugins/pep-plugin -dump"
 
-# admin:
-#   enabled: true
-#   type: ClusterIP  
-#   http: 
-#     enabled: true
-#     servicePort: 8001
-#     containerPort: 8001
+admin:
+  enabled: true
+  type: ClusterIP  
+  http: 
+    enabled: true
+    servicePort: 8001
+    containerPort: 8001
 
-# status:
-#   enabled: true
-#   http: 
-#     enabled: true
-#     containerPort: 9102
+status:
+  enabled: true
+  http: 
+    enabled: true
+    containerPort: 9102
 
 
 #! dblessConfig:
@@ -123,20 +125,20 @@ dblessConfig:
         - tir-key
     services:
       - host: "orionld" #TODO: Set as variable
-        name: "orion" #! namespace?? #TODO: Set as variable
+        name: "orion" #! namespace?? #TODO: Set as variable 
         port: 1026
         protocol: http
         routes:
-          - name: orion #! ??
+          - name: orion #! ?? #TODO: Set as variable
             paths:
-              - /orion #! ??
+              - /orion #! ?? #TODO: Set as variable
             strip_path: true
         plugins:
           - name: pep-plugin
             config:
-              pathprefix: "/orion" #! ??
+              pathprefix: "/orion" #! ?? #TODO: Set as variable
               authorizationendpointtype: ExtAuthz
-              authorizationendpointaddress: http://pdp:8080/authz
+              authorizationendpointaddress: http://pdp:8080/authz #TODO: Set as variable
           - name: request-transformer
             config:
               remove:
