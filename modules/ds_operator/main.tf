@@ -134,7 +134,7 @@ resource "helm_release" "credentials_config_service" {
   ]
 }
 
-#? Ingress is needed? Ingress is configured for the Trusted Issuers List and Trusted Participant List??
+#? DONE Ingress is needed?
 resource "helm_release" "trusted_issuers_list" {
   depends_on = [kubernetes_manifest.certs_creation, helm_release.mysql]
 

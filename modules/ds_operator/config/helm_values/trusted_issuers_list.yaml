@@ -1,5 +1,9 @@
 fullnameOverride: ${service_name}
 
+deployment:
+  image:  
+    tag: 0.0.3
+
 ## ingress configuration
 ingress:
   # Route config for the trusted issuers list endpoint
