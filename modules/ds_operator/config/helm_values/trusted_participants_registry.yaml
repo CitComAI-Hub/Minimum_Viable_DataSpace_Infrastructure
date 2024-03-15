@@ -6,14 +6,17 @@ fullnameOverride: ${service_name}
 #   - did:web:happypets.dsba.fiware.dev:did
 trustedparticipantsregistry:
   replicaCount: 1
+
   deployment:
     image:
       tag: 0.6.0
       pullPolicy: Always
     additionalLabels:
       participant: onboarding
+  
   route:
     enabled: false
+  
   #* Ingress configuration (should there be an ingress to connect the activation
   #* service with the public internet)
   ingress:

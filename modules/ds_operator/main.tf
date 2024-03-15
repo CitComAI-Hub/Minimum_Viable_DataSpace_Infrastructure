@@ -78,6 +78,7 @@ resource "helm_release" "walt_id" {
 ################################################################################
 # Depends on: MongoDB                                                          #
 ################################################################################
+
 #* DONE
 resource "helm_release" "orion_ld" {
   depends_on = [helm_release.mongodb]
@@ -107,6 +108,7 @@ resource "helm_release" "orion_ld" {
 ################################################################################
 # Depends on: MySQL                                                            #
 ################################################################################
+
 #* DONE
 resource "helm_release" "credentials_config_service" {
   depends_on = [helm_release.mysql]
@@ -168,6 +170,7 @@ resource "helm_release" "trusted_issuers_list" {
 ################################################################################
 # Depends on: OrionLD                                                          #
 ################################################################################
+
 #? SATELLITE ???
 resource "helm_release" "trusted_participants_registry" {
   depends_on = [kubernetes_manifest.certs_creation, helm_release.orion_ld]
