@@ -325,7 +325,7 @@ resource "helm_release" "pdp" {
 # Depends on: OrionLD, pdp                                                     #
 ################################################################################
 
-#? Where are the Orion and PDP services referred to? dblessConfig??
+#? DONE dblessConfig??
 resource "helm_release" "kong" {
   depends_on = [
     kubernetes_manifest.certs_creation,
