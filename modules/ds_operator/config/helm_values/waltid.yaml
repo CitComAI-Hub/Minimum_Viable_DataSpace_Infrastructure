@@ -106,6 +106,7 @@ vcwaltid:
   #       }
   #     }
 
+  #? not configured in the fiware example: https://github.com/FIWARE-Ops/fiware-gitops/blob/master/aws/dsba/onboarding-portal/walt-id/values.yaml
   # config:
   #   datasource:
   #     # database configuaration, see hikari docu for options
@@ -113,8 +114,8 @@ vcwaltid:
   #     maximumPoolSize: 5
   #     autoCommit: false
   #     dataSource:
-  #         journalMode: WAL
-  #         fullColumnNames: false
+  #       journalMode: WAL
+  #       fullColumnNames: false
   #   additionalConfig:
   #   serviceConf:
   #     signatory.conf: |
