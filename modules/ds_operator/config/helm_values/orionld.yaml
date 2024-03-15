@@ -16,6 +16,7 @@ broker:
     # its assumed that mongo is running as a replica set
     hosts:
       - ${service_name}        
+
 #* Configuration for embedding mongodb into the chart. Do not use this in production.
 mongo:
   enabled: false
