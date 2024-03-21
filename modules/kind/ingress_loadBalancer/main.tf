@@ -15,15 +15,18 @@ data "kubectl_file_documents" "loadbalancer_manifest" {
 }
 
 resource "kubectl_manifest" "ingress" {
+  wait = true
+
   for_each  = data.kubectl_file_documents.ingress_manifest.manifests
   yaml_body = each.value
-  wait      = true
 }
 
 resource "kubectl_manifest" "load_balancer" {
+  depends_on = [kubectl_manifest.ingress]
+  wait       = true
+
   for_each  = data.kubectl_file_documents.loadbalancer_manifest.manifests
   yaml_body = each.value
-  wait      = true
 }
 
 resource "null_resource" "loadBalancer_installation" {
