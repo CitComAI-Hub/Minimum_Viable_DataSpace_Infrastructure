@@ -6,6 +6,9 @@ module "ca_configuration" {
   namespace           = "cert-manager"
   clusterissuer_name  = var.ca_clusterissuer_name
   secret_ca_container = "ca-cert-manager"
+  providers = {
+    kubernetes = kubernetes
+  }
 }
 
 module "local_ds_operator" {
