@@ -14,11 +14,10 @@ module "ca_configuration" {
 module "local_ds_operator" {
   source     = "../../modules/ds_operator/"
   depends_on = [module.ca_configuration]
+  namespace  = "ds-operator"
   providers = {
     helm = helm
   }
-
-  namespace = "ds-operator"
   flags_deployment = {
     mongodb = true
     mysql   = true

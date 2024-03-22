@@ -203,48 +203,6 @@ resource "helm_release" "trusted_participants_registry" {
 }
 
 ################################################################################
-# Depends on: Credentials Config Service, Kong, Verifier                       #
-################################################################################
-
-#* DONE
-resource "helm_release" "portal" {
-  depends_on = [
-    kubernetes_manifest.certs_creation,
-    helm_release.credentials_config_service,
-    helm_release.kong,
-    helm_release.verifier,
-  ]
-
-  chart      = var.portal.chart_name
-  version    = var.portal.version
-  repository = var.portal.repository
-  name       = var.services_names.portal
-  namespace  = var.namespace
-  wait       = true
-  count      = var.flags_deployment.portal ? 1 : 0
-
-  set {
-    name  = "service.type"
-    value = "ClusterIP"
-  }
-
-  values = [
-    templatefile("${local.helm_conf_yaml_path}/portal.yaml", {
-      service_name       = var.services_names.portal,
-      didweb_domain      = var.ds_domain,
-      ds_domain          = local.dns_dir[var.services_names.portal],
-      secret_tls_name    = local.secrets_tls[var.services_names.portal],
-      ds_domain_tpr      = local.dns_dir[var.services_names.tpr],
-      ds_domain_verifier = local.dns_dir[var.services_names.verifier],
-      ds_domain_kong     = local.dns_dir[var.services_names.kong],
-      til_service        = var.services_names.til,
-      css_service        = var.services_names.ccs,
-      client_id          = "ds-operator-local" #TODO: Set as variable
-    })
-  ]
-}
-
-################################################################################
 # Depends on: WaltID, Credentials Config Service, Trusted Issuers List         #
 ################################################################################
 
@@ -352,6 +310,48 @@ resource "helm_release" "kong" {
       service_name    = var.services_names.kong,
       ds_domain       = local.dns_dir[var.services_names.kong],
       secret_tls_name = local.secrets_tls[var.services_names.kong],
+    })
+  ]
+}
+
+################################################################################
+# Depends on: Credentials Config Service, Kong, Verifier                       #
+################################################################################
+
+#* DONE
+resource "helm_release" "portal" {
+  depends_on = [
+    kubernetes_manifest.certs_creation,
+    helm_release.credentials_config_service,
+    helm_release.kong,
+    helm_release.verifier,
+  ]
+
+  chart      = var.portal.chart_name
+  version    = var.portal.version
+  repository = var.portal.repository
+  name       = var.services_names.portal
+  namespace  = var.namespace
+  wait       = true
+  count      = var.flags_deployment.portal ? 1 : 0
+
+  set {
+    name  = "service.type"
+    value = "ClusterIP"
+  }
+
+  values = [
+    templatefile("${local.helm_conf_yaml_path}/portal.yaml", {
+      service_name       = var.services_names.portal,
+      didweb_domain      = var.ds_domain,
+      ds_domain          = local.dns_dir[var.services_names.portal],
+      secret_tls_name    = local.secrets_tls[var.services_names.portal],
+      ds_domain_tpr      = local.dns_dir[var.services_names.tpr],
+      ds_domain_verifier = local.dns_dir[var.services_names.verifier],
+      ds_domain_kong     = local.dns_dir[var.services_names.kong],
+      til_service        = var.services_names.til,
+      css_service        = var.services_names.ccs,
+      client_id          = "ds-operator-local" #TODO: Set as variable
     })
   ]
 }
