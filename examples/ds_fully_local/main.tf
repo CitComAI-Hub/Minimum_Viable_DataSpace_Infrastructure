@@ -1,16 +1,10 @@
-locals {
-  kubernetes_path       = "~/.kube/config"
-  ca_clusterissuer_name = "ca-certificates"
-}
-
 #! Use makefile command to create a local k8s cluster.
-
 
 module "ca_configuration" {
   source              = "../../modules/ca_configuration/"
   count               = var.flags_deployment.ca_configuration ? 1 : 0 # count =: number of instances to create
   namespace           = "cert-manager"
-  clusterissuer_name  = local.ca_clusterissuer_name
+  clusterissuer_name  = var.ca_clusterissuer_name
   secret_ca_container = "ca-cert-manager"
 }
 
