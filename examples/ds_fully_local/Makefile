@@ -30,4 +30,4 @@ cluster_init_apply:
 
 ## Destroy cluster only.
 cluster_destroy:
-	$(destroy_cluster)
+	$(call destroy_cluster,"ds_fully_local")

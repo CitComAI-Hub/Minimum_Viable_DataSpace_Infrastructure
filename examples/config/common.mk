@@ -23,9 +23,10 @@ define deploy_cluster
 endef
 
 define destroy_cluster
-	@cd ../kind_cluster && \
+	@export module=$(1) && \
+		cd ../kind_cluster && \
 		terraform destroy -auto-approve \
-			-target=module.local_k8s_cluster && \
+			-var-file="../$$module/config/kind_cluster.tfvars" && \
 		$(remove_tmp_tf) && \
 		rm -rf terraform.tfvars
 endef
