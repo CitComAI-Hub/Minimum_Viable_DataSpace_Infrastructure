@@ -1,1 +1,0 @@
-terraform init && terraform apply -target=module.local_k8s_cluster -auto-approve && terraform apply -auto-approve
