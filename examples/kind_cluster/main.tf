@@ -15,6 +15,18 @@ module "cluster_config" {
     kubectl = kubectl
   }
 }
+module "portainer" {
+  source     = "../../modules/portainer_ce"
+  depends_on = [module.local_k8s_cluster]
+  count      = var.flags_deployment.portainer ? 1 : 0 # count =: number of instances to create
+
+  cluster_name          = var.cluster_name
+  kubernetes_local_path = pathexpand(var.kubernetes_local_path)
+  img_version           = "2.19.4"
+  providers = {
+    kubectl = kubectl
+  }
+}
 
 module "cert_trust_manager" {
   source     = "../../modules/cert_trust_manager"
@@ -29,17 +41,3 @@ module "cert_trust_manager" {
     helm       = helm
   }
 }
-
-module "portainer" {
-  source     = "../../modules/portainer_ce"
-  depends_on = [module.local_k8s_cluster]
-  count      = var.flags_deployment.portainer ? 1 : 0 # count =: number of instances to create
-
-  cluster_name          = var.cluster_name
-  kubernetes_local_path = pathexpand(var.kubernetes_local_path)
-  img_version           = "2.19.4"
-  providers = {
-    kubectl = kubectl
-  }
-}
-

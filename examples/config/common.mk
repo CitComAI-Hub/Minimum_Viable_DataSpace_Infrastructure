@@ -13,12 +13,17 @@ define deploy_cluster
 	@export module=$(1) && \
 		cd ../kind_cluster && \
 		terraform init -upgrade && \
-		terraform apply \
-			-auto-approve \
+		terraform apply -auto-approve \
 			-target=module.local_k8s_cluster \
 			-var-file="../$$module/config/kind_cluster.tfvars" && \
-		terraform apply \
-			-auto-approve \
+		terraform apply -auto-approve \
+			-target=module.cluster_config \
+			-var-file="../$$module/config/kind_cluster.tfvars" && \
+		terraform apply -auto-approve \
+			-target=module.portainer \
+			-var-file="../$$module/config/kind_cluster.tfvars" && \
+		terraform apply -auto-approve \
+			-target=module.cert_trust_manager \
 			-var-file="../$$module/config/kind_cluster.tfvars"
 endef
 
@@ -26,6 +31,16 @@ define destroy_cluster
 	@export module=$(1) && \
 		cd ../kind_cluster && \
 		terraform destroy -auto-approve \
+			-target=module.cert_trust_manager \
+			-var-file="../$$module/config/kind_cluster.tfvars" && \
+		terraform destroy -auto-approve \
+			-target=module.portainer \
+			-var-file="../$$module/config/kind_cluster.tfvars" && \
+		terraform destroy -auto-approve \
+			-target=module.cluster_config \
+			-var-file="../$$module/config/kind_cluster.tfvars" && \
+		terraform destroy -auto-approve \
+			-target=module.local_k8s_cluster \
 			-var-file="../$$module/config/kind_cluster.tfvars" && \
 		$(remove_tmp_tf) && \
 		rm -rf terraform.tfvars
