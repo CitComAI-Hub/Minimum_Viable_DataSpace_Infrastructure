@@ -325,6 +325,17 @@ resource "helm_release" "pdp" {
 # Depends on: OrionLD, pdp                                                     #
 ################################################################################
 
+resource "kubernetes_config_map" "kong_dbless" {
+  metadata {
+    name = "${var.services_names.kong}-dbless"
+  }
+
+  data = {
+    "kong.yml" = file("${local.helm_config_map_path}/kong_dbless.yaml")
+  }
+}
+
+
 #? DONE dblessConfig??
 resource "helm_release" "kong" {
   depends_on = [
