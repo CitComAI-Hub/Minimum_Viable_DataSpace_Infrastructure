@@ -33,7 +33,7 @@ deployment:
   server:
     host: https://${service_domain}
   
-  ssikit: #! What is this??
+  ssikit:
     auditorUrl: http://${waltid_service}:7003
   
   verifier:
@@ -45,15 +45,14 @@ deployment:
     keyPath: /opt/did/secret/tls.key
     credentialPath: /opt/credential/credential.json
     clientId: tir-res
-    verificationMethod: ${did_domain}#54134df8357d4aaea1e600f3d0ebe7fb
+    verificationMethod: ${did_domain}
   
   configRepo:
     configEndpoint: http://${ccs_service}:8080/
   
   # TODO: Error deployment
-  # kubectl logs --previous verifier-66f66844fb-dfz6v --context kind-ds-local-cluster --kubeconfig ~/.kube/config_DSLocal -n ds-operator
+  # kubectl logs verifier-66f66844fb-dfz6v --context kind-ds-local-cluster --kubeconfig ~/.kube/config_DSLocal -n ds-operator
   # Defaulted container "vcverifier" out of: vcverifier, load-did (init)
-  # Error from server (BadRequest): previous terminated container "vcverifier" in pod "verifier-66f66844fb-dfz6v" not found
   # ---
   # initContainers: #! What is this??
   #   - name: load-did

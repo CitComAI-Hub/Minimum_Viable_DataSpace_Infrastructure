@@ -130,7 +130,7 @@ resource "helm_release" "credentials_config_service" {
   values = [
     templatefile("${local.helm_conf_yaml_path}/credentials_config_service.yaml", {
       service_name  = var.services_names.ccs,
-      mysql_service = local.dns_domains.mysql,
+      mysql_service = var.services_names.mysql,
       ccs_db        = var.mysql.ccs_db,
       root_password = var.mysql.root_password
     })
@@ -161,7 +161,7 @@ resource "helm_release" "trusted_issuers_list" {
       secret_tls_name_til = local.secrets_tls[local.dns_domains.til],
       service_domain_tir  = local.dns_dir[local.dns_domains.tir], #tir-operator.dataspace.deployment.local
       secret_tls_name_tir = local.secrets_tls[local.dns_domains.tir],
-      mysql_service       = local.dns_domains.mysql,
+      mysql_service       = var.services_names.mysql,
       root_password       = var.mysql.root_password,
       til_db              = var.mysql.til_db
     })
@@ -211,7 +211,7 @@ resource "helm_release" "trusted_participants_registry" {
 resource "kubernetes_config_map" "did_config" {
   metadata {
     # configmap name
-    name = "did-config"
+    name      = "did-config"
     namespace = var.namespace
   }
 
@@ -223,7 +223,7 @@ resource "kubernetes_config_map" "did_config" {
 resource "kubernetes_config_map" "vc_config" {
   metadata {
     # configmap name
-    name = "operator-verifier-credential"
+    name      = "operator-verifier-credential"
     namespace = var.namespace
   }
 

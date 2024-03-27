@@ -1,9 +1,8 @@
 locals {
   dns_domains = merge(var.services_names, {
-    # walt_id = "${var.services_names.walt_id}-operator"
-    til     = "til"
-    tir     = "tir"
-    tpr     = "tpr"
+    til = "til"
+    tir = "tir"
+    tpr = "tpr"
   })
 
   cert_properties = [

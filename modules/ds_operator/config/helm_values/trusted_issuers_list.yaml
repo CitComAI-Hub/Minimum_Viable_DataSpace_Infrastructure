@@ -44,7 +44,7 @@ deployment:
 database:
   persistence: true
   host: ${mysql_service}
-  port: 3306
+  port: 3306 #TODO: Set as variable
   name: ${til_db}
-  username: root
+  username: root #TODO: Set as variable
   password: ${root_password}
