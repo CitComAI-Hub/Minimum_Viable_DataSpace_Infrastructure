@@ -62,9 +62,10 @@ locals {
   ]
 
   #! Do not edit.
-  helm_conf_yaml_path = "${path.module}/config/helm_values"
-  dns_dir             = { for prop in local.cert_properties : prop.id => prop.dns_names if contains(local.services_names, prop.id) }
-  secrets_tls         = { for prop in local.cert_properties : prop.id => prop.spec_secret_name if contains(local.services_names, prop.id) }
+  helm_config_map_path = "${path.module}/config/configmaps"
+  helm_conf_yaml_path  = "${path.module}/config/helm_values"
+  dns_dir              = { for prop in local.cert_properties : prop.id => prop.dns_names if contains(local.services_names, prop.id) }
+  secrets_tls          = { for prop in local.cert_properties : prop.id => prop.spec_secret_name if contains(local.services_names, prop.id) }
   cert_properties_map = {
     for cert in local.cert_properties : cert.metadata_name => {
       spec_secret_name = cert.spec_secret_name

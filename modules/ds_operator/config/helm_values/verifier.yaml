@@ -2,22 +2,22 @@ fullnameOverride: ${service_name}
 
 # Ingress configuration
 ingress:
-    enabled: true
-    annotations:
-        kubernetes.io/ingress.class: "nginx"
-        # forcing everything to use ssl
-        ingress.kubernetes.io/ssl-redirect: "true"
-        # example annotations, allowing cert-manager to automatically create tls-certs
-        kubernetes.io/tls-acme: "true"
-    hosts:
-      - host: ${ds_domain}
-        paths:
-        - /
-    # configure the ingress' tls
-    tls:
-      - secretName: ${secret_tls_name}
-        hosts:
-          - ${ds_domain}
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    # forcing everything to use ssl
+    ingress.kubernetes.io/ssl-redirect: "true"
+    # example annotations, allowing cert-manager to automatically create tls-certs
+    kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: ${ds_domain}
+      paths:
+      - /
+  # configure the ingress' tls
+  tls:
+    - secretName: ${secret_tls_name}
+      hosts:
+        - ${ds_domain}
 
 deployment:
   image:
