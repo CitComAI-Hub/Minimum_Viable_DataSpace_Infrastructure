@@ -29,15 +29,15 @@ module "local_ds_operator" {
     trusted_issuers_list       = true
     # depends on: orion_ld
     trusted_participants_registry = true
-    # depends on: credentials_config_service, kong, verifier
-    portal = true
     # depends on: walt_id, credentials_config_service, trusted_issuers_list
     verifier = true
     # depends on: walt_id, verifier
     pdp = true
     # depends on: orion_ld, pdp
-    kong = true
+    kong = false
+    # depends on: credentials_config_service, kong, verifier
+    portal = false
     # depends on: walt_id, mysql, pdp
-    keyrock = true
+    keyrock = false #! Error deployment
   }
 }
