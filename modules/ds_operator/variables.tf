@@ -247,7 +247,7 @@ variable "verifier" {
   })
   description = "Verifier Service"
   default = {
-    version    = "1.0.15"
+    version    = "1.0.23"
     chart_name = "vcverifier"
     repository = "https://i4Trust.github.io/helm-charts"
   }

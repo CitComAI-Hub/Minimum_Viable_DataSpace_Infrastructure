@@ -211,7 +211,7 @@ resource "helm_release" "trusted_participants_registry" {
 resource "kubernetes_config_map" "did_config" {
   metadata {
     # configmap name
-    name      = "did-config"
+    name      = "${var.services_names.verifier}-did-config"
     namespace = var.namespace
   }
 
@@ -220,10 +220,11 @@ resource "kubernetes_config_map" "did_config" {
   }
 }
 
+#? how have the credentials been generated?
 resource "kubernetes_config_map" "vc_config" {
   metadata {
     # configmap name
-    name      = "operator-verifier-credential"
+    name      = "${var.services_names.verifier}-vcredential-config"
     namespace = var.namespace
   }
 
@@ -315,10 +316,11 @@ resource "helm_release" "pdp" {
 resource "kubernetes_config_map" "kong_dbless" {
   metadata {
     name = "${var.services_names.kong}-dbless"
+    namespace = var.namespace
   }
 
   data = {
-    "kong.yml" = file("${local.helm_config_map_path}/kong/kong_dbless.yaml")
+    "kong_dbless.yml" = file("${local.helm_config_map_path}/kong/kong_dbless.yaml")
   }
 }
 
