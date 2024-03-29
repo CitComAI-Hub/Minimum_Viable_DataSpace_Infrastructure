@@ -71,4 +71,13 @@ locals {
     web = "did:web:${local.dns_dir[local.dns_domains.walt_id]}:did"
     key = "did:key" # TODO: change to real did:key
   }
+
+  verifier_configmap = {
+    did_config = {
+      name = "${var.services_names.verifier}-did-config"
+    }
+    vc_config = {
+      name = "${var.services_names.verifier}-vcredential-config"
+    }
+  }
 }

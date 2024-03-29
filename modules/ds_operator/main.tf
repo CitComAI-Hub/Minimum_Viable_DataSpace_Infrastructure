@@ -208,28 +208,44 @@ resource "helm_release" "trusted_participants_registry" {
 # Depends on: WaltID, Credentials Config Service, Trusted Issuers List         #
 ################################################################################
 
+data "template_file" "did_config" {
+  template = file("${local.helm_config_map_path}/verifier/did-config.yaml")
+
+  vars = {
+    name          = local.verifier_configmap.did_config.name
+    waltid_domain = local.dns_dir[local.dns_domains.walt_id]
+  }
+}
+
 resource "kubernetes_config_map" "did_config" {
   metadata {
-    # configmap name
-    name      = "${var.services_names.verifier}-did-config"
+    name      = local.verifier_configmap.did_config.name # configmap name
     namespace = var.namespace
   }
 
   data = {
-    "did-config.yml" = file("${local.helm_config_map_path}/verifier/did-config.yaml")
+    "did-config.yml" = data.template_file.did_config.rendered
+  }
+}
+
+data "template_file" "vc_config" {
+  template = file("${local.helm_config_map_path}/verifier/verifier-credential.yaml")
+
+  vars = {
+    name       = local.verifier_configmap.did_config.name
+    did_domain = local.did_methods[var.did_option],
   }
 }
 
 #? how have the credentials been generated?
 resource "kubernetes_config_map" "vc_config" {
   metadata {
-    # configmap name
-    name      = "${var.services_names.verifier}-vcredential-config"
+    name      = local.verifier_configmap.vc_config.name # configmap name
     namespace = var.namespace
   }
 
   data = {
-    "verifier-credential.yml" = file("${local.helm_config_map_path}/verifier/verifier-credential.yaml")
+    "verifier-credential.yml" = data.template_file.vc_config.rendered
   }
 }
 
@@ -315,7 +331,7 @@ resource "helm_release" "pdp" {
 
 resource "kubernetes_config_map" "kong_dbless" {
   metadata {
-    name = "${var.services_names.kong}-dbless"
+    name      = "${var.services_names.kong}-dbless"
     namespace = var.namespace
   }
 
