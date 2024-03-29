@@ -171,15 +171,19 @@ variable "walt_id" {
 
 variable "orion_ld" {
   type = object({
-    version    = string
-    chart_name = string
-    repository = string
+    version     = string
+    chart_name  = string
+    repository  = string
+    broker_port = number
+    db_name     = string
   })
   description = "Orion-LD service"
   default = {
-    version    = "1.2.6"
-    chart_name = "orion"
-    repository = "https://fiware.github.io/helm-charts"
+    version     = "1.2.6"
+    chart_name  = "orion"
+    repository  = "https://fiware.github.io/helm-charts"
+    broker_port = 1026
+    db_name     = "orion-oper" #! maximum 10 characters
   }
 }
 

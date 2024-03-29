@@ -99,9 +99,11 @@ resource "helm_release" "orion_ld" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/orionld.yaml", {
-      service_name  = var.services_names.mongo,
+      service_name  = var.services_names.orion_ld,
+      mongo_service = var.services_names.mongo,
       root_password = var.mongodb.root_password,
-      orion_db_name = "orion-oper" #! maximum 10 characters
+      orion_port    = var.orion_ld.broker_port,
+      orion_db_name = var.orion_ld.db_name
     })
   ]
 }
@@ -329,14 +331,24 @@ resource "helm_release" "pdp" {
 # Depends on: OrionLD, pdp                                                     #
 ################################################################################
 
+data "template_file" "kong_dbless" {
+  template = file("${local.helm_config_map_path}/kong/kong_dbless.yaml")
+
+  vars = {
+    name          = local.kong_configmap.kong_dbless.name,
+    orion_service = var.services_names.orion_ld,
+    orion_name    = "tir", #! !!????
+  }
+}
+
 resource "kubernetes_config_map" "kong_dbless" {
   metadata {
-    name      = "${var.services_names.kong}-dbless"
+    name      = local.kong_configmap.kong_dbless.name
     namespace = var.namespace
   }
 
   data = {
-    "kong_dbless.yml" = file("${local.helm_config_map_path}/kong/kong_dbless.yaml")
+    "kong_dbless.yml" = data.template_file.kong_dbless.rendered
   }
 }
 
