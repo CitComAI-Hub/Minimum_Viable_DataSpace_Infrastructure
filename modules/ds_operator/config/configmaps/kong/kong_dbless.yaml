@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.kong.dblessConfig.configMap }}
+  name: ${name}
 data:
   kong.yml: |
     _format_version: "2.1"
@@ -41,15 +41,15 @@ data:
             config: 
               minute: 30
       
-      - host: {{ .Values.kong.dblessConfig.configMap.orion }} #"dsba-orion-ld"
-        name: {{ .Values.kong.dblessConfig.configMap.orion.name }} #"tir"
-        port: {{ .Values.kong.dblessConfig.configMap.orion.port }} #1026
+      - host: ${orion_service}
+        name: ${orion_name}
+        port: ${orion_port}
         protocol: http
 
         routes:
-          - name: {{ .Values.kong.dblessConfig.configMap.orion.name }} #tir
+          - name: ${orion_name}
             paths:
-              - /{{ .Values.kong.dblessConfig.configMap.orion.name }} #tir
+              - /${orion_name}
             strip_path: true
 
         plugins:
@@ -66,15 +66,15 @@ data:
             config: 
               minute: 30
 
-      - host: {{ .Values.kong.dblessConfig.configMap.waltid }} #"dsba-walt-id-vcwaltid"
-        name: {{ .Values.kong.dblessConfig.configMap.waltid.name }} #"walt"
-        port: {{ .Values.kong.dblessConfig.configMap.waltid.port }} #7003
+      - host: ${waltid_service}
+        name: ${waltid_name}
+        port: ${waltid_custodian_port}
         protocol: http
 
         routes:
-          - name: {{ .Values.kong.dblessConfig.configMap.waltid.name }} #walt
+          - name: ${waltid_name}
             paths:
-              - /{{ .Values.kong.dblessConfig.configMap.waltid.name }} #walt
+              - /${waltid_name}
             strip_path: true
 
         plugins:
@@ -91,23 +91,23 @@ data:
             config: 
               minute: 30
 
-      - host: "dsba-onboarding-portal-orion-ld"
-        name: "vc"
+      - host: ${portal_orion}
+        name: ${portal_orion_name}
         port: 1026
         protocol: http
     
         routes:
-          - name: vc
+          - name: ${portal_orion_name}
             paths:
-              - /vc
+              - /${portal_orion_name}
             strip_path: true
     
         plugins:
           - name: pep-plugin
             config:
-              pathprefix: "/vc"
+              pathprefix: "/${portal_orion_name}"
               authorizationendpointtype: ExtAuthz
-              authorizationendpointaddress: http://dsba-onboarding-portal-pdp-dsba-pdp:8080/authz
+              authorizationendpointaddress: http://${portal_orion_name}:8080/authz
                 
           - name: request-transformer
             config:
