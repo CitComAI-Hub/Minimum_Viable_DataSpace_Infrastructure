@@ -437,66 +437,6 @@ resource "helm_release" "portal" {
 ################################################################################
 
 #! Error deployment
-#FIXME: Error deployment
-# > fiware-idm@8.3.0 start /opt/fiware-idm
-# > node --max-http-header-size=${IDM_SERVER_MAX_HEADER_SIZE:-8192} ./bin/www
-
-# Connection has been established successfully
-# Database created
-# Database migrated
-# Unable to seed database:  Error: Command failed: npm run seed_db --silent
-# ERROR: Validation error
-
-#     at ChildProcess.exithandler (child_process.js:383:12)
-#     at ChildProcess.emit (events.js:400:28)
-#     at maybeClose (internal/child_process.js:1088:16)
-#     at Process.ChildProcess._handle.onexit (internal/child_process.js:296:5) {
-#   killed: false,
-#   code: 1,
-#   signal: null,
-#   cmd: 'npm run seed_db --silent'
-# }
-# internal/fs/watchers.js:251
-#     throw error;
-#     ^
-
-# Error: EMFILE: too many open files, watch '/opt/fiware-idm/etc/translations/'
-#     at FSWatcher.<computed> (internal/fs/watchers.js:243:19)
-#     at Object.watch (fs.js:1587:34)
-#     at module.exports (/opt/fiware-idm/node_modules/i18n-express/index.js:68:6)
-#     at Object.<anonymous> (/opt/fiware-idm/app.js:177:5)
-#     at Module._compile (internal/modules/cjs/loader.js:1085:14)
-#     at Object.Module._extensions..js (internal/modules/cjs/loader.js:1114:10)
-#     at Module.load (internal/modules/cjs/loader.js:950:32)
-#     at Function.Module._load (internal/modules/cjs/loader.js:790:12)
-#     at Module.require (internal/modules/cjs/loader.js:974:19)
-#     at require (internal/modules/cjs/helpers.js:101:18)
-#     at start_server (/opt/fiware-idm/bin/www:106:15)
-#     at /opt/fiware-idm/bin/www:140:7
-#     at /opt/fiware-idm/lib/database.js:112:11
-#     at /opt/fiware-idm/lib/database.js:39:18
-#     at ChildProcess.exithandler (child_process.js:390:5)
-#     at ChildProcess.emit (events.js:400:28)
-#     at maybeClose (internal/child_process.js:1088:16)
-#     at Process.ChildProcess._handle.onexit (internal/child_process.js:296:5) {
-#   errno: -24,
-#   syscall: 'watch',
-#   code: 'EMFILE',
-#   path: '/opt/fiware-idm/etc/translations/',
-#   filename: '/opt/fiware-idm/etc/translations/'
-# }
-# npm ERR! code ELIFECYCLE
-# npm ERR! errno 1
-# npm ERR! fiware-idm@8.3.0 start: `node --max-http-header-size=${IDM_SERVER_MAX_HEADER_SIZE:-8192} ./bin/www`
-# npm ERR! Exit status 1
-# npm ERR! 
-# npm ERR! Failed at the fiware-idm@8.3.0 start script.
-# npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
-
-# npm ERR! A complete log of this run can be found in:
-# npm ERR!     /root/.npm/_logs/2024-03-14T13_19_08_227Z-debug.log
-
-
 resource "helm_release" "keyrock" {
   depends_on = [
     kubernetes_manifest.certs_creation,
