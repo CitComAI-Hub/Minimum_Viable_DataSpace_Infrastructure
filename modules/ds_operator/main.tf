@@ -335,20 +335,26 @@ data "template_file" "kong_dbless" {
   template = file("${local.helm_config_map_path}/kong/kong_dbless.yaml")
 
   vars = {
-    name          = local.kong_configmap.kong_dbless.name,
-    orion_service = var.services_names.orion_ld,
-    orion_name    = "tir", #! !!????
+    name                  = local.kong_configmap.db_less.name,
+    orion_service         = var.services_names.orion_ld,
+    orion_name            = "tir", #? What is this? #FIXME
+    orion_port            = var.orion_ld.broker_port,
+    waltid_service        = var.services_names.walt_id,
+    waltid_name           = "waltid", #? What is this? #FIXME
+    waltid_custodian_port = 7003,
+    portal_orion          = "portal-orion-ld" #? What is this? #FIXME
+    portal_orion_name     = "vc"              #? What is this? #FIXME
   }
 }
 
 resource "kubernetes_config_map" "kong_dbless" {
   metadata {
-    name      = local.kong_configmap.kong_dbless.name
+    name      = local.kong_configmap.db_less.name
     namespace = var.namespace
   }
 
   data = {
-    "kong_dbless.yml" = data.template_file.kong_dbless.rendered
+    "kong.yml" = data.template_file.kong_dbless.rendered
   }
 }
 
@@ -375,10 +381,11 @@ resource "helm_release" "kong" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/kong_conf.yaml", {
-      namespace       = var.namespace,
-      service_name    = var.services_names.kong,
-      service_domain  = local.dns_dir[local.dns_domains.kong],
-      secret_tls_name = local.secrets_tls[local.dns_domains.kong],
+      namespace        = var.namespace,
+      service_name     = var.services_names.kong,
+      service_domain   = local.dns_dir[local.dns_domains.kong],
+      secret_tls_name  = local.secrets_tls[local.dns_domains.kong],
+      dbless_configmap = local.kong_configmap.db_less.name,
     })
   ]
 }
