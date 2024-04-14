@@ -87,6 +87,17 @@ variable "mysql" {
 
 }
 
+variable "orionld" {
+  type = object({
+    enable_service = bool
+  })
+  description = "Orion-LD service configuration"
+  default = {
+    enable_service = true
+  }
+
+}
+
 variable "credentials_config_service" {
   type = object({
     enable_service = bool

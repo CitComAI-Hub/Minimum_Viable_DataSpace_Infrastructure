@@ -20,11 +20,13 @@ resource "helm_release" "connector" {
       mysql_root_password = var.mysql.root_password,
       mysql_password      = var.mysql.root_password,
       # Orion-LD
+      orionld_enable  = var.orionld.enable_service,
       orionld_name = var.services_names.orion_ld,
       # Credentials Config Service
       ccs_enable  = var.credentials_config_service.enable_service,
       ccs_name    = var.services_names.ccs,
       ccs_db_name = var.credentials_config_service.db_name,
+      # Trusted Issuers List
       # Activation Service
       activation_enable         = var.activation.enable_service,
       activation_name           = var.activation.name_service,
@@ -32,7 +34,6 @@ resource "helm_release" "connector" {
       # PDP
       # Kong
       # Postgres
-      # Trusted Issuers List
       # Walt-ID
       # Verifier
       # Keyrock

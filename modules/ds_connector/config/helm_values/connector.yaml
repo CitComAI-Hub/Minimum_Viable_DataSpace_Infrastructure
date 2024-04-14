@@ -63,7 +63,7 @@ mysql:
 
 #* DONE
 orion-ld:
-  deploymentEnabled: true
+  deploymentEnabled: ${orionld_enable}
   
   ##############################################################################
   # Helm chart: mysql                                                          #
@@ -212,11 +212,76 @@ credentials-config-service:
       persistence: true
       host: ${mysql_name}
       name: ${ccs_db_name}
-
       # Should use Secret in production environment
       username: root
       password: ${mysql_root_password}
 
+#? DONE
+trusted-issuers-list:
+  deploymentEnabled: false
+
+  trusted-issuers-list:
+
+    fullnameOverride: ${ccs_name}
+
+    # Ingress
+    ingress:
+      til:
+        enabled: false # TODO: Enable ingress
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-fiware-eks
+          kubernetes.io/ingress.class: nginx
+        hosts:
+          - host: til-ips.dsba.aws.fiware.io
+        tls:
+          - hosts:
+              - til-ips.dsba.aws.fiware.io
+            secretName: til-ips-dsba-til-tls
+      tir:
+        enabled: false # TODO: Enable ingress
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-fiware-eks
+          kubernetes.io/ingress.class: nginx
+        hosts:
+          - host: tir-ips.dsba.aws.fiware.io
+        tls:
+          - hosts:
+              - tir-ips.dsba.aws.fiware.io
+            secretName: til-ips-dsba-tir-tls
+
+    # Database config
+    database:
+      persistence: true
+      host: ${mysql_name}
+      name: til
+      # Should use Secret in production environment
+      username: root
+      password: ${mysql_root_password}
+
+    # Init data
+    initData: #TODO: Check if data is created in the DB
+      initEnabled: false
+      hook: post-install
+      backoffLimit: 6
+      issuers:
+        - name: mp_create
+          issuer:
+            did: "did:web:marketplace.dsba.fiware.dev:did"
+            credentials:
+              - validFor:
+                  from: "2022-07-21T17:32:28Z"
+                  to: "2040-07-21T17:32:28Z"
+                credentialsType: "IpsActivationService"
+                claims:
+                  - name: "roles"
+                    allowedValues: 
+                      - - names:
+                          - "CREATE_ISSUER"
+                          target: "did:web:ips.dsba.aws.fiware.io:did"
+              - validFor:
+                  from: "2022-07-21T17:32:28Z"
+                  to: "2040-07-21T17:32:28Z"
+                credentialsType: "VerifiableCredential"
 
 activation-service:
 
@@ -455,72 +520,6 @@ postgres:
         scripts:
           create.sh: |
             psql postgresql://postgres:POSTGRES_POSTGRES_PASSWORD@localhost:5432 -c "CREATE DATABASE keycloak_ips;"
-
-trusted-issuers-list:
-  # Enable the deployment of application: trusted-issuers-list
-  deploymentEnabled: false
-
-  trusted-issuers-list:
-
-    # Ingress
-    ingress:
-      til:
-        enabled: true
-        annotations:
-          cert-manager.io/cluster-issuer: letsencrypt-fiware-eks
-          kubernetes.io/ingress.class: nginx
-        hosts:
-          - host: til-ips.dsba.aws.fiware.io
-        tls:
-          - hosts:
-              - til-ips.dsba.aws.fiware.io
-            secretName: til-ips-dsba-til-tls
-      tir:
-        enabled: true
-        annotations:
-          cert-manager.io/cluster-issuer: letsencrypt-fiware-eks
-          kubernetes.io/ingress.class: nginx
-        hosts:
-          - host: tir-ips.dsba.aws.fiware.io
-        tls:
-          - hosts:
-              - tir-ips.dsba.aws.fiware.io
-            secretName: til-ips-dsba-tir-tls
-
-    # Database config
-    database:
-      persistence: true
-      host: mysql-ips
-      name: til
-
-      # Should use Secret in production environment
-      username: root
-      password: "dbPassword"
-
-    # Init data
-    initData:
-      initEnabled: true
-      hook: post-install
-      backoffLimit: 6
-      issuers:
-        - name: mp_create
-          issuer:
-            did: "did:web:marketplace.dsba.fiware.dev:did"
-            credentials:
-              - validFor:
-                  from: "2022-07-21T17:32:28Z"
-                  to: "2040-07-21T17:32:28Z"
-                credentialsType: "IpsActivationService"
-                claims:
-                  - name: "roles"
-                    allowedValues: 
-                      - - names:
-                          - "CREATE_ISSUER"
-                          target: "did:web:ips.dsba.aws.fiware.io:did"
-              - validFor:
-                  from: "2022-07-21T17:32:28Z"
-                  to: "2040-07-21T17:32:28Z"
-                credentialsType: "VerifiableCredential"
 
 vcwaltid:
   # Enable the deployment of application: vcwaltid
