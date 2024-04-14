@@ -27,13 +27,20 @@ variable "service_domain" {
 variable "services_names" {
   type = object({
     connector = string
+    mongo     = string
+    mysql     = string
+    orion_ld  = string
+    ccs       = string
   })
   description = "Service names (pods)"
   default = {
     connector = "fiware-data-space-connector"
+    mongo     = "mongodb"
+    mysql     = "mysql"
+    orion_ld  = "orionld"
+    ccs       = "cred-conf-service"
   }
 }
-
 
 ################################################################################
 # Helm Configuration                                                           #
@@ -56,14 +63,12 @@ variable "connector" {
 variable "mongodb" {
   type = object({
     enable_service = bool
-    name_service   = string
     auth_enabled   = bool
     root_password  = string
   })
   description = "MongoDB service configuration"
   default = {
     enable_service = true
-    name_service   = "mongodb"
     auth_enabled   = true
     root_password  = "root"
   }
@@ -72,13 +77,11 @@ variable "mongodb" {
 variable "mysql" {
   type = object({
     enable_service = bool
-    name_service   = string
     root_password  = string
   })
   description = "MySQL service configuration"
   default = {
     enable_service = true
-    name_service   = "mysql"
     root_password  = "root"
   }
 
@@ -87,16 +90,14 @@ variable "mysql" {
 variable "credentials_config_service" {
   type = object({
     enable_service = bool
-    name_service   = string
     db_name        = string
   })
   description = "Credentials Config Service configuration"
   default = {
     enable_service = true
-    name_service   = "credentials-config-service"
     db_name        = "ccs"
   }
-  
+
 }
 
 variable "activation" {

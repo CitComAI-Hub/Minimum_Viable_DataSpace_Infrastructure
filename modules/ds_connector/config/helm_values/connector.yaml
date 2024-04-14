@@ -59,6 +59,142 @@ mysql:
       rootPassword: ${mysql_root_password}
       password: ${mysql_password}
 
+################################################################################
+
+#* DONE
+orion-ld:
+  deploymentEnabled: true
+  
+  ##############################################################################
+  # Helm chart: mysql                                                          #
+  ##############################################################################
+  orion:
+
+    fullnameOverride: ${orionld_name}
+
+    broker:
+      db:
+        auth:
+          user: root
+          password: ${mongodb_root_password}
+          mech: "SCRAM-SHA-1"
+        hosts:
+          - ${mongodb_name}
+
+    initData: #TODO: Check if data is created in the DB
+      initEnabled: false
+      hook: post-install
+      backoffLimit: 6
+      entities:
+        - name: deliveryorder_happypets001.json
+          data: |
+            {
+              "id": "urn:ngsi-ld:DELIVERYORDER:HAPPYPETS001",
+              "type": "DELIVERYORDER",
+              "issuer": {
+                "type": "Property",
+                "value": "Happy Pets"
+              },
+              "destinee": {
+                "type": "Property",
+                "value": "Happy Pets customer via IPS"
+              },
+              "deliveryAddress": {
+                "type": "Property",
+                "value": {
+                  "addressCountry": "DE",
+                  "addressRegion": "Berlin",
+                  "addressLocality": "Berlin",
+                  "postalCode": "12345",
+                  "streetAddress": "Customer Strasse 23"
+                }
+              },
+              "originAddress": {
+                "type": "Property",
+                "value": {
+                  "addressCountry": "DE",
+                  "addressRegion": "Berlin",
+                  "addressLocality": "Berlin",
+                  "postalCode": "12345",
+                  "streetAddress": "HappyPets Strasse 15"
+                }
+              },
+              "pda": {
+                "type": "Property",
+                "value": "2021-10-03"
+              },
+              "pta": {
+                "type": "Property",
+                "value": "14:00:00"
+              },
+              "eda": {
+                "type": "Property",
+                "value": "2021-10-02"
+              },
+              "eta": {
+                "type": "Property",
+                "value": "14:00:00"
+              },
+              "@context": [
+                "https://schema.lab.fiware.org/ld/context"
+              ]
+            }
+                
+        - name: deliveryorder_happypets002.json
+          data: |
+            {
+              "id": "urn:ngsi-ld:DELIVERYORDER:HAPPYPETS002",
+              "type": "DELIVERYORDER",
+              "issuer": {
+                "type": "Property",
+                "value": "Happy Pets"
+              },
+              "destinee": {
+                "type": "Property",
+                "value": "Happy Pets 2nd customer via IPS"
+              },
+              "deliveryAddress": {
+                "type": "Property",
+                "value": {
+                  "addressCountry": "DE",
+                  "addressRegion": "Hamburg",
+                  "addressLocality": "Hamburg",
+                  "postalCode": "23456",
+                  "streetAddress": "Customer Str. 19"
+                }
+              },
+              "originAddress": {
+                "type": "Property",
+                "value": {
+                  "addressCountry": "DE",
+                  "addressRegion": "Berlin",
+                  "addressLocality": "Berlin",
+                  "postalCode": "12345",
+                  "streetAddress": "HappyPets Strasse 15"
+                }
+              },
+              "pda": {
+                "type": "Property",
+                "value": "2021-11-12"
+              },
+              "pta": {
+                "type": "Property",
+                "value": "11:00:00"
+              },
+              "eda": {
+                "type": "Property",
+                "value": "2021-11-12"
+              },
+              "eta": {
+                "type": "Property",
+                "value": "11:00:00"
+              },
+              "@context": [
+                "https://schema.lab.fiware.org/ld/context"
+              ]
+            }
+
+################################################################################
 
 #* DONE
 credentials-config-service:
@@ -295,135 +431,6 @@ kong:
                     headers:
                       - Authorization
                       - authorization
-
-orion-ld:
-  # Enable the deployment of application: orion-ld
-  deploymentEnabled: false
-
-  orion:
-
-    broker:
-      db:
-        auth:
-          user: root
-          password: "dbPassword"
-          mech: "SCRAM-SHA-1"
-        hosts:
-          - ips-dsc-mongodb
-
-    initData:
-      initEnabled: true
-      hook: post-install
-      backoffLimit: 6
-      entities:
-        - name: deliveryorder_happypets001.json
-          data: |
-            {
-              "id": "urn:ngsi-ld:DELIVERYORDER:HAPPYPETS001",
-              "type": "DELIVERYORDER",
-              "issuer": {
-                "type": "Property",
-                "value": "Happy Pets"
-              },
-              "destinee": {
-                "type": "Property",
-                "value": "Happy Pets customer via IPS"
-              },
-              "deliveryAddress": {
-                "type": "Property",
-                "value": {
-                  "addressCountry": "DE",
-                  "addressRegion": "Berlin",
-                  "addressLocality": "Berlin",
-                  "postalCode": "12345",
-                  "streetAddress": "Customer Strasse 23"
-                }
-              },
-              "originAddress": {
-                "type": "Property",
-                "value": {
-                  "addressCountry": "DE",
-                  "addressRegion": "Berlin",
-                  "addressLocality": "Berlin",
-                  "postalCode": "12345",
-                  "streetAddress": "HappyPets Strasse 15"
-                }
-              },
-              "pda": {
-                "type": "Property",
-                "value": "2021-10-03"
-              },
-              "pta": {
-                "type": "Property",
-                "value": "14:00:00"
-              },
-              "eda": {
-                "type": "Property",
-                "value": "2021-10-02"
-              },
-              "eta": {
-                "type": "Property",
-                "value": "14:00:00"
-              },
-              "@context": [
-                "https://schema.lab.fiware.org/ld/context"
-              ]
-            }
-                
-        - name: deliveryorder_happypets002.json
-          data: |
-            {
-              "id": "urn:ngsi-ld:DELIVERYORDER:HAPPYPETS002",
-              "type": "DELIVERYORDER",
-              "issuer": {
-                "type": "Property",
-                "value": "Happy Pets"
-              },
-              "destinee": {
-                "type": "Property",
-                "value": "Happy Pets 2nd customer via IPS"
-              },
-              "deliveryAddress": {
-                "type": "Property",
-                "value": {
-                  "addressCountry": "DE",
-                  "addressRegion": "Hamburg",
-                  "addressLocality": "Hamburg",
-                  "postalCode": "23456",
-                  "streetAddress": "Customer Str. 19"
-                }
-              },
-              "originAddress": {
-                "type": "Property",
-                "value": {
-                  "addressCountry": "DE",
-                  "addressRegion": "Berlin",
-                  "addressLocality": "Berlin",
-                  "postalCode": "12345",
-                  "streetAddress": "HappyPets Strasse 15"
-                }
-              },
-              "pda": {
-                "type": "Property",
-                "value": "2021-11-12"
-              },
-              "pta": {
-                "type": "Property",
-                "value": "11:00:00"
-              },
-              "eda": {
-                "type": "Property",
-                "value": "2021-11-12"
-              },
-              "eta": {
-                "type": "Property",
-                "value": "11:00:00"
-              },
-              "@context": [
-                "https://schema.lab.fiware.org/ld/context"
-              ]
-            }
-
 postgres:
   # Enable the deployment of application: postgres
   deploymentEnabled: false
