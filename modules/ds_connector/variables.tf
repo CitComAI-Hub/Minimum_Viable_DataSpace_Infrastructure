@@ -29,6 +29,7 @@ variable "services_names" {
     connector = string
     mongo     = string
     mysql     = string
+    walt_id   = string
     orion_ld  = string
     ccs       = string
     til       = string
@@ -38,6 +39,7 @@ variable "services_names" {
     connector = "fiware-data-space-connector"
     mongo     = "mongodb"
     mysql     = "mysql"
+    walt_id   = "waltid"
     orion_ld  = "orionld"
     ccs       = "cred-conf-service"
     til       = "trusted-issuers-list"
@@ -87,6 +89,16 @@ variable "mysql" {
     root_password  = "root"
   }
 
+}
+
+variable "walt_id" {
+  type = object({
+    enable_service = bool
+  })
+  description = "Walt-ID service configuration"
+  default = {
+    enable_service = true
+  }
 }
 
 variable "orion_ld" {

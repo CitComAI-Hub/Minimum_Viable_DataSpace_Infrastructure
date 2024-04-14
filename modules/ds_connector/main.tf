@@ -19,6 +19,9 @@ resource "helm_release" "connector" {
       mysql_name          = var.services_names.mysql,
       mysql_root_password = var.mysql.root_password,
       mysql_password      = var.mysql.root_password,
+      # Walt-ID
+      waltid_enable = var.walt_id.enable_service,
+      waltid_name   = var.services_names.walt_id,
       # Orion-LD
       orionld_enable = var.orion_ld.enable_service,
       orionld_name   = var.services_names.orion_ld,
@@ -37,7 +40,6 @@ resource "helm_release" "connector" {
       # PDP
       # Kong
       # Postgres
-      # Walt-ID
       # Verifier
       # Keyrock
       # Keycloack

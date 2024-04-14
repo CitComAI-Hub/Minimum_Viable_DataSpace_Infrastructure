@@ -59,6 +59,138 @@ mysql:
       rootPassword: ${mysql_root_password}
       password: ${mysql_password}
 
+#? DONE - check ingress and did
+vcwaltid:
+  # Enable the deployment of application: vcwaltid
+  deploymentEnabled: ${waltid_enable}
+
+  # Organisation DID
+  did: did:web:ips.dsba.aws.fiware.io:did #TODO: Change
+  ingress:
+    enabled: false
+    host: ips.dsba.aws.fiware.io
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-fiware-eks
+    tls:
+      enabled: true
+  route:
+    enabled: false
+    
+  # Walt-id config
+  vcwaltid:
+
+    fullnameOverride: ${waltid_name}
+
+    # Persistence
+    persistence:
+      enabled: true
+      pvc:
+        size: 1Gi
+
+    # List of templates to be created
+    templates:
+      GaiaXParticipantCredential.json: |
+        {
+          "@context": [
+            "https://www.w3.org/2018/credentials/v1",
+            "https://registry.lab.dsba.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#"
+          ],
+          "type": [
+            "VerifiableCredential"
+          ],
+          "id": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
+          "issuer": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
+          "issuanceDate": "2023-03-21T12:00:00.148Z",
+          "credentialSubject": {
+            "id": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
+            "type": "gx:LegalParticipant",
+            "gx:legalName": "dsba compliant participant",
+            "gx:legalRegistrationNumber": {
+              "gx:vatID": "MYVATID"
+            },
+            "gx:headquarterAddress": {
+              "gx:countrySubdivisionCode": "BE-BRU"
+            },
+            "gx:legalAddress": {
+              "gx:countrySubdivisionCode": "BE-BRU"
+            },
+            "gx-terms-and-conditions:gaiaxTermsAndConditions": "70c1d713215f95191a11d38fe2341faed27d19e083917bc8732ca4fea4976700"
+          }
+        }
+      NaturalPersonCredential.json: |
+        {
+          "@context": ["https://www.w3.org/2018/credentials/v1"],
+          "credentialSchema": {
+            "id": "https://raw.githubusercontent.com/FIWARE-Ops/tech-x-challenge/main/schema.json",
+            "type": "FullJsonSchemaValidator2021"
+          },
+          "credentialSubject": {
+            "type": "gx:NaturalParticipant",
+            "familyName": "Happy",
+            "firstName": "User",
+            "roles": [{
+              "names": ["LEGAL_REPRESENTATIVE"],
+              "target": "did:web:onboarding"
+             }]
+          },
+          "id": "urn:uuid:3add94f4-28ec-42a1-8704-4e4aa51006b4",
+          "issued": "2021-08-31T00:00:00Z",
+          "issuer": "did:ebsi:2A9BZ9SUe6BatacSpvs1V5CdjHvLpQ7bEsi2Jb6LdHKnQxaN",
+          "validFrom": "2021-08-31T00:00:00Z",
+          "issuanceDate": "2021-08-31T00:00:00Z",
+          "type": ["VerifiableCredential", "LegalPersonCredential"]
+        }
+      MarketplaceUserCredential.json: |
+        {
+          "@context": ["https://www.w3.org/2018/credentials/v1"],
+          "credentialSchema": {
+            "id": "https://raw.githubusercontent.com/FIWARE-Ops/tech-x-challenge/main/schema.json",
+            "type": "FullJsonSchemaValidator2021"
+          },
+          "credentialSubject": {
+            "type": "gx:NaturalParticipant",
+            "email": "normal-user@fiware.org",
+            "familyName": "IPS",
+            "firstName": "employee",
+            "lastName": "IPS",
+            "roles": [{
+              "names": ["LEGAL_REPRESENTATIVE"],
+              "target": "did:web:onboarding"
+            }]
+          },
+          "id": "urn:uuid:3add94f4-28ec-42a1-8704-4e4aa51006b4",
+          "issued": "2021-08-31T00:00:00Z",
+          "issuer": "did:ebsi:2A9BZ9SUe6BatacSpvs1V5CdjHvLpQ7bEsi2Jb6LdHKnQxaN",
+          "validFrom": "2021-08-31T00:00:00Z",
+          "issuanceDate": "2021-08-31T00:00:00Z",
+          "type": ["MarketplaceUserCredential"]
+        }
+      EmployeeCredential.json: |
+        {
+          "@context": ["https://www.w3.org/2018/credentials/v1"],
+          "credentialSchema": {
+            "id": "https://raw.githubusercontent.com/FIWARE-Ops/tech-x-challenge/main/schema.json",
+            "type": "FullJsonSchemaValidator2021"
+          },
+          "credentialSubject": {
+            "type": "gx:NaturalParticipant",
+            "email": "normal-user@fiware.org",
+            "familyName": "IPS",
+            "firstName": "employee",
+            "lastName": "IPS",
+            "roles": [{
+              "names": ["LEGAL_REPRESENTATIVE"],
+              "target": "did:web:onboarding"
+            }]
+          },
+          "id": "urn:uuid:3add94f4-28ec-42a1-8704-4e4aa51006b4",
+          "issued": "2021-08-31T00:00:00Z",
+          "issuer": "did:ebsi:2A9BZ9SUe6BatacSpvs1V5CdjHvLpQ7bEsi2Jb6LdHKnQxaN",
+          "validFrom": "2021-08-31T00:00:00Z",
+          "issuanceDate": "2021-08-31T00:00:00Z",
+          "type": ["EmployeeCredential"]
+        }
+
 ################################################################################
 
 #* DONE
@@ -522,135 +654,6 @@ postgres:
         scripts:
           create.sh: |
             psql postgresql://postgres:POSTGRES_POSTGRES_PASSWORD@localhost:5432 -c "CREATE DATABASE keycloak_ips;"
-
-vcwaltid:
-  # Enable the deployment of application: vcwaltid
-  deploymentEnabled: false
-
-  # Organisation DID
-  did: did:web:ips.dsba.aws.fiware.io:did
-  ingress:
-    enabled: true
-    host: ips.dsba.aws.fiware.io
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-fiware-eks
-    tls:
-      enabled: true
-  route:
-    enabled: false
-    
-  # Walt-id config
-  vcwaltid:
-
-    # Persistence
-    persistence:
-      enabled: true
-      pvc:
-        size: 1Gi
-
-    # List of templates to be created
-    templates:
-      GaiaXParticipantCredential.json: |
-        {
-          "@context": [
-            "https://www.w3.org/2018/credentials/v1",
-            "https://registry.lab.dsba.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#"
-          ],
-          "type": [
-            "VerifiableCredential"
-          ],
-          "id": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
-          "issuer": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
-          "issuanceDate": "2023-03-21T12:00:00.148Z",
-          "credentialSubject": {
-            "id": "did:web:raw.githubusercontent.com:egavard:payload-sign:master",
-            "type": "gx:LegalParticipant",
-            "gx:legalName": "dsba compliant participant",
-            "gx:legalRegistrationNumber": {
-              "gx:vatID": "MYVATID"
-            },
-            "gx:headquarterAddress": {
-              "gx:countrySubdivisionCode": "BE-BRU"
-            },
-            "gx:legalAddress": {
-              "gx:countrySubdivisionCode": "BE-BRU"
-            },
-            "gx-terms-and-conditions:gaiaxTermsAndConditions": "70c1d713215f95191a11d38fe2341faed27d19e083917bc8732ca4fea4976700"
-          }
-        }
-      NaturalPersonCredential.json: |
-        {
-          "@context": ["https://www.w3.org/2018/credentials/v1"],
-          "credentialSchema": {
-            "id": "https://raw.githubusercontent.com/FIWARE-Ops/tech-x-challenge/main/schema.json",
-            "type": "FullJsonSchemaValidator2021"
-          },
-          "credentialSubject": {
-            "type": "gx:NaturalParticipant",
-            "familyName": "Happy",
-            "firstName": "User",
-            "roles": [{
-              "names": ["LEGAL_REPRESENTATIVE"],
-              "target": "did:web:onboarding"
-             }]
-          },
-          "id": "urn:uuid:3add94f4-28ec-42a1-8704-4e4aa51006b4",
-          "issued": "2021-08-31T00:00:00Z",
-          "issuer": "did:ebsi:2A9BZ9SUe6BatacSpvs1V5CdjHvLpQ7bEsi2Jb6LdHKnQxaN",
-          "validFrom": "2021-08-31T00:00:00Z",
-          "issuanceDate": "2021-08-31T00:00:00Z",
-          "type": ["VerifiableCredential", "LegalPersonCredential"]
-        }
-      MarketplaceUserCredential.json: |
-        {
-          "@context": ["https://www.w3.org/2018/credentials/v1"],
-          "credentialSchema": {
-            "id": "https://raw.githubusercontent.com/FIWARE-Ops/tech-x-challenge/main/schema.json",
-            "type": "FullJsonSchemaValidator2021"
-          },
-          "credentialSubject": {
-            "type": "gx:NaturalParticipant",
-            "email": "normal-user@fiware.org",
-            "familyName": "IPS",
-            "firstName": "employee",
-            "lastName": "IPS",
-            "roles": [{
-              "names": ["LEGAL_REPRESENTATIVE"],
-              "target": "did:web:onboarding"
-            }]
-          },
-          "id": "urn:uuid:3add94f4-28ec-42a1-8704-4e4aa51006b4",
-          "issued": "2021-08-31T00:00:00Z",
-          "issuer": "did:ebsi:2A9BZ9SUe6BatacSpvs1V5CdjHvLpQ7bEsi2Jb6LdHKnQxaN",
-          "validFrom": "2021-08-31T00:00:00Z",
-          "issuanceDate": "2021-08-31T00:00:00Z",
-          "type": ["MarketplaceUserCredential"]
-        }
-      EmployeeCredential.json: |
-        {
-          "@context": ["https://www.w3.org/2018/credentials/v1"],
-          "credentialSchema": {
-            "id": "https://raw.githubusercontent.com/FIWARE-Ops/tech-x-challenge/main/schema.json",
-            "type": "FullJsonSchemaValidator2021"
-          },
-          "credentialSubject": {
-            "type": "gx:NaturalParticipant",
-            "email": "normal-user@fiware.org",
-            "familyName": "IPS",
-            "firstName": "employee",
-            "lastName": "IPS",
-            "roles": [{
-              "names": ["LEGAL_REPRESENTATIVE"],
-              "target": "did:web:onboarding"
-            }]
-          },
-          "id": "urn:uuid:3add94f4-28ec-42a1-8704-4e4aa51006b4",
-          "issued": "2021-08-31T00:00:00Z",
-          "issuer": "did:ebsi:2A9BZ9SUe6BatacSpvs1V5CdjHvLpQ7bEsi2Jb6LdHKnQxaN",
-          "validFrom": "2021-08-31T00:00:00Z",
-          "issuanceDate": "2021-08-31T00:00:00Z",
-          "type": ["EmployeeCredential"]
-        }
 
 verifier:
   # Enable the deployment of application: verifier
