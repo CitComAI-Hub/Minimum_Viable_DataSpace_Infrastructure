@@ -7,10 +7,11 @@ argoApplications: false
 
 #* DONE
 mongodb:
-
-  # Enable the deployment of application: mongodb
   deploymentEnabled: ${mongodb_enable}
 
+  ##############################################################################
+  # Helm chart: mongodb                                                        #
+  ##############################################################################
   mongodb:
 
     fullnameOverride: ${mongodb_name}
@@ -44,29 +45,28 @@ mongodb:
 
 #* DONE
 mysql:
-  
-  # Enable the deployment of application: mysql
   deploymentEnabled: ${mysql_enable}
 
+  ##############################################################################
+  # Helm chart: mysql                                                          #
+  ##############################################################################
   mysql:
     
     fullnameOverride: ${mysql_name}
     
-    # initdbScripts:
-    #   #CREATE DATABASE {til_db};
-    #   create.sql: |
-    #     CREATE DATABASE ${ccs_db_name};
     auth:
       # Should use a Secret on production deployments
       rootPassword: ${mysql_root_password}
       password: ${mysql_password}
 
 
-#! ERROR
+#* DONE
 credentials-config-service:
-  # Enable the deployment of application: credentials-config-service
   deploymentEnabled: ${ccs_enable}
 
+  ##############################################################################
+  # Helm chart: Credentials Config Service                                     #
+  ##############################################################################
   credentials-config-service:
 
     fullnameOverride: ${ccs_name}
@@ -79,7 +79,7 @@ credentials-config-service:
 
       # Should use Secret in production environment
       username: root
-      password: ${mysql_root_password}"
+      password: ${mysql_root_password}
 
 
 activation-service:
