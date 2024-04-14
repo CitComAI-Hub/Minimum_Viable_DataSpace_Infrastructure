@@ -31,6 +31,7 @@ variable "services_names" {
     mysql     = string
     orion_ld  = string
     ccs       = string
+    til       = string
   })
   description = "Service names (pods)"
   default = {
@@ -39,6 +40,7 @@ variable "services_names" {
     mysql     = "mysql"
     orion_ld  = "orionld"
     ccs       = "cred-conf-service"
+    til       = "trusted-issuers-list"
   }
 }
 
@@ -87,7 +89,7 @@ variable "mysql" {
 
 }
 
-variable "orionld" {
+variable "orion_ld" {
   type = object({
     enable_service = bool
   })
@@ -108,7 +110,18 @@ variable "credentials_config_service" {
     enable_service = true
     db_name        = "ccs"
   }
+}
 
+variable "trusted_issuers_list" {
+  type = object({
+    enable_service = bool
+    db_name        = string
+  })
+  description = "Trusted Issuers List service configuration"
+  default = {
+    enable_service = true
+    db_name        = "til"
+  }
 }
 
 variable "activation" {

@@ -216,13 +216,13 @@ credentials-config-service:
       username: root
       password: ${mysql_root_password}
 
-#? DONE
+#? DONE - check ingress
 trusted-issuers-list:
-  deploymentEnabled: false
+  deploymentEnabled: ${til_enable}
 
   trusted-issuers-list:
 
-    fullnameOverride: ${ccs_name}
+    fullnameOverride: ${til_name}
 
     # Ingress
     ingress:
@@ -253,7 +253,7 @@ trusted-issuers-list:
     database:
       persistence: true
       host: ${mysql_name}
-      name: til
+      name: ${til_db_name}
       # Should use Secret in production environment
       username: root
       password: ${mysql_root_password}
@@ -282,6 +282,8 @@ trusted-issuers-list:
                   from: "2022-07-21T17:32:28Z"
                   to: "2040-07-21T17:32:28Z"
                 credentialsType: "VerifiableCredential"
+
+################################################################################
 
 activation-service:
 
