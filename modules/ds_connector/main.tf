@@ -19,6 +19,13 @@ resource "helm_release" "connector" {
       mysql_name          = var.services_names.mysql,
       mysql_root_password = var.mysql.root_password,
       mysql_password      = var.mysql.root_password,
+      # Postgresql
+      postgresql_enable        = var.postgresql.enable_service,
+      postgresql_name          = var.services_names.postgresql,
+      postgresql_root_password = var.postgresql.root_password,
+      postgresql_user_name     = var.postgresql.user_name,
+      postgresql_user_password = var.postgresql.user_password,
+      postgresql_db_name       = var.postgresql.db_name,
       # Walt-ID
       waltid_enable = var.walt_id.enable_service,
       waltid_name   = var.services_names.walt_id,
@@ -39,7 +46,6 @@ resource "helm_release" "connector" {
       activation_enable_ingress = var.activation.enable_ingress
       # PDP
       # Kong
-      # Postgres
       # Verifier
       # Keyrock
       # Keycloack

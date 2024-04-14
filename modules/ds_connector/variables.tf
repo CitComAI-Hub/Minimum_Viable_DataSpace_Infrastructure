@@ -26,23 +26,25 @@ variable "service_domain" {
 
 variable "services_names" {
   type = object({
-    connector = string
-    mongo     = string
-    mysql     = string
-    walt_id   = string
-    orion_ld  = string
-    ccs       = string
-    til       = string
+    connector  = string
+    mongo      = string
+    mysql      = string
+    postgresql = string
+    walt_id    = string
+    orion_ld   = string
+    ccs        = string
+    til        = string
   })
   description = "Service names (pods)"
   default = {
-    connector = "fiware-data-space-connector"
-    mongo     = "mongodb"
-    mysql     = "mysql"
-    walt_id   = "waltid"
-    orion_ld  = "orionld"
-    ccs       = "cred-conf-service"
-    til       = "trusted-issuers-list"
+    connector  = "fiware-data-space-connector"
+    mongo      = "mongodb"
+    mysql      = "mysql"
+    postgresql = "postgresql"
+    walt_id    = "waltid"
+    orion_ld   = "orionld"
+    ccs        = "cred-conf-service"
+    til        = "trusted-issuers-list"
   }
 }
 
@@ -89,6 +91,24 @@ variable "mysql" {
     root_password  = "root"
   }
 
+}
+
+variable "postgresql" {
+  type = object({
+    enable_service = bool
+    root_password  = string
+    user_name      = string
+    user_password  = string
+    db_name        = string
+  })
+  description = "PostgreSQL service configuration"
+  default = {
+    enable_service = true
+    root_password  = "root"
+    user_name      = "keycloak"
+    user_password  = "keycloak_password"
+    db_name        = "keycloak_ips"
+  }
 }
 
 variable "walt_id" {

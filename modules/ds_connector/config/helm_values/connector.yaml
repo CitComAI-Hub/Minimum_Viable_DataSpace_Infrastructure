@@ -59,9 +59,36 @@ mysql:
       rootPassword: ${mysql_root_password}
       password: ${mysql_password}
 
+#* DONE
+postgres:
+  deploymentEnabled: ${postgresql_enable}
+
+  ##############################################################################
+  # Helm chart: postgresql                                                     #
+  ##############################################################################
+  postgresql:
+
+    fullnameOverride: ${postgresql_name}
+
+    auth:
+      # Credentials for postgres admin user
+      postgresPassword: ${postgresql_root_password}
+
+      enablePostgresUser: true
+      # Should use a Secret for PWs on production deployments
+      # Credentials for Keycloak DB
+      username: ${postgresql_user_name}
+      password: ${postgresql_user_password}
+
+    # Init DB
+    primary:
+      initdb:
+        scripts:
+          create.sh: |
+            psql postgresql://postgres:${postgresql_root_password}@localhost:5432 -c "CREATE DATABASE ${postgresql_db_name};"
+
 #? DONE - check ingress and did
 vcwaltid:
-  # Enable the deployment of application: vcwaltid
   deploymentEnabled: ${waltid_enable}
 
   # Organisation DID
@@ -76,7 +103,9 @@ vcwaltid:
   route:
     enabled: false
     
-  # Walt-id config
+  ##############################################################################
+  # Helm chart: vcwaltid                                                       #
+  ##############################################################################
   vcwaltid:
 
     fullnameOverride: ${waltid_name}
@@ -352,6 +381,9 @@ credentials-config-service:
 trusted-issuers-list:
   deploymentEnabled: ${til_enable}
 
+  ##############################################################################
+  # Helm chart: Trusted Issuers List                                           #
+  ##############################################################################
   trusted-issuers-list:
 
     fullnameOverride: ${til_name}
@@ -630,31 +662,6 @@ kong:
                     headers:
                       - Authorization
                       - authorization
-postgres:
-  # Enable the deployment of application: postgres
-  deploymentEnabled: false
-
-  postgresql:
-
-    fullnameOverride: postgresql-ips
-
-    auth:
-      # Should use a Secret for PWs on production deployments
-      # Credentials for Keycloak DB
-      username: keycloak
-      password: "dbPassword"
-      enablePostgresUser: true
-
-      # Credentials for postgres admin user
-      postgresPassword: "dbRootPassword"
-
-    # Init DB
-    primary:
-      initdb:
-        scripts:
-          create.sh: |
-            psql postgresql://postgres:POSTGRES_POSTGRES_PASSWORD@localhost:5432 -c "CREATE DATABASE keycloak_ips;"
-
 verifier:
   # Enable the deployment of application: verifier
   deploymentEnabled: false
