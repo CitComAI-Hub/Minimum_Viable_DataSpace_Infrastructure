@@ -90,6 +90,11 @@ resource "helm_release" "connector" {
       pdp_enable = var.pdp.enable_service,
       pdp_name   = var.services_names.pdp,
       # Kong
+      kong_enable     = var.kong.enable_service,
+      kong_name       = var.services_names.kong,
+      kong_ingress    = var.kong.enable_ingress,
+      kong_domain     = local.dns_dir[local.dns_domains.kong],
+      kong_secret_tls = local.secrets_tls[local.dns_domains.kong],
     })
   ]
 

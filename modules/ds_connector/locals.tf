@@ -46,13 +46,13 @@ locals {
       metadata_name    = "${var.services_names.keyrock}-certificate"
       spec_secret_name = "${var.services_names.keyrock}-tls-secret"
       dns_name         = "${local.dns_domains.keyrock}.${var.service_domain}"
+    },
+    { # kong
+      id               = local.dns_domains.kong
+      metadata_name    = "${var.services_names.kong}-certificate"
+      spec_secret_name = "${var.services_names.kong}-tls-secret"
+      dns_name         = "${local.dns_domains.kong}.${var.service_domain}"
     }
-    # { # kong
-    #   id               = local.dns_domains.kong
-    #   metadata_name    = "${var.services_names.kong}-certificate"
-    #   spec_secret_name = "${var.services_names.kong}-tls-secret"
-    #   dns_name         = "${local.dns_domains.kong}.${var.service_domain}"
-    # },
   ]
 
   #!############################################################################

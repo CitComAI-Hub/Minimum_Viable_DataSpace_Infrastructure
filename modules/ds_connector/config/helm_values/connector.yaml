@@ -1881,12 +1881,19 @@ dsba-pdp:
 
 ################################################################################
 
-#? DONE
+#? DONE - fullnameOverride not working
 kong:
-  # Enable the deployment of application: kong
-  deploymentEnabled: false
+  deploymentEnabled: ${kong_enable}
 
+  fullnameOverride: ${kong_name}
+
+  ##############################################################################
+  # Helm chart: Kong                                                           #
+  ##############################################################################
   kong:
+
+    fullnameOverride: ${kong_name}
+
     replicaCount: 1
 
     proxy:
@@ -1895,21 +1902,25 @@ kong:
         enabled: false
 
       # Provide Ingress or Route config here
-      ingress:
-        enabled: true
-        annotations:
-          kubernetes.io/ingress.class: nginx
-          cert-manager.io/cluster-issuer: letsencrypt-fiware-eks
-        ingressClassName: nginx
-        tls: kong-ips-dsba-tls
-        hostname: ips-kong.dsba.aws.fiware.io
       route:
         enabled: false
+      
+      ingress:
+        enabled: ${kong_ingress}
+        hostname: ${kong_domain}
+        tls: ${kong_secret_tls}
+        ingressClassName: nginx
+        annotations:
+          kubernetes.io/ingress.class: nginx
+          # forcing everything to use ssl
+          ingress.kubernetes.io/ssl-redirect: "true"
+          # example annotations, allowing cert-manager to automatically create tls-certs
+          kubernetes.io/tls-acme: "true"
 
     # Provide the kong.yml configuration (either as existing CM, secret or directly in the values.yaml)
     dblessConfig:
-      configMap: ""
-      secret: ""
+      # configMap: ""
+      # secret: ""
       config: |
         _format_version: "2.1"
         _transform: true
@@ -1922,7 +1933,7 @@ kong:
             - tir-key
 
         services:
-          - host: "ips-dsc-orion"
+          - host: ${orionld_name}
             name: "ips"
             port: 1026
             protocol: http
@@ -1938,7 +1949,7 @@ kong:
                 config:
                   pathprefix: "/ips"
                   authorizationendpointtype: ExtAuthz
-                  authorizationendpointaddress: http://ips-dsc-dsba-pdp:8080/authz
+                  authorizationendpointaddress: http://${pdp_name}:8080/authz
 
               - name: request-transformer
                 config:

@@ -51,6 +51,7 @@ variable "services_names" {
     keycloak            = string
     keyrock             = string
     pdp                 = string
+    kong                = string
   })
   description = "Service names (pods)"
   default = {
@@ -70,6 +71,7 @@ variable "services_names" {
     keycloak            = "keycloak"
     keyrock             = "keyrock"
     pdp                 = "pdp"
+    kong                = "kong"
   }
 }
 
@@ -280,5 +282,17 @@ variable "pdp" {
   description = "PDP service configuration"
   default = {
     enable_service = true
+  }
+}
+
+variable "kong" {
+  type = object({
+    enable_service = bool
+    enable_ingress = bool
+  })
+  description = "Kong service configuration"
+  default = {
+    enable_service = true
+    enable_ingress = true
   }
 }
