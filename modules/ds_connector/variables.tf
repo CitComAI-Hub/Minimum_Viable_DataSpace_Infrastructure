@@ -5,6 +5,15 @@ variable "kubernetes_local_path" {
 }
 
 ################################################################################
+# Certs Configuration Module                                                   #
+################################################################################
+variable "ca_clusterissuer_name" {
+  type        = string
+  description = "The name of the clusterissuer"
+  default     = "ca-certificates"
+}
+
+################################################################################
 # Cluster Configuration                                                        #
 ################################################################################
 
@@ -34,6 +43,8 @@ variable "services_names" {
     orion_ld   = string
     ccs        = string
     til        = string
+    tir        = string
+    keyrock    = string
   })
   description = "Service names (pods)"
   default = {
@@ -45,7 +56,15 @@ variable "services_names" {
     orion_ld   = "orionld"
     ccs        = "cred-conf-service"
     til        = "trusted-issuers-list"
+    tir        = "trusted-issuers-registry"
+    keyrock    = "keyrock"
   }
+}
+
+variable "did_option" {
+  type        = string
+  description = "DID option for the services"
+  default     = "web"
 }
 
 ################################################################################
@@ -114,10 +133,12 @@ variable "postgresql" {
 variable "walt_id" {
   type = object({
     enable_service = bool
+    enable_ingress = bool
   })
   description = "Walt-ID service configuration"
   default = {
-    enable_service = true
+    enable_service = false
+    enable_ingress = true
   }
 }
 
@@ -155,6 +176,28 @@ variable "trusted_issuers_list" {
     db_name        = "til"
   }
 }
+
+variable "keyrock" {
+  type = object({
+    enable_service = bool
+    admin_user     = string
+    admin_password = string
+    admin_email    = string
+    db_name        = string
+    enable_ingress = bool
+  })
+  description = "Keyrock service configuration"
+  default = {
+    enable_service = false
+    admin_user     = "admin"
+    admin_password = "admin_password"
+    admin_email    = "admin@keyrock-connector.org"
+    db_name        = "ar_idm_ips"
+    enable_ingress = true
+  }
+}
+
+
 
 variable "activation" {
   type = object({

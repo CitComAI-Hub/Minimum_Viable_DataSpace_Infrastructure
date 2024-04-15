@@ -9,6 +9,7 @@ resource "helm_release" "connector" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/connector.yaml", {
+      did_domain = local.did_methods[var.did_option],
       # MongoDB
       mongodb_enable        = var.mongodb.enable_service,
       mongodb_name          = var.services_names.mongo,
@@ -27,8 +28,11 @@ resource "helm_release" "connector" {
       postgresql_user_password = var.postgresql.user_password,
       postgresql_db_name       = var.postgresql.db_name,
       # Walt-ID
-      waltid_enable = var.walt_id.enable_service,
-      waltid_name   = var.services_names.walt_id,
+      waltid_enable     = var.walt_id.enable_service,
+      waltid_name       = var.services_names.walt_id,
+      waltid_ingress    = var.walt_id.enable_ingress,
+      waltid_domain     = local.dns_dir[local.dns_domains.walt_id],
+      waltid_secret_tls = local.secrets_tls[local.dns_domains.walt_id],
       # Orion-LD
       orionld_enable = var.orion_ld.enable_service,
       orionld_name   = var.services_names.orion_ld,
@@ -37,17 +41,30 @@ resource "helm_release" "connector" {
       ccs_name    = var.services_names.ccs,
       ccs_db_name = var.credentials_config_service.db_name,
       # Trusted Issuers List
-      til_enable  = var.trusted_issuers_list.enable_service,
-      til_name    = var.services_names.til,
-      til_db_name = var.trusted_issuers_list.db_name,
+      til_enable     = var.trusted_issuers_list.enable_service,
+      til_name       = var.services_names.til,
+      til_db_name    = var.trusted_issuers_list.db_name,
+      til_domain     = local.dns_dir[local.dns_domains.til],
+      til_secret_tls = local.secrets_tls[local.dns_domains.til],
+      tir_domain     = local.dns_dir[local.dns_domains.tir],
+      tir_secret_tls = local.secrets_tls[local.dns_domains.tir],
       # Activation Service
       activation_enable         = var.activation.enable_service,
       activation_name           = var.activation.name_service,
       activation_enable_ingress = var.activation.enable_ingress
+      # Keyrock
+      keyrock_enable = var.keyrock.enable_service,
+      keyrock_name   = var.services_names.keyrock,
+      keyrock_admin_user     = var.keyrock.admin_user,
+      keyrock_admin_password = var.keyrock.admin_password,
+      keyrock_admin_email    = var.keyrock.admin_email,
+      keyrock_db_name        = var.keyrock.db_name,
+      keyrock_ingress        = var.keyrock.enable_ingress,
+      keyrock_domain         = local.dns_dir[local.dns_domains.keyrock],
+      keyrock_secret_tls     = local.secrets_tls[local.dns_domains.keyrock],
       # PDP
       # Kong
       # Verifier
-      # Keyrock
       # Keycloack
     })
   ]
