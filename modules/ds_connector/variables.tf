@@ -44,6 +44,7 @@ variable "services_names" {
     ccs        = string
     til        = string
     tir        = string
+    verifier   = string
     keyrock    = string
   })
   description = "Service names (pods)"
@@ -57,6 +58,7 @@ variable "services_names" {
     ccs        = "cred-conf-service"
     til        = "trusted-issuers-list"
     tir        = "trusted-issuers-registry"
+    verifier   = "verifier"
     keyrock    = "keyrock"
   }
 }
@@ -176,6 +178,19 @@ variable "trusted_issuers_list" {
     db_name        = "til"
   }
 }
+
+variable "verifier" {
+  type = object({
+    enable_service = bool
+    enable_ingress = bool
+  })
+  description = "Verifier service configuration"
+  default = {
+    enable_service = true
+    enable_ingress = true
+  }
+}
+
 
 variable "keyrock" {
   type = object({

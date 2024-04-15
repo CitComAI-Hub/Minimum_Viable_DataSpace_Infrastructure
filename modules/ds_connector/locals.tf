@@ -23,6 +23,12 @@ locals {
       spec_secret_name = "${var.services_names.tir}-tls-secret"
       dns_name         = "${local.dns_domains.tir}.${var.service_domain}"
     },
+    { # verifier
+      id               = local.dns_domains.verifier
+      metadata_name    = "${var.services_names.verifier}-certificate"
+      spec_secret_name = "${var.services_names.verifier}-tls-secret"
+      dns_name         = "${local.dns_domains.verifier}.${var.service_domain}"
+    },
     { # keyrock
       id               = local.dns_domains.keyrock
       metadata_name    = "${var.services_names.keyrock}-certificate"
@@ -34,12 +40,6 @@ locals {
     #   metadata_name    = "${var.services_names.portal}-certificate"
     #   spec_secret_name = "${var.services_names.portal}-tls-secret"
     #   dns_name         = "${local.dns_domains.portal}.${var.service_domain}"
-    # },
-    # { # verifier
-    #   id               = local.dns_domains.verifier
-    #   metadata_name    = "${var.services_names.verifier}-certificate"
-    #   spec_secret_name = "${var.services_names.verifier}-tls-secret"
-    #   dns_name         = "${local.dns_domains.verifier}.${var.service_domain}"
     # },
     # { # kong
     #   id               = local.dns_domains.kong

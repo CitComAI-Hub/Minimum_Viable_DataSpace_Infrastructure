@@ -485,26 +485,35 @@ trusted-issuers-list:
 
 ################################################################################
 
-#? DONE
+#* DONE
 verifier:
-  # Enable the deployment of application: verifier
-  deploymentEnabled: false
+  deploymentEnabled: ${verifier_enable}
 
+  fullnameOverride: ${verifier_name}
+
+  ##############################################################################
+  # Helm chart: Verifier                                                       #
+  ##############################################################################
   vcverifier:
 
+    fullnameOverride: ${verifier_name}
+
     ingress:
-      enabled: true
+      enabled: ${verifier_ingress}
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-fiware-eks
-        kubernetes.io/ingress.class: nginx
+        kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+        # forcing everything to use ssl
+        ingress.kubernetes.io/ssl-redirect: "true"
+        # example annotations, allowing cert-manager to automatically create tls-certs
+        kubernetes.io/tls-acme: "true"
       hosts:
-        - host: ips-verifier.dsba.aws.fiware.io
+        - host: ${verifier_domain}
           paths:
             - /
       tls:
         - hosts:
-            - ips-verifier.dsba.aws.fiware.io
-          secretName: verifier-ips-dsba-tls
+            - ${verifier_domain}
+          secretName: ${verifier_secret_tls}
 
     deployment:
 
@@ -517,24 +526,22 @@ verifier:
       # Server config
       server:
         # Place external host here when publishing verifier with public URL
-        host: https://ips-verifier.dsba.aws.fiware.io
+        host: https://${verifier_domain}
 
       # Walt-id config
       ssikit:
-        auditorUrl: http://ips-dsc-vcwaltid:7003
+        auditorUrl: http://${waltid_name}:7003
 
       # Verifier config
       verifier:
         # URL endpoint of data space trusted issuers registry
-        tirAddress: https://tir.dsba.fiware.dev/v3/issuers
+        tirAddress: https://tir.dsba.fiware.dev/v3/issuers #TODO: Change to TPR URL
         # DID of organisation
-        did: did:web:ips.dsba.aws.fiware.io:did
+        did: ${did_domain}
 
       # Config service
       configRepo:
-        configEndpoint: http://ips-dsc-credentials-config-service:8080/
-
-
+        configEndpoint: http://${ccs_name}:8080/
 
 ################################################################################
 
@@ -874,7 +881,7 @@ dsba-pdp:
       ishare:
         existingSecret: ips-dsc-vcwaltid-tls-sec
 
-        clientId: did:web:ips.dsba.aws.fiware.io:did
+        clientId: ${did_domain}
 
         # Initial list of fingerprints for trusted CAs. This will be overwritten
         # after the first update from the trust anchor.

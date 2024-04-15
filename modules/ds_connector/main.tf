@@ -52,9 +52,15 @@ resource "helm_release" "connector" {
       activation_enable         = var.activation.enable_service,
       activation_name           = var.activation.name_service,
       activation_enable_ingress = var.activation.enable_ingress
+      # Verifier
+      verifier_enable     = var.verifier.enable_service,
+      verifier_name       = var.services_names.verifier,
+      verifier_ingress    = var.verifier.enable_ingress,
+      verifier_domain     = local.dns_dir[local.dns_domains.verifier],
+      verifier_secret_tls = local.secrets_tls[local.dns_domains.verifier],
       # Keyrock
-      keyrock_enable = var.keyrock.enable_service,
-      keyrock_name   = var.services_names.keyrock,
+      keyrock_enable         = var.keyrock.enable_service,
+      keyrock_name           = var.services_names.keyrock,
       keyrock_admin_user     = var.keyrock.admin_user,
       keyrock_admin_password = var.keyrock.admin_password,
       keyrock_admin_email    = var.keyrock.admin_email,
@@ -64,7 +70,6 @@ resource "helm_release" "connector" {
       keyrock_secret_tls     = local.secrets_tls[local.dns_domains.keyrock],
       # PDP
       # Kong
-      # Verifier
       # Keycloack
     })
   ]
