@@ -246,6 +246,9 @@ tm-forum-api:
 
   fullnameOverride: ${tm_forum_api_name}
 
+  ##############################################################################
+  # Helm chart: TM Forum API                                                   #
+  ##############################################################################
   tm-forum-api:
     fullnameOverride: ${tm_forum_api_name}
 
@@ -553,12 +556,19 @@ verifier:
       configRepo:
         configEndpoint: http://${ccs_name}:8080/
 
-#? not setting up the deployment
+#* DONE
 contract-management:
-  # Enable the deployment of application: contract-management
-  deploymentEnabled: false
+  deploymentEnabled: ${contract_management_enable}
 
+  fullnameOverride: ${contract_management_name}
+
+  ##############################################################################
+  # Helm chart: Contract Management                                            #
+  ##############################################################################
   contract-management:
+
+    fullnameOverride: ${contract_management_name}
+
     til:
       ## Type of Verifiable Credential necessary for accessing the service
       credentialType: VerifiableCredential
@@ -572,11 +582,11 @@ contract-management:
             - GOLD_CUSTOMER
     services:
       product:
-        url: http://ips-dsc-tm-forum-api-envoy:8080
+        url: http://${tm_forum_api_name}-envoy:8080
       party:
-        url: http://ips-dsc-tm-forum-api-envoy:8080
+        url: http://${tm_forum_api_name}-envoy:8080
       til:
-        url: http://ips-dsc-trusted-issuers-list:8080
+        url: http://${til_name}:8080
 
 ################################################################################
 

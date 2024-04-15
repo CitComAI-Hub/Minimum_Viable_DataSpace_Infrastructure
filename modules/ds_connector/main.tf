@@ -61,6 +61,9 @@ resource "helm_release" "connector" {
       verifier_ingress    = var.verifier.enable_ingress,
       verifier_domain     = local.dns_dir[local.dns_domains.verifier],
       verifier_secret_tls = local.secrets_tls[local.dns_domains.verifier],
+      # Contract Management
+      contract_management_enable = var.contract_management.enable_service,
+      contract_management_name   = var.services_names.contract_management,
       # Keycloack
       keycloak_enable         = var.keycloak.enable_service,
       keycloak_name           = var.services_names.keycloak,

@@ -35,35 +35,37 @@ variable "service_domain" {
 
 variable "services_names" {
   type = object({
-    connector    = string
-    mongo        = string
-    mysql        = string
-    postgresql   = string
-    walt_id      = string
-    tm_forum_api = string
-    orion_ld     = string
-    ccs          = string
-    til          = string
-    tir          = string
-    verifier     = string
-    keycloak     = string
-    keyrock      = string
+    connector           = string
+    mongo               = string
+    mysql               = string
+    postgresql          = string
+    walt_id             = string
+    tm_forum_api        = string
+    orion_ld            = string
+    ccs                 = string
+    til                 = string
+    tir                 = string
+    verifier            = string
+    contract_management = string
+    keycloak            = string
+    keyrock             = string
   })
   description = "Service names (pods)"
   default = {
-    connector    = "fiware-data-space-connector"
-    mongo        = "mongodb"
-    mysql        = "mysql"
-    postgresql   = "postgresql"
-    walt_id      = "waltid"
-    tm_forum_api = "tm-forum-api"
-    orion_ld     = "orionld"
-    ccs          = "cred-conf-service"
-    til          = "trusted-issuers-list"
-    tir          = "trusted-issuers-registry"
-    verifier     = "verifier"
-    keycloak     = "keycloak"
-    keyrock      = "keyrock"
+    connector           = "fiware-data-space-connector"
+    mongo               = "mongodb"
+    mysql               = "mysql"
+    postgresql          = "postgresql"
+    walt_id             = "waltid"
+    tm_forum_api        = "tm-forum-api"
+    orion_ld            = "orionld"
+    ccs                 = "cred-conf-service"
+    til                 = "trusted-issuers-list"
+    tir                 = "trusted-issuers-registry"
+    verifier            = "verifier"
+    contract_management = "contract-management"
+    keycloak            = "keycloak"
+    keyrock             = "keyrock"
   }
 }
 
@@ -202,6 +204,16 @@ variable "verifier" {
   default = {
     enable_service = true
     enable_ingress = true
+  }
+}
+
+variable "contract_management" {
+  type = object({
+    enable_service = bool
+  })
+  description = "Contract Management service configuration"
+  default = {
+    enable_service = true
   }
 }
 
