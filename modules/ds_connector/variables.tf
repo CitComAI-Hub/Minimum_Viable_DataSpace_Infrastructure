@@ -50,6 +50,7 @@ variable "services_names" {
     activation          = string
     keycloak            = string
     keyrock             = string
+    pdp                 = string
   })
   description = "Service names (pods)"
   default = {
@@ -68,6 +69,7 @@ variable "services_names" {
     activation          = "activation-service"
     keycloak            = "keycloak"
     keyrock             = "keyrock"
+    pdp                 = "pdp"
   }
 }
 
@@ -233,8 +235,6 @@ variable "activation" {
   }
 }
 
-
-
 variable "keycloak" {
   type = object({
     enable_service = bool
@@ -270,5 +270,15 @@ variable "keyrock" {
     admin_email    = "admin@keyrock-connector.org"
     db_name        = "ar_idm_ips"
     enable_ingress = true
+  }
+}
+
+variable "pdp" {
+  type = object({
+    enable_service = bool
+  })
+  description = "PDP service configuration"
+  default = {
+    enable_service = true
   }
 }

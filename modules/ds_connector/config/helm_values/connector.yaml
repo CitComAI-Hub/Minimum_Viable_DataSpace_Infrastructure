@@ -1,3 +1,5 @@
+#* template: https://github.com/FIWARE-Ops/data-space-connector/blob/main/examples/service-provider-ips/values-dsc.yaml
+
 # should argo-cd applications be created?
 argoApplications: false
 
@@ -388,312 +390,6 @@ orion-ld:
                 "https://schema.lab.fiware.org/ld/context"
               ]
             }
-
-################################################################################
-
-#* DONE
-credentials-config-service:
-  deploymentEnabled: ${ccs_enable}
-
-  fullnameOverride: ${ccs_name}
-
-  ##############################################################################
-  # Helm chart: Credentials Config Service                                     #
-  ##############################################################################
-  credentials-config-service:
-
-    fullnameOverride: ${ccs_name}
-
-    # Database config
-    database:
-      persistence: true
-      host: ${mysql_name}
-      name: ${ccs_db_name}
-      # Should use Secret in production environment
-      username: root
-      password: ${mysql_root_password}
-
-#* DONE
-trusted-issuers-list:
-  deploymentEnabled: ${til_enable}
-
-  fullnameOverride: ${til_name}
-
-  ##############################################################################
-  # Helm chart: Trusted Issuers List                                           #
-  ##############################################################################
-  trusted-issuers-list:
-
-    fullnameOverride: ${til_name}
-
-    # Ingress
-    ingress:
-      til:
-        enabled: true
-        annotations:
-          kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
-          # forcing everything to use ssl
-          ingress.kubernetes.io/ssl-redirect: "true"
-          # example annotations, allowing cert-manager to automatically create tls-certs
-          kubernetes.io/tls-acme: "true"
-        hosts:
-          - host: ${til_domain}
-            paths:
-              - /
-        tls:
-          - secretName: ${til_secret_tls}
-            hosts:
-              - ${til_domain}
-      tir:
-        enabled: true
-        annotations:
-          kubernetes.io/ingress.class: "nginx"
-          # forcing everything to use ssl
-          ingress.kubernetes.io/ssl-redirect: "true"
-          # example annotations, allowing cert-manager to automatically create tls-certs
-          kubernetes.io/tls-acme: "true"
-        hosts:
-          - host: ${tir_domain}
-            paths:
-              - /
-        tls:
-          - secretName: ${tir_secret_tls}
-            hosts:
-              - ${tir_domain}
-
-    # Database config
-    database:
-      persistence: true
-      host: ${mysql_name}
-      name: ${til_db_name}
-      # Should use Secret in production environment
-      username: root
-      password: ${mysql_root_password}
-
-    # Init data
-    initData: #TODO: Check if data is created in the DB
-      initEnabled: false
-      hook: post-install
-      backoffLimit: 6
-      issuers:
-        - name: mp_create
-          issuer:
-            did: "did:web:marketplace.dsba.fiware.dev:did"
-            credentials:
-              - validFor:
-                  from: "2022-07-21T17:32:28Z"
-                  to: "2040-07-21T17:32:28Z"
-                credentialsType: "IpsActivationService"
-                claims:
-                  - name: "roles"
-                    allowedValues: 
-                      - - names:
-                          - "CREATE_ISSUER"
-                          target: ${did_domain}
-              - validFor:
-                  from: "2022-07-21T17:32:28Z"
-                  to: "2040-07-21T17:32:28Z"
-                credentialsType: "VerifiableCredential"
-
-################################################################################
-
-#* DONE
-verifier:
-  deploymentEnabled: ${verifier_enable}
-
-  fullnameOverride: ${verifier_name}
-
-  ##############################################################################
-  # Helm chart: Verifier                                                       #
-  ##############################################################################
-  vcverifier:
-
-    fullnameOverride: ${verifier_name}
-
-    ingress:
-      enabled: ${verifier_ingress}
-      # ingressClassName: nginx
-      annotations:
-        kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
-        # forcing everything to use ssl
-        ingress.kubernetes.io/ssl-redirect: "true"
-        # example annotations, allowing cert-manager to automatically create tls-certs
-        kubernetes.io/tls-acme: "true"
-      hosts:
-        - host: ${verifier_domain}
-          paths:
-            - /
-      tls:
-        - hosts:
-            - ${verifier_domain}
-          secretName: ${verifier_secret_tls}
-
-    deployment:
-
-      # Logging
-      logging:
-        level: DEBUG
-        pathsToSkip:
-          - "/health"
-
-      # Server config
-      server:
-        # Place external host here when publishing verifier with public URL
-        host: https://${verifier_domain}
-
-      # Walt-id config
-      ssikit:
-        auditorUrl: http://${waltid_name}:7003
-
-      # Verifier config
-      verifier:
-        # URL endpoint of data space trusted issuers registry
-        tirAddress: https://tir.dsba.fiware.dev/v3/issuers #TODO: Change to TPR URL
-        # DID of organisation
-        did: ${did_domain}
-
-      # Config service
-      configRepo:
-        configEndpoint: http://${ccs_name}:8080/
-
-#* DONE
-contract-management:
-  deploymentEnabled: ${contract_management_enable}
-
-  fullnameOverride: ${contract_management_name}
-
-  ##############################################################################
-  # Helm chart: Contract Management                                            #
-  ##############################################################################
-  contract-management:
-
-    fullnameOverride: ${contract_management_name}
-
-    til:
-      ## Type of Verifiable Credential necessary for accessing the service
-      credentialType: VerifiableCredential
-      ## Claims with permissions granted to given Verifiable Credential
-      claims:
-        ## DID of the target service that is requiring the permissions
-        - target: ${did_domain}
-          ## Roles that are added/allowed for the given service
-          roles:
-            - STANDARD_CUSTOMER
-            - GOLD_CUSTOMER
-    services:
-      product:
-        url: http://${tm_forum_api_name}-envoy:8080
-      party:
-        url: http://${tm_forum_api_name}-envoy:8080
-      til:
-        url: http://${til_name}:8080
-
-################################################################################
-
-#* DONE
-activation-service:
-  deploymentEnabled: ${activation_enable}
-
-  fullnameOverride: ${activation_name}
-
-  ##############################################################################
-  # Helm chart: Activation Service                                             #
-  ##############################################################################
-  activation-service:
-    
-    fullnameOverride: ${activation_name}
-    
-    ## Configuration of activation service execution
-    activationService:
-      # -- Number of (gunicorn) workers that should be created
-      workers: 1
-      # -- Maximum header size in bytes
-      maxHeaderSize: 32768
-      # -- Log Level
-      logLevel: "debug"
-
-    ## Add Ingress or OpenShift Route
-    route:
-      enabled: false
-
-    ingress:
-      enabled: ${activation_ingress}
-      # ingressClassName: nginx
-      annotations:
-        kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
-        # forcing everything to use ssl
-        ingress.kubernetes.io/ssl-redirect: "true"
-        # example annotations, allowing cert-manager to automatically create tls-certs
-        kubernetes.io/tls-acme: "true"
-      hosts:
-        - host: ${activation_domain}
-          paths:
-            - /
-      tls:
-        - hosts:
-            - ${activation_domain}
-          secretName: ${activation_secret_tls}
-
-    ## CCS config
-    ccs:
-      endpoint: "http://${ccs_name}:8080/"
-      id: ${activation_id}
-      defaultOidcScope: "default"
-      oidcScopes:
-        default:
-          - type: "VerifiableCredential"
-            trustedParticipantsLists: [
-              "https://tir.dsba.fiware.dev" #TODO: Change to TPR URL
-            ]
-            trustedIssuersLists: [
-              "http://${til_name}:8080"
-            ]
-          - type: "IpsActivationService"
-            trustedParticipantsLists: [
-              "https://tir.dsba.fiware.dev" #TODO: Change to TPR URL
-            ]
-            trustedIssuersLists: [
-              "http://${til_name}:8080"
-            ]
-
-    ## AS config
-    config:
-
-      # DB
-      db:
-        # -- Use sqlite in-memory database
-        useMemory: true
-        # -- Enable tracking of modifications
-        modTracking: false
-        # -- Enable SQL logging to stderr
-        echo: true
-
-      # Configuration for additional API keys to protect certain endpoints
-      apikeys:
-        # Config for Trusted-Issuers-List flow
-        issuer:
-          # Header name
-          headerName: "AS-API-KEY"
-          # API key (auto-generated if left empty)
-          apiKey: "77ab4a67-ea3c-4348-98bd-2e9f0304bfb8"
-          # Enable for /issuer endpoint (API key will be required)
-          enabledIssuer: true
-
-      issuer:
-        clientId: ${activation_id}
-        providerId: ${did_domain}
-        tilUri: "http://${til_name}:8080"
-        verifierUri: "https://${verifier_domain}"
-        samedevicePath: "/api/v1/samedevice"
-        jwksPath: "/.well-known/jwks"
-        algorithms:
-          - "ES256"
-        roles:
-          createRole: "CREATE_ISSUER"
-          updateRole: "UPDATE_ISSUER"
-          deleteRole: "DELETE_ISSUER"
-
-################################################################################
 
 #! The initialization parameters remain to be configured.
 keycloak:
@@ -1600,6 +1296,310 @@ keycloak:
 
 ################################################################################
 
+#* DONE
+credentials-config-service:
+  deploymentEnabled: ${ccs_enable}
+
+  fullnameOverride: ${ccs_name}
+
+  ##############################################################################
+  # Helm chart: Credentials Config Service                                     #
+  ##############################################################################
+  credentials-config-service:
+
+    fullnameOverride: ${ccs_name}
+
+    # Database config
+    database:
+      persistence: true
+      host: ${mysql_name}
+      name: ${ccs_db_name}
+      # Should use Secret in production environment
+      username: root
+      password: ${mysql_root_password}
+
+#* DONE
+trusted-issuers-list:
+  deploymentEnabled: ${til_enable}
+
+  fullnameOverride: ${til_name}
+
+  ##############################################################################
+  # Helm chart: Trusted Issuers List                                           #
+  ##############################################################################
+  trusted-issuers-list:
+
+    fullnameOverride: ${til_name}
+
+    # Ingress
+    ingress:
+      til:
+        enabled: true
+        annotations:
+          kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+          # forcing everything to use ssl
+          ingress.kubernetes.io/ssl-redirect: "true"
+          # example annotations, allowing cert-manager to automatically create tls-certs
+          kubernetes.io/tls-acme: "true"
+        hosts:
+          - host: ${til_domain}
+            paths:
+              - /
+        tls:
+          - secretName: ${til_secret_tls}
+            hosts:
+              - ${til_domain}
+      tir:
+        enabled: true
+        annotations:
+          kubernetes.io/ingress.class: "nginx"
+          # forcing everything to use ssl
+          ingress.kubernetes.io/ssl-redirect: "true"
+          # example annotations, allowing cert-manager to automatically create tls-certs
+          kubernetes.io/tls-acme: "true"
+        hosts:
+          - host: ${tir_domain}
+            paths:
+              - /
+        tls:
+          - secretName: ${tir_secret_tls}
+            hosts:
+              - ${tir_domain}
+
+    # Database config
+    database:
+      persistence: true
+      host: ${mysql_name}
+      name: ${til_db_name}
+      # Should use Secret in production environment
+      username: root
+      password: ${mysql_root_password}
+
+    # Init data
+    initData: #TODO: Check if data is created in the DB
+      initEnabled: false
+      hook: post-install
+      backoffLimit: 6
+      issuers:
+        - name: mp_create
+          issuer:
+            did: "did:web:marketplace.dsba.fiware.dev:did"
+            credentials:
+              - validFor:
+                  from: "2022-07-21T17:32:28Z"
+                  to: "2040-07-21T17:32:28Z"
+                credentialsType: "IpsActivationService"
+                claims:
+                  - name: "roles"
+                    allowedValues: 
+                      - - names:
+                          - "CREATE_ISSUER"
+                          target: ${did_domain}
+              - validFor:
+                  from: "2022-07-21T17:32:28Z"
+                  to: "2040-07-21T17:32:28Z"
+                credentialsType: "VerifiableCredential"
+
+################################################################################
+
+#* DONE
+verifier:
+  deploymentEnabled: ${verifier_enable}
+
+  fullnameOverride: ${verifier_name}
+
+  ##############################################################################
+  # Helm chart: Verifier                                                       #
+  ##############################################################################
+  vcverifier:
+
+    fullnameOverride: ${verifier_name}
+
+    ingress:
+      enabled: ${verifier_ingress}
+      # ingressClassName: nginx
+      annotations:
+        kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+        # forcing everything to use ssl
+        ingress.kubernetes.io/ssl-redirect: "true"
+        # example annotations, allowing cert-manager to automatically create tls-certs
+        kubernetes.io/tls-acme: "true"
+      hosts:
+        - host: ${verifier_domain}
+          paths:
+            - /
+      tls:
+        - hosts:
+            - ${verifier_domain}
+          secretName: ${verifier_secret_tls}
+
+    deployment:
+
+      # Logging
+      logging:
+        level: DEBUG
+        pathsToSkip:
+          - "/health"
+
+      # Server config
+      server:
+        # Place external host here when publishing verifier with public URL
+        host: https://${verifier_domain}
+
+      # Walt-id config
+      ssikit:
+        auditorUrl: http://${waltid_name}:7003
+
+      # Verifier config
+      verifier:
+        # URL endpoint of data space trusted issuers registry
+        tirAddress: https://tir.dsba.fiware.dev/v3/issuers #TODO: Change to TPR URL
+        # DID of organisation
+        did: ${did_domain}
+
+      # Config service
+      configRepo:
+        configEndpoint: http://${ccs_name}:8080/
+
+#* DONE
+contract-management:
+  deploymentEnabled: ${contract_management_enable}
+
+  fullnameOverride: ${contract_management_name}
+
+  ##############################################################################
+  # Helm chart: Contract Management                                            #
+  ##############################################################################
+  contract-management:
+
+    fullnameOverride: ${contract_management_name}
+
+    til:
+      ## Type of Verifiable Credential necessary for accessing the service
+      credentialType: VerifiableCredential
+      ## Claims with permissions granted to given Verifiable Credential
+      claims:
+        ## DID of the target service that is requiring the permissions
+        - target: ${did_domain}
+          ## Roles that are added/allowed for the given service
+          roles:
+            - STANDARD_CUSTOMER
+            - GOLD_CUSTOMER
+    services:
+      product:
+        url: http://${tm_forum_api_name}-envoy:8080
+      party:
+        url: http://${tm_forum_api_name}-envoy:8080
+      til:
+        url: http://${til_name}:8080
+
+################################################################################
+
+#* DONE
+activation-service:
+  deploymentEnabled: ${activation_enable}
+
+  fullnameOverride: ${activation_name}
+
+  ##############################################################################
+  # Helm chart: Activation Service                                             #
+  ##############################################################################
+  activation-service:
+    
+    fullnameOverride: ${activation_name}
+    
+    ## Configuration of activation service execution
+    activationService:
+      # -- Number of (gunicorn) workers that should be created
+      workers: 1
+      # -- Maximum header size in bytes
+      maxHeaderSize: 32768
+      # -- Log Level
+      logLevel: "debug"
+
+    ## Add Ingress or OpenShift Route
+    route:
+      enabled: false
+
+    ingress:
+      enabled: ${activation_ingress}
+      # ingressClassName: nginx
+      annotations:
+        kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+        # forcing everything to use ssl
+        ingress.kubernetes.io/ssl-redirect: "true"
+        # example annotations, allowing cert-manager to automatically create tls-certs
+        kubernetes.io/tls-acme: "true"
+      hosts:
+        - host: ${activation_domain}
+          paths:
+            - /
+      tls:
+        - hosts:
+            - ${activation_domain}
+          secretName: ${activation_secret_tls}
+
+    ## CCS config
+    ccs:
+      endpoint: "http://${ccs_name}:8080/"
+      id: ${activation_id}
+      defaultOidcScope: "default"
+      oidcScopes:
+        default:
+          - type: "VerifiableCredential"
+            trustedParticipantsLists: [
+              "https://tir.dsba.fiware.dev" #TODO: Change to TPR URL
+            ]
+            trustedIssuersLists: [
+              "http://${til_name}:8080"
+            ]
+          - type: "IpsActivationService"
+            trustedParticipantsLists: [
+              "https://tir.dsba.fiware.dev" #TODO: Change to TPR URL
+            ]
+            trustedIssuersLists: [
+              "http://${til_name}:8080"
+            ]
+
+    ## AS config
+    config:
+
+      # DB
+      db:
+        # -- Use sqlite in-memory database
+        useMemory: true
+        # -- Enable tracking of modifications
+        modTracking: false
+        # -- Enable SQL logging to stderr
+        echo: true
+
+      # Configuration for additional API keys to protect certain endpoints
+      apikeys:
+        # Config for Trusted-Issuers-List flow
+        issuer:
+          # Header name
+          headerName: "AS-API-KEY"
+          # API key (auto-generated if left empty)
+          apiKey: "77ab4a67-ea3c-4348-98bd-2e9f0304bfb8"
+          # Enable for /issuer endpoint (API key will be required)
+          enabledIssuer: true
+
+      issuer:
+        clientId: ${activation_id}
+        providerId: ${did_domain}
+        tilUri: "http://${til_name}:8080"
+        verifierUri: "https://${verifier_domain}"
+        samedevicePath: "/api/v1/samedevice"
+        jwksPath: "/.well-known/jwks"
+        algorithms:
+          - "ES256"
+        roles:
+          createRole: "CREATE_ISSUER"
+          updateRole: "UPDATE_ISSUER"
+          deleteRole: "DELETE_ISSUER"
+
+################################################################################
+
 #! ERROR
 keyrock:
   # Enable the deployment of application: keyrock
@@ -1819,11 +1819,18 @@ keyrock:
 
 ################################################################################
 
+#* DONE
 dsba-pdp:
-  # Enable the deployment of application: dsba-pdp
-  deploymentEnabled: false
+  deploymentEnabled: ${pdp_enable}
 
+  fullnameOverride: ${pdp_name}
+
+  ##############################################################################
+  # Helm chart: PDP                                                            #
+  ##############################################################################
   dsba-pdp:
+
+    fullnameOverride: ${pdp_name}
 
     # DB
     db:
@@ -1850,7 +1857,7 @@ dsba-pdp:
           id: ${did_domain}
           delegationPath: "/ar/delegation"
           tokenPath: "/oauth2/token"
-          url: "https://ar-ips.dsba.aws.fiware.io"
+          url: "https://${keyrock_domain}"
 
         trustAnchor:
           id: "EU.EORI.FIWARESATELLITE"
@@ -1872,6 +1879,9 @@ dsba-pdp:
       - name: ISHARE_KEY_PATH
         value: /iShare/tls.key
 
+################################################################################
+
+#? DONE
 kong:
   # Enable the deployment of application: kong
   deploymentEnabled: false
