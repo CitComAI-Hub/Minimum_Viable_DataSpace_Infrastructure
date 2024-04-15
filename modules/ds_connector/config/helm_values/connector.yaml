@@ -590,6 +590,111 @@ contract-management:
 
 ################################################################################
 
+#* DONE
+activation-service:
+  deploymentEnabled: ${activation_enable}
+
+  fullnameOverride: ${activation_name}
+
+  ##############################################################################
+  # Helm chart: Activation Service                                             #
+  ##############################################################################
+  activation-service:
+    
+    fullnameOverride: ${activation_name}
+    
+    ## Configuration of activation service execution
+    activationService:
+      # -- Number of (gunicorn) workers that should be created
+      workers: 1
+      # -- Maximum header size in bytes
+      maxHeaderSize: 32768
+      # -- Log Level
+      logLevel: "debug"
+
+    ## Add Ingress or OpenShift Route
+    route:
+      enabled: false
+
+    ingress:
+      enabled: ${activation_ingress}
+      # ingressClassName: nginx
+      annotations:
+        kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+        # forcing everything to use ssl
+        ingress.kubernetes.io/ssl-redirect: "true"
+        # example annotations, allowing cert-manager to automatically create tls-certs
+        kubernetes.io/tls-acme: "true"
+      hosts:
+        - host: ${activation_domain}
+          paths:
+            - /
+      tls:
+        - hosts:
+            - ${activation_domain}
+          secretName: ${activation_secret_tls}
+
+    ## CCS config
+    ccs:
+      endpoint: "http://${ccs_name}:8080/"
+      id: ${activation_id}
+      defaultOidcScope: "default"
+      oidcScopes:
+        default:
+          - type: "VerifiableCredential"
+            trustedParticipantsLists: [
+              "https://tir.dsba.fiware.dev" #TODO: Change to TPR URL
+            ]
+            trustedIssuersLists: [
+              "http://${til_name}:8080"
+            ]
+          - type: "IpsActivationService"
+            trustedParticipantsLists: [
+              "https://tir.dsba.fiware.dev" #TODO: Change to TPR URL
+            ]
+            trustedIssuersLists: [
+              "http://${til_name}:8080"
+            ]
+
+    ## AS config
+    config:
+
+      # DB
+      db:
+        # -- Use sqlite in-memory database
+        useMemory: true
+        # -- Enable tracking of modifications
+        modTracking: false
+        # -- Enable SQL logging to stderr
+        echo: true
+
+      # Configuration for additional API keys to protect certain endpoints
+      apikeys:
+        # Config for Trusted-Issuers-List flow
+        issuer:
+          # Header name
+          headerName: "AS-API-KEY"
+          # API key (auto-generated if left empty)
+          apiKey: "77ab4a67-ea3c-4348-98bd-2e9f0304bfb8"
+          # Enable for /issuer endpoint (API key will be required)
+          enabledIssuer: true
+
+      issuer:
+        clientId: ${activation_id}
+        providerId: ${did_domain}
+        tilUri: "http://${til_name}:8080"
+        verifierUri: "https://${verifier_domain}"
+        samedevicePath: "/api/v1/samedevice"
+        jwksPath: "/.well-known/jwks"
+        algorithms:
+          - "ES256"
+        roles:
+          createRole: "CREATE_ISSUER"
+          updateRole: "UPDATE_ISSUER"
+          deleteRole: "DELETE_ISSUER"
+
+################################################################################
+
 #! The initialization parameters remain to be configured.
 keycloak:
   deploymentEnabled: ${keycloak_enable}
@@ -1714,103 +1819,6 @@ keyrock:
 
 ################################################################################
 
-
-activation-service:
-
-  # Enable the deployment of application: activation-service
-  deploymentEnabled: ${activation_enable}
-
-  activation-service:
-    
-    fullnameOverride: ${activation_name}
-    
-    ## Configuration of activation service execution
-    activationService:
-      # -- Number of (gunicorn) workers that should be created
-      workers: 1
-      # -- Maximum header size in bytes
-      maxHeaderSize: 32768
-      # -- Log Level
-      logLevel: "debug"
-
-    ## Add Ingress or OpenShift Route
-    route:
-      enabled: false
-
-    ingress:
-      enabled: ${activation_enable_ingress}
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-fiware-eks
-        kubernetes.io/ingress.class: nginx
-      hosts:
-        - host: ips-as.dsba.aws.fiware.io
-          paths:
-            - /
-      tls:
-        - hosts:
-            - ips-as.dsba.aws.fiware.io
-          secretName: as-ips-dsba-tls
-
-    ## CCS config
-    ccs:
-      endpoint: "http://ips-dsc-credentials-config-service:8080/"
-      id: "ips-activation-service"
-      defaultOidcScope: "default"
-      oidcScopes:
-        default:
-          - type: "VerifiableCredential"
-            trustedParticipantsLists: [
-              "https://tir.dsba.fiware.dev"
-            ]
-            trustedIssuersLists: [
-              "http://ips-dsc-trusted-issuers-list:8080"
-            ]
-          - type: "IpsActivationService"
-            trustedParticipantsLists: [
-              "https://tir.dsba.fiware.dev"
-            ]
-            trustedIssuersLists: [
-              "http://ips-dsc-trusted-issuers-list:8080"
-            ]
-
-    ## AS config
-    config:
-
-      # DB
-      db:
-        # -- Use sqlite in-memory database
-        useMemory: true
-        # -- Enable tracking of modifications
-        modTracking: false
-        # -- Enable SQL logging to stderr
-        echo: true
-
-      # Configuration for additional API keys to protect certain endpoints
-      apikeys:
-        # Config for Trusted-Issuers-List flow
-        issuer:
-          # Header name
-          headerName: "AS-API-KEY"
-          # API key (auto-generated if left empty)
-          apiKey: "77ab4a67-ea3c-4348-98bd-2e9f0304bfb8"
-          # Enable for /issuer endpoint (API key will be required)
-          enabledIssuer: true
-
-      issuer:
-        clientId: "ips-activation-service"
-        providerId: ${did_domain}
-        tilUri: "http://ips-dsc-trusted-issuers-list:8080"
-        verifierUri: "https://ips-verifier.dsba.aws.fiware.io"
-        samedevicePath: "/api/v1/samedevice"
-        jwksPath: "/.well-known/jwks"
-        algorithms:
-          - "ES256"
-        roles:
-          createRole: "CREATE_ISSUER"
-          updateRole: "UPDATE_ISSUER"
-          deleteRole: "DELETE_ISSUER"
-
-
 dsba-pdp:
   # Enable the deployment of application: dsba-pdp
   deploymentEnabled: false
@@ -1852,7 +1860,7 @@ dsba-pdp:
 
       # Verifier
       trustedVerifiers:
-        - https://ips-verifier.dsba.aws.fiware.io/.well-known/jwks
+        - https://${verifier_domain}/.well-known/jwks
 
       # Provider DID
       providerId: ${did_domain}

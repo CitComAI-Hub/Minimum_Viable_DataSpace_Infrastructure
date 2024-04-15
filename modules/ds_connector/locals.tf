@@ -29,6 +29,12 @@ locals {
       spec_secret_name = "${var.services_names.verifier}-tls-secret"
       dns_name         = "${local.dns_domains.verifier}.${var.service_domain}"
     },
+    { # activation service
+      id               = local.dns_domains.activation
+      metadata_name    = "${var.services_names.activation}-certificate"
+      spec_secret_name = "${var.services_names.activation}-tls-secret"
+      dns_name         = "${local.dns_domains.activation}.${var.service_domain}"
+    },
     { # keycloak
       id               = local.dns_domains.keycloak
       metadata_name    = "${var.services_names.keycloak}-certificate"

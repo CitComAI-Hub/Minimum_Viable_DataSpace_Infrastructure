@@ -51,10 +51,6 @@ resource "helm_release" "connector" {
       til_secret_tls = local.secrets_tls[local.dns_domains.til],
       tir_domain     = local.dns_dir[local.dns_domains.tir],
       tir_secret_tls = local.secrets_tls[local.dns_domains.tir],
-      # Activation Service
-      activation_enable         = var.activation.enable_service,
-      activation_name           = var.activation.name_service,
-      activation_enable_ingress = var.activation.enable_ingress
       # Verifier
       verifier_enable     = var.verifier.enable_service,
       verifier_name       = var.services_names.verifier,
@@ -64,6 +60,13 @@ resource "helm_release" "connector" {
       # Contract Management
       contract_management_enable = var.contract_management.enable_service,
       contract_management_name   = var.services_names.contract_management,
+      # Activation Service
+      activation_enable     = var.activation.enable_service,
+      activation_name       = var.services_names.activation,
+      activation_ingress    = var.activation.enable_ingress,
+      activation_id         = var.activation.client_id,
+      activation_domain     = local.dns_dir[local.dns_domains.activation],
+      activation_secret_tls = local.secrets_tls[local.dns_domains.activation],
       # Keycloack
       keycloak_enable         = var.keycloak.enable_service,
       keycloak_name           = var.services_names.keycloak,

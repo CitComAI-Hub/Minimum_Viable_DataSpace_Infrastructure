@@ -47,6 +47,7 @@ variable "services_names" {
     tir                 = string
     verifier            = string
     contract_management = string
+    activation          = string
     keycloak            = string
     keyrock             = string
   })
@@ -64,6 +65,7 @@ variable "services_names" {
     tir                 = "trusted-issuers-registry"
     verifier            = "verifier"
     contract_management = "contract-management"
+    activation          = "activation-service"
     keycloak            = "keycloak"
     keyrock             = "keyrock"
   }
@@ -217,6 +219,22 @@ variable "contract_management" {
   }
 }
 
+variable "activation" {
+  type = object({
+    enable_service = bool
+    enable_ingress = bool
+    client_id      = string
+  })
+  description = "Activaion service configuration"
+  default = {
+    enable_service = true
+    enable_ingress = true
+    client_id      = "ips-activation-service"
+  }
+}
+
+
+
 variable "keycloak" {
   type = object({
     enable_service = bool
@@ -251,22 +269,6 @@ variable "keyrock" {
     admin_password = "admin_password"
     admin_email    = "admin@keyrock-connector.org"
     db_name        = "ar_idm_ips"
-    enable_ingress = true
-  }
-}
-
-
-
-variable "activation" {
-  type = object({
-    enable_service = bool
-    name_service   = string
-    enable_ingress = bool
-  })
-  description = "Activaion service configuration"
-  default = {
-    enable_service = false
-    name_service   = "activation-service"
     enable_ingress = true
   }
 }
