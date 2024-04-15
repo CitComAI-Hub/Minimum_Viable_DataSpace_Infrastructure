@@ -240,6 +240,15 @@ vcwaltid:
           "type": ["EmployeeCredential"]
         }
 
+#* DONE
+tm-forum-api:
+  deploymentEnabled: ${tm_forum_api_enable}
+
+  fullnameOverride: ${tm_forum_api_name}
+
+  tm-forum-api:
+    fullnameOverride: ${tm_forum_api_name}
+
 ################################################################################
 
 #* DONE
@@ -543,6 +552,31 @@ verifier:
       # Config service
       configRepo:
         configEndpoint: http://${ccs_name}:8080/
+
+#? not setting up the deployment
+contract-management:
+  # Enable the deployment of application: contract-management
+  deploymentEnabled: false
+
+  contract-management:
+    til:
+      ## Type of Verifiable Credential necessary for accessing the service
+      credentialType: VerifiableCredential
+      ## Claims with permissions granted to given Verifiable Credential
+      claims:
+        ## DID of the target service that is requiring the permissions
+        - target: ${did_domain}
+          ## Roles that are added/allowed for the given service
+          roles:
+            - STANDARD_CUSTOMER
+            - GOLD_CUSTOMER
+    services:
+      product:
+        url: http://ips-dsc-tm-forum-api-envoy:8080
+      party:
+        url: http://ips-dsc-tm-forum-api-envoy:8080
+      til:
+        url: http://ips-dsc-trusted-issuers-list:8080
 
 ################################################################################
 
@@ -1884,30 +1918,3 @@ kong:
                     headers:
                       - Authorization
                       - authorization
-
-contract-management:
-  # Enable the deployment of application: contract-management
-  deploymentEnabled: false
-  contract-management:
-    til:
-      ## Type of Verifiable Credential necessary for accessing the service
-      credentialType: VerifiableCredential
-      ## Claims with permissions granted to given Verifiable Credential
-      claims:
-        ## DID of the target service that is requiring the permissions
-        - target: ${did_domain}
-          ## Roles that are added/allowed for the given service
-          roles:
-            - STANDARD_CUSTOMER
-            - GOLD_CUSTOMER
-    services:
-      product:
-        url: http://ips-dsc-tm-forum-api-envoy:8080
-      party:
-        url: http://ips-dsc-tm-forum-api-envoy:8080
-      til:
-        url: http://ips-dsc-trusted-issuers-list:8080
-
-tm-forum-api:
-  # Enable the deployment of application: contract-management
-  deploymentEnabled: false

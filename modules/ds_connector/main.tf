@@ -33,6 +33,9 @@ resource "helm_release" "connector" {
       waltid_ingress    = var.walt_id.enable_ingress,
       waltid_domain     = local.dns_dir[local.dns_domains.walt_id],
       waltid_secret_tls = local.secrets_tls[local.dns_domains.walt_id],
+      # TM Forum API
+      tm_forum_api_enable = var.tm_forum_api.enable_service,
+      tm_forum_api_name   = var.services_names.tm_forum_api,
       # Orion-LD
       orionld_enable = var.orion_ld.enable_service,
       orionld_name   = var.services_names.orion_ld,
