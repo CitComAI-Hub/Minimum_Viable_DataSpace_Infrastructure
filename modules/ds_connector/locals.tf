@@ -29,18 +29,18 @@ locals {
       spec_secret_name = "${var.services_names.verifier}-tls-secret"
       dns_name         = "${local.dns_domains.verifier}.${var.service_domain}"
     },
+    { # keycloak
+      id               = local.dns_domains.keycloak
+      metadata_name    = "${var.services_names.keycloak}-certificate"
+      spec_secret_name = "${var.services_names.keycloak}-tls-secret"
+      dns_name         = "${local.dns_domains.keycloak}.${var.service_domain}"
+    },
     { # keyrock
       id               = local.dns_domains.keyrock
       metadata_name    = "${var.services_names.keyrock}-certificate"
       spec_secret_name = "${var.services_names.keyrock}-tls-secret"
       dns_name         = "${local.dns_domains.keyrock}.${var.service_domain}"
     }
-    # { # portal
-    #   id               = local.dns_domains.portal
-    #   metadata_name    = "${var.services_names.portal}-certificate"
-    #   spec_secret_name = "${var.services_names.portal}-tls-secret"
-    #   dns_name         = "${local.dns_domains.portal}.${var.service_domain}"
-    # },
     # { # kong
     #   id               = local.dns_domains.kong
     #   metadata_name    = "${var.services_names.kong}-certificate"

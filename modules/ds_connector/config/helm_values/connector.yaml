@@ -500,6 +500,7 @@ verifier:
 
     ingress:
       enabled: ${verifier_ingress}
+      # ingressClassName: nginx
       annotations:
         kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
         # forcing everything to use ssl
@@ -545,443 +546,11 @@ verifier:
 
 ################################################################################
 
-#! ERROR
-keyrock:
-  # Enable the deployment of application: keyrock
-  deploymentEnabled: ${keyrock_enable}
-
-  ##############################################################################
-  # Helm chart: Keyrock                                                        #
-  ##############################################################################
-  keyrock:
-    fullnameOverride: ${keyrock_name}
-
-    # External hostname of Keyrock
-    host: https://${keyrock_domain}
-
-    # Ingress
-    ingress:
-      enabled: ${keyrock_ingress}
-      annotations:
-        kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
-        # forcing everything to use ssl
-        ingress.kubernetes.io/ssl-redirect: "true"
-        # example annotations, allowing cert-manager to automatically create tls-certs
-        kubernetes.io/tls-acme: "true"
-      hosts:
-        - host: ${keyrock_domain}
-          paths:
-            - /
-      tls:
-        - hosts:
-            - ${keyrock_domain}
-          secretName: ${keyrock_secret_tls}
-    
-    # MySQL DB config
-    db:
-      user: root
-      password: ${mysql_root_password}
-      host: ${mysql_name}
-
-    # Admin user to be created
-    admin:
-      user: ${keyrock_admin_user}
-      password: ${keyrock_admin_password}
-      email: ${keyrock_admin_email}
-
-    ## Theme configuration for Keyrock
-    theme:
-      ## -- Enable theme
-      enabled: false
-
-    ## Configuration of Authorisation Registry (AR)
-    authorisationRegistry:
-      # -- Enable usage of authorisation registry
-      enabled: true
-      # -- Identifier (EORI) of AR
-      identifier: ${did_domain}
-      # -- URL of AR
-      url: "internal"
-
-    ## Configuration of iSHARE Satellite
-    satellite:
-      # -- Enable usage of satellite
-      enabled: true
-      # -- Identifier (EORI) of satellite
-      identifier: "EU.EORI.FIWARESATELLITE"
-      # -- URL of satellite
-      url: "https://tir.dsba.fiware.dev" #TODO: Change to TPR URL
-      # -- Token endpoint of satellite
-      tokenEndpoint: "https://tir.dsba.fiware.dev/token"
-      # -- Parties endpoint of satellite
-      partiesEndpoint: "https://tir.dsba.fiware.dev/parties"
-
-    ## -- Configuration of local key and certificate for validation and generation of tokens
-    token:
-      # -- Enable storage of local key and certificate
-      enabled: false
-
-    # ENV variables for Keyrock
-    additionalEnvVars:
-      - name: IDM_TITLE
-        value: "IPS AR"
-      - name: IDM_DEBUG
-        value: "true"
-      - name: DEBUG
-        value: "*"
-      - name: IDM_DB_NAME
-        value: ${keyrock_db_name}
-      - name: IDM_DB_SEED
-        value: "true"
-      - name: IDM_SERVER_MAX_HEADER_SIZE
-        value: "32768"
-      - name: IDM_PR_CLIENT_ID
-        value: ${did_domain}
-      - name: IDM_PR_CLIENT_KEY
-        valueFrom:
-            secretKeyRef:
-              name: ${waltid_secret_tls}
-              key: tls.key
-      - name: IDM_PR_CLIENT_CRT
-        valueFrom:
-            secretKeyRef:
-              name: ${waltid_secret_tls}
-              key: tls.crt
-
-    # Init data
-    initData:
-      initEnabled: true
-      hook: post-install
-      backoffLimit: 6
-      command: 
-        - /bin/sh
-        - /scripts/create.sh
-      volumeMount:
-        name: scripts
-        mountPath: /scripts
-      # env:
-      #   - name: DB_PASSWORD
-      #     value: "dbPassword"
-      scriptData:
-        create.sh: |-
-          mysql -h ${mysql_name} -u root -p${mysql_root_password} ${keyrock_db_name} <<EOF
-
-          -- Static objects
-          SET @rules := JSON_ARRAY(
-            JSON_OBJECT(
-              "effect", "Permit"
-            )
-          );
-
-          SET @subjectGold := "GOLD_CUSTOMER";
-          SET @subjectStandard := "STANDARD_CUSTOMER";
-
-          -- Policies Gold
-          SET @policiesGold := JSON_ARRAY(
-            JSON_OBJECT(
-              "rules", CAST(@rules as JSON),
-              "target", JSON_OBJECT(
-                "actions", JSON_ARRAY("PATCH"),
-                "resource", JSON_OBJECT(
-                  "type", "DELIVERYORDER",
-                  "attributes", JSON_ARRAY("pta","pda"),
-                  "identifiers", JSON_ARRAY("*")
-                )
-              )
-            ),
-            JSON_OBJECT(
-              "rules", CAST(@rules as JSON),
-              "target", JSON_OBJECT(
-                "actions", JSON_ARRAY("GET"),
-                "resource", JSON_OBJECT(
-                  "type", "DELIVERYORDER",
-                  "attributes", JSON_ARRAY("*"),
-                  "identifiers", JSON_ARRAY("*")
-                )
-              )
-            )
-          );
-
-          -- Policies Standard
-          SET @policiesStandard := JSON_ARRAY(
-            JSON_OBJECT(
-              "rules", CAST(@rules as JSON),
-              "target", JSON_OBJECT(
-                "actions", JSON_ARRAY("GET"),
-                "resource", JSON_OBJECT(
-                  "type", "DELIVERYORDER",
-                  "attributes", JSON_ARRAY("*"),
-                  "identifiers", JSON_ARRAY("*")
-                )
-              )
-            )
-          );
-
-          -- Insert Delegation Evidence Gold VC
-          SET @delegationGoldVC := JSON_OBJECT(
-            "target", JSON_OBJECT(
-              "accessSubject", @subjectGold
-            ),
-            "notBefore", 1616583866,
-            "notOnOrAfter", 1735817171,
-            "policyIssuer", ${did_domain},
-            "policySets", JSON_ARRAY(
-              JSON_OBJECT(
-                "target", JSON_OBJECT(
-                  "environment", JSON_OBJECT(
-                    "licenses", JSON_ARRAY("ISHARE.0001")
-                  )
-                ),
-                "policies", CAST(@policiesGold as JSON)
-              )
-            )
-          );
-          INSERT IGNORE INTO delegation_evidence (policy_issuer, access_subject,policy) VALUES (${did_domain}, @subjectGold, @delegationGoldVC);
-
-          -- Insert Delegation Evidence Standard VC
-          SET @delegationStandardVC := JSON_OBJECT(
-            "target", JSON_OBJECT(
-              "accessSubject", @subjectStandard
-            ),
-            "notBefore", 1616583866,
-            "notOnOrAfter", 1735817171,
-            "policyIssuer", ${did_domain},
-            "policySets", JSON_ARRAY(
-              JSON_OBJECT(
-                "target", JSON_OBJECT(
-                  "environment", JSON_OBJECT(
-                    "licenses", JSON_ARRAY("ISHARE.0001")
-                  )
-                ),
-                "policies", CAST(@policiesStandard as JSON)
-              )
-            )
-          );
-          INSERT IGNORE INTO delegation_evidence (policy_issuer, access_subject,policy) VALUES (${did_domain}, @subjectStandard, @delegationStandardVC);
-
-          COMMIT;
-          EOF
-
-################################################################################
-
-
-activation-service:
-
-  # Enable the deployment of application: activation-service
-  deploymentEnabled: ${activation_enable}
-
-  activation-service:
-    
-    fullnameOverride: ${activation_name}
-    
-    ## Configuration of activation service execution
-    activationService:
-      # -- Number of (gunicorn) workers that should be created
-      workers: 1
-      # -- Maximum header size in bytes
-      maxHeaderSize: 32768
-      # -- Log Level
-      logLevel: "debug"
-
-    ## Add Ingress or OpenShift Route
-    route:
-      enabled: false
-
-    ingress:
-      enabled: ${activation_enable_ingress}
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-fiware-eks
-        kubernetes.io/ingress.class: nginx
-      hosts:
-        - host: ips-as.dsba.aws.fiware.io
-          paths:
-            - /
-      tls:
-        - hosts:
-            - ips-as.dsba.aws.fiware.io
-          secretName: as-ips-dsba-tls
-
-    ## CCS config
-    ccs:
-      endpoint: "http://ips-dsc-credentials-config-service:8080/"
-      id: "ips-activation-service"
-      defaultOidcScope: "default"
-      oidcScopes:
-        default:
-          - type: "VerifiableCredential"
-            trustedParticipantsLists: [
-              "https://tir.dsba.fiware.dev"
-            ]
-            trustedIssuersLists: [
-              "http://ips-dsc-trusted-issuers-list:8080"
-            ]
-          - type: "IpsActivationService"
-            trustedParticipantsLists: [
-              "https://tir.dsba.fiware.dev"
-            ]
-            trustedIssuersLists: [
-              "http://ips-dsc-trusted-issuers-list:8080"
-            ]
-
-    ## AS config
-    config:
-
-      # DB
-      db:
-        # -- Use sqlite in-memory database
-        useMemory: true
-        # -- Enable tracking of modifications
-        modTracking: false
-        # -- Enable SQL logging to stderr
-        echo: true
-
-      # Configuration for additional API keys to protect certain endpoints
-      apikeys:
-        # Config for Trusted-Issuers-List flow
-        issuer:
-          # Header name
-          headerName: "AS-API-KEY"
-          # API key (auto-generated if left empty)
-          apiKey: "77ab4a67-ea3c-4348-98bd-2e9f0304bfb8"
-          # Enable for /issuer endpoint (API key will be required)
-          enabledIssuer: true
-
-      issuer:
-        clientId: "ips-activation-service"
-        providerId: ${did_domain}
-        tilUri: "http://ips-dsc-trusted-issuers-list:8080"
-        verifierUri: "https://ips-verifier.dsba.aws.fiware.io"
-        samedevicePath: "/api/v1/samedevice"
-        jwksPath: "/.well-known/jwks"
-        algorithms:
-          - "ES256"
-        roles:
-          createRole: "CREATE_ISSUER"
-          updateRole: "UPDATE_ISSUER"
-          deleteRole: "DELETE_ISSUER"
-
-
-dsba-pdp:
-  # Enable the deployment of application: dsba-pdp
-  deploymentEnabled: false
-
-  dsba-pdp:
-
-    # DB
-    db:
-      enabled: false
-      migrate:
-        enabled: false
-
-    deployment:
-      # Log level
-      logLevel: DEBUG
-
-      # iSHARE config
-      ishare:
-        existingSecret: ips-dsc-vcwaltid-tls-sec
-
-        clientId: ${did_domain}
-
-        # Initial list of fingerprints for trusted CAs. This will be overwritten
-        # after the first update from the trust anchor.
-        trustedFingerprints:
-          - D2F62092F982CF783D4632BD86FA86C3FBFDB2D8C8A58BC6809163FCF5CD030B
-
-        ar:
-          id: ${did_domain}
-          delegationPath: "/ar/delegation"
-          tokenPath: "/oauth2/token"
-          url: "https://ar-ips.dsba.aws.fiware.io"
-
-        trustAnchor:
-          id: "EU.EORI.FIWARESATELLITE"
-          tokenPath: "/token"
-          trustedListPath: "/trusted_list"
-          url: "https://tir.dsba.fiware.dev"
-
-      # Verifier
-      trustedVerifiers:
-        - https://ips-verifier.dsba.aws.fiware.io/.well-known/jwks
-
-      # Provider DID
-      providerId: ${did_domain}
-
-    # ENVs
-    additionalEnvVars:
-      - name: ISHARE_CERTIFICATE_PATH
-        value: /iShare/tls.crt
-      - name: ISHARE_KEY_PATH
-        value: /iShare/tls.key
-
-kong:
-  # Enable the deployment of application: kong
-  deploymentEnabled: false
-
-  kong:
-    replicaCount: 1
-
-    proxy:
-      enabled: true
-      tls:
-        enabled: false
-
-      # Provide Ingress or Route config here
-      ingress:
-        enabled: true
-        annotations:
-          kubernetes.io/ingress.class: nginx
-          cert-manager.io/cluster-issuer: letsencrypt-fiware-eks
-        ingressClassName: nginx
-        tls: kong-ips-dsba-tls
-        hostname: ips-kong.dsba.aws.fiware.io
-      route:
-        enabled: false
-
-    # Provide the kong.yml configuration (either as existing CM, secret or directly in the values.yaml)
-    dblessConfig:
-      configMap: ""
-      secret: ""
-      config: |
-        _format_version: "2.1"
-        _transform: true
-
-        consumers:
-        - username: token-consumer
-          keyauth_credentials:
-          - tags:
-            - token-key
-            - tir-key
-
-        services:
-          - host: "ips-dsc-orion"
-            name: "ips"
-            port: 1026
-            protocol: http
-
-            routes:
-              - name: ips
-                paths:
-                  - /ips
-                strip_path: true
-
-            plugins:
-              - name: pep-plugin
-                config:
-                  pathprefix: "/ips"
-                  authorizationendpointtype: ExtAuthz
-                  authorizationendpointaddress: http://ips-dsc-dsba-pdp:8080/authz
-
-              - name: request-transformer
-                config:
-                  remove:
-                    headers:
-                      - Authorization
-                      - authorization
-
+#! The initialization parameters remain to be configured.
 keycloak:
-  # Enable the deployment of application: keycloak
-  deploymentEnabled: false
+  deploymentEnabled: ${keycloak_enable}
+
+  fullnameOverride: ${keycloak_name}
 
   # Config to create DID
   didConfig:
@@ -990,13 +559,33 @@ keycloak:
     loadDidWebEnabled: true
 
     # Domain for DID web
-    domain: "ips.dsba.aws.fiware.io"
+    domain: ${waltid_domain}
 
     # x5u for DID web
-    x5u: "https://ips.dsba.aws.fiware.io/certs/tls.crt"
+    x5u: "https://${waltid_domain}/certs/tls.crt"
 
-    
+  ##############################################################################
+  # Helm chart: Keycloak                                                       #
+  ##############################################################################
   keycloak:
+
+    fullnameOverride: ${keycloak_name}
+
+    # Ingress
+    ingress:
+      enabled: ${keycloak_ingress}
+      ingressClassName: nginx
+      annotations:
+        kubernetes.io/ingress.class: nginx
+        # forcing everything to use ssl
+        ingress.kubernetes.io/ssl-redirect: "true"
+        # example annotations, allowing cert-manager to automatically create tls-certs
+        kubernetes.io/tls-acme: "true"
+      hostname: ${keycloak_domain}
+      tls:
+        - hosts:
+            - ${keycloak_domain}
+          secretName: ${keycloak_secret_tls}
 
     # Logging
     logging:
@@ -1007,18 +596,17 @@ keycloak:
 
     # Admin account
     auth:
-      adminUser: fiwareAdmin
-      adminPassword: fiwareAdmin
-
-    # Ingress
-    ingress:
-      enabled: true
-      ingressClassName: nginx
-      hostname: ips-kc.dsba.aws.fiware.io
-      tls: true
-      annotations:
-        kubernetes.io/ingress.class: nginx
-        cert-manager.io/cluster-issuer: letsencrypt-fiware-eks
+      adminUser: ${keycloak_admin_user}
+      adminPassword: ${keycloak_admin_password}
+    
+    # Config for external DB
+    postgresql: # internal database
+      enabled: false
+    externalDatabase:
+      host: ${postgresql_name}
+      user: ${postgresql_user_name}
+      password: ${postgresql_user_password}
+      database: ${keycloak_db_name}
 
     # ENVs
     extraEnvVars:
@@ -1029,61 +617,51 @@ keycloak:
     - name: VCISSUER_ISSUER_DID
       value: ${did_domain}
     - name: VCISSUER_WALTID_ADDRESS
-      value: "http://ips-dsc-vcwaltid"
+      value: "http://${waltid_name}"
 
     # Volumes
-    extraVolumes:
-      - name: data
-        emptyDir: {}
-      - name: profiles
-        configMap:
-          name: ips-dsc-keycloak-profile
-      - name: providers
-        emptyDir: {}
-      - name: did-config
-        configMap:
-          name: ips-dsc-keycloak-did-config
-      - name: did-secret
-        secret:
-          secretName: ips-dsc-vcwaltid-tls-sec
+    # extraVolumes:
+    #   - name: data
+    #     emptyDir: {}
+    #   - name: providers
+    #     emptyDir: {}
+    #   - name: did-secret
+    #     secret:
+    #       secretName: ${waltid_secret_tls}
+    #   - name: profiles
+    #     configMap:
+    #       name: ips-dsc-keycloak-profile #TODO: Check 
+    #   - name: did-config
+    #     configMap:
+    #       name: ips-dsc-keycloak-did-config #TODO: Check 
 
-    # Init containers for VC issuer and loading of DID
-    initContainers:
-      - name: add-vc-issuer
-        image: quay.io/fiware/keycloak-vc-issuer:0.5.0
-        imagePullPolicy: Always
-        volumeMounts:
-          - name: providers
-            mountPath: /target
-      - name: load-did
-        image: quay.io/opencloudio/curl:4.2.0-build.8
-        imagePullPolicy: Always
-        command:
-          - /bin/sh
-          - /opt/did/script/import.sh
-        env:
-          - name: WALTID_CORE_ADDRESS
-            value: "ips-dsc-vcwaltid:7000"
-        volumeMounts:
-          - name: did-config
-            mountPath: /opt/did/script
-          - name: did-secret
-            mountPath: /opt/did/secret
-
-    # Disable internal DB
-    postgresql:
-      enabled: false
-
-    # Config for external DB
-    externalDatabase:
-      host: postgresql-ips
-      user: postgres
-      password: "dbRootPassword"
-      database: keycloak_ips
+    # # Init containers for VC issuer and loading of DID
+    # initContainers:
+    #   - name: add-vc-issuer
+    #     image: quay.io/fiware/keycloak-vc-issuer:0.5.0
+    #     imagePullPolicy: Always
+    #     volumeMounts:
+    #       - name: providers
+    #         mountPath: /target
+    #   - name: load-did
+    #     image: quay.io/opencloudio/curl:4.2.0-build.8
+    #     imagePullPolicy: Always
+    #     command:
+    #       - /bin/sh
+    #       - /opt/did/script/import.sh
+    #     env:
+    #       - name: WALTID_CORE_ADDRESS
+    #         value: "${waltid_name}:7000"
+    #     volumeMounts:
+    #       - name: did-config
+    #         mountPath: /opt/did/script
+    #       - name: did-secret
+    #         mountPath: /opt/did/secret
 
     # CLI config
+    #! hard-coded parameter for fiware example
     keycloakConfigCli:
-      enabled: true
+      enabled: false # TODO: Check if this is needed. True by default.
       
       # Realm config - either provide configuration or existing ConfigMap
       configuration:
@@ -1870,6 +1448,442 @@ keycloak:
               "offline_access"
             ]
           }
+
+################################################################################
+
+#! ERROR
+keyrock:
+  # Enable the deployment of application: keyrock
+  deploymentEnabled: ${keyrock_enable}
+
+  ##############################################################################
+  # Helm chart: Keyrock                                                        #
+  ##############################################################################
+  keyrock:
+    fullnameOverride: ${keyrock_name}
+
+    # External hostname of Keyrock
+    host: https://${keyrock_domain}
+
+    # Ingress
+    ingress:
+      enabled: ${keyrock_ingress}
+      annotations:
+        kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+        # forcing everything to use ssl
+        ingress.kubernetes.io/ssl-redirect: "true"
+        # example annotations, allowing cert-manager to automatically create tls-certs
+        kubernetes.io/tls-acme: "true"
+      hosts:
+        - host: ${keyrock_domain}
+          paths:
+            - /
+      tls:
+        - hosts:
+            - ${keyrock_domain}
+          secretName: ${keyrock_secret_tls}
+    
+    # MySQL DB config
+    db:
+      user: root
+      password: ${mysql_root_password}
+      host: ${mysql_name}
+
+    # Admin user to be created
+    admin:
+      user: ${keyrock_admin_user}
+      password: ${keyrock_admin_password}
+      email: ${keyrock_admin_email}
+
+    ## Theme configuration for Keyrock
+    theme:
+      ## -- Enable theme
+      enabled: false
+
+    ## Configuration of Authorisation Registry (AR)
+    authorisationRegistry:
+      # -- Enable usage of authorisation registry
+      enabled: true
+      # -- Identifier (EORI) of AR
+      identifier: ${did_domain}
+      # -- URL of AR
+      url: "internal"
+
+    ## Configuration of iSHARE Satellite
+    satellite:
+      # -- Enable usage of satellite
+      enabled: true
+      # -- Identifier (EORI) of satellite
+      identifier: "EU.EORI.FIWARESATELLITE"
+      # -- URL of satellite
+      url: "https://tir.dsba.fiware.dev" #TODO: Change to TPR URL
+      # -- Token endpoint of satellite
+      tokenEndpoint: "https://tir.dsba.fiware.dev/token"
+      # -- Parties endpoint of satellite
+      partiesEndpoint: "https://tir.dsba.fiware.dev/parties"
+
+    ## -- Configuration of local key and certificate for validation and generation of tokens
+    token:
+      # -- Enable storage of local key and certificate
+      enabled: false
+
+    # ENV variables for Keyrock
+    additionalEnvVars:
+      - name: IDM_TITLE
+        value: "IPS AR"
+      - name: IDM_DEBUG
+        value: "true"
+      - name: DEBUG
+        value: "*"
+      - name: IDM_DB_NAME
+        value: ${keyrock_db_name}
+      - name: IDM_DB_SEED
+        value: "true"
+      - name: IDM_SERVER_MAX_HEADER_SIZE
+        value: "32768"
+      - name: IDM_PR_CLIENT_ID
+        value: ${did_domain}
+      - name: IDM_PR_CLIENT_KEY
+        valueFrom:
+            secretKeyRef:
+              name: ${waltid_secret_tls}
+              key: tls.key
+      - name: IDM_PR_CLIENT_CRT
+        valueFrom:
+            secretKeyRef:
+              name: ${waltid_secret_tls}
+              key: tls.crt
+
+    # Init data
+    initData:
+      initEnabled: true
+      hook: post-install
+      backoffLimit: 6
+      command: 
+        - /bin/sh
+        - /scripts/create.sh
+      volumeMount:
+        name: scripts
+        mountPath: /scripts
+      # env:
+      #   - name: DB_PASSWORD
+      #     value: "dbPassword"
+      scriptData:
+        create.sh: |-
+          mysql -h ${mysql_name} -u root -p${mysql_root_password} ${keyrock_db_name} <<EOF
+
+          -- Static objects
+          SET @rules := JSON_ARRAY(
+            JSON_OBJECT(
+              "effect", "Permit"
+            )
+          );
+
+          SET @subjectGold := "GOLD_CUSTOMER";
+          SET @subjectStandard := "STANDARD_CUSTOMER";
+
+          -- Policies Gold
+          SET @policiesGold := JSON_ARRAY(
+            JSON_OBJECT(
+              "rules", CAST(@rules as JSON),
+              "target", JSON_OBJECT(
+                "actions", JSON_ARRAY("PATCH"),
+                "resource", JSON_OBJECT(
+                  "type", "DELIVERYORDER",
+                  "attributes", JSON_ARRAY("pta","pda"),
+                  "identifiers", JSON_ARRAY("*")
+                )
+              )
+            ),
+            JSON_OBJECT(
+              "rules", CAST(@rules as JSON),
+              "target", JSON_OBJECT(
+                "actions", JSON_ARRAY("GET"),
+                "resource", JSON_OBJECT(
+                  "type", "DELIVERYORDER",
+                  "attributes", JSON_ARRAY("*"),
+                  "identifiers", JSON_ARRAY("*")
+                )
+              )
+            )
+          );
+
+          -- Policies Standard
+          SET @policiesStandard := JSON_ARRAY(
+            JSON_OBJECT(
+              "rules", CAST(@rules as JSON),
+              "target", JSON_OBJECT(
+                "actions", JSON_ARRAY("GET"),
+                "resource", JSON_OBJECT(
+                  "type", "DELIVERYORDER",
+                  "attributes", JSON_ARRAY("*"),
+                  "identifiers", JSON_ARRAY("*")
+                )
+              )
+            )
+          );
+
+          -- Insert Delegation Evidence Gold VC
+          SET @delegationGoldVC := JSON_OBJECT(
+            "target", JSON_OBJECT(
+              "accessSubject", @subjectGold
+            ),
+            "notBefore", 1616583866,
+            "notOnOrAfter", 1735817171,
+            "policyIssuer", ${did_domain},
+            "policySets", JSON_ARRAY(
+              JSON_OBJECT(
+                "target", JSON_OBJECT(
+                  "environment", JSON_OBJECT(
+                    "licenses", JSON_ARRAY("ISHARE.0001")
+                  )
+                ),
+                "policies", CAST(@policiesGold as JSON)
+              )
+            )
+          );
+          INSERT IGNORE INTO delegation_evidence (policy_issuer, access_subject,policy) VALUES (${did_domain}, @subjectGold, @delegationGoldVC);
+
+          -- Insert Delegation Evidence Standard VC
+          SET @delegationStandardVC := JSON_OBJECT(
+            "target", JSON_OBJECT(
+              "accessSubject", @subjectStandard
+            ),
+            "notBefore", 1616583866,
+            "notOnOrAfter", 1735817171,
+            "policyIssuer", ${did_domain},
+            "policySets", JSON_ARRAY(
+              JSON_OBJECT(
+                "target", JSON_OBJECT(
+                  "environment", JSON_OBJECT(
+                    "licenses", JSON_ARRAY("ISHARE.0001")
+                  )
+                ),
+                "policies", CAST(@policiesStandard as JSON)
+              )
+            )
+          );
+          INSERT IGNORE INTO delegation_evidence (policy_issuer, access_subject,policy) VALUES (${did_domain}, @subjectStandard, @delegationStandardVC);
+
+          COMMIT;
+          EOF
+
+################################################################################
+
+
+activation-service:
+
+  # Enable the deployment of application: activation-service
+  deploymentEnabled: ${activation_enable}
+
+  activation-service:
+    
+    fullnameOverride: ${activation_name}
+    
+    ## Configuration of activation service execution
+    activationService:
+      # -- Number of (gunicorn) workers that should be created
+      workers: 1
+      # -- Maximum header size in bytes
+      maxHeaderSize: 32768
+      # -- Log Level
+      logLevel: "debug"
+
+    ## Add Ingress or OpenShift Route
+    route:
+      enabled: false
+
+    ingress:
+      enabled: ${activation_enable_ingress}
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-fiware-eks
+        kubernetes.io/ingress.class: nginx
+      hosts:
+        - host: ips-as.dsba.aws.fiware.io
+          paths:
+            - /
+      tls:
+        - hosts:
+            - ips-as.dsba.aws.fiware.io
+          secretName: as-ips-dsba-tls
+
+    ## CCS config
+    ccs:
+      endpoint: "http://ips-dsc-credentials-config-service:8080/"
+      id: "ips-activation-service"
+      defaultOidcScope: "default"
+      oidcScopes:
+        default:
+          - type: "VerifiableCredential"
+            trustedParticipantsLists: [
+              "https://tir.dsba.fiware.dev"
+            ]
+            trustedIssuersLists: [
+              "http://ips-dsc-trusted-issuers-list:8080"
+            ]
+          - type: "IpsActivationService"
+            trustedParticipantsLists: [
+              "https://tir.dsba.fiware.dev"
+            ]
+            trustedIssuersLists: [
+              "http://ips-dsc-trusted-issuers-list:8080"
+            ]
+
+    ## AS config
+    config:
+
+      # DB
+      db:
+        # -- Use sqlite in-memory database
+        useMemory: true
+        # -- Enable tracking of modifications
+        modTracking: false
+        # -- Enable SQL logging to stderr
+        echo: true
+
+      # Configuration for additional API keys to protect certain endpoints
+      apikeys:
+        # Config for Trusted-Issuers-List flow
+        issuer:
+          # Header name
+          headerName: "AS-API-KEY"
+          # API key (auto-generated if left empty)
+          apiKey: "77ab4a67-ea3c-4348-98bd-2e9f0304bfb8"
+          # Enable for /issuer endpoint (API key will be required)
+          enabledIssuer: true
+
+      issuer:
+        clientId: "ips-activation-service"
+        providerId: ${did_domain}
+        tilUri: "http://ips-dsc-trusted-issuers-list:8080"
+        verifierUri: "https://ips-verifier.dsba.aws.fiware.io"
+        samedevicePath: "/api/v1/samedevice"
+        jwksPath: "/.well-known/jwks"
+        algorithms:
+          - "ES256"
+        roles:
+          createRole: "CREATE_ISSUER"
+          updateRole: "UPDATE_ISSUER"
+          deleteRole: "DELETE_ISSUER"
+
+
+dsba-pdp:
+  # Enable the deployment of application: dsba-pdp
+  deploymentEnabled: false
+
+  dsba-pdp:
+
+    # DB
+    db:
+      enabled: false
+      migrate:
+        enabled: false
+
+    deployment:
+      # Log level
+      logLevel: DEBUG
+
+      # iSHARE config
+      ishare:
+        existingSecret: ${waltid_secret_tls}
+
+        clientId: ${did_domain}
+
+        # Initial list of fingerprints for trusted CAs. This will be overwritten
+        # after the first update from the trust anchor.
+        trustedFingerprints:
+          - D2F62092F982CF783D4632BD86FA86C3FBFDB2D8C8A58BC6809163FCF5CD030B
+
+        ar:
+          id: ${did_domain}
+          delegationPath: "/ar/delegation"
+          tokenPath: "/oauth2/token"
+          url: "https://ar-ips.dsba.aws.fiware.io"
+
+        trustAnchor:
+          id: "EU.EORI.FIWARESATELLITE"
+          tokenPath: "/token"
+          trustedListPath: "/trusted_list"
+          url: "https://tir.dsba.fiware.dev"
+
+      # Verifier
+      trustedVerifiers:
+        - https://ips-verifier.dsba.aws.fiware.io/.well-known/jwks
+
+      # Provider DID
+      providerId: ${did_domain}
+
+    # ENVs
+    additionalEnvVars:
+      - name: ISHARE_CERTIFICATE_PATH
+        value: /iShare/tls.crt
+      - name: ISHARE_KEY_PATH
+        value: /iShare/tls.key
+
+kong:
+  # Enable the deployment of application: kong
+  deploymentEnabled: false
+
+  kong:
+    replicaCount: 1
+
+    proxy:
+      enabled: true
+      tls:
+        enabled: false
+
+      # Provide Ingress or Route config here
+      ingress:
+        enabled: true
+        annotations:
+          kubernetes.io/ingress.class: nginx
+          cert-manager.io/cluster-issuer: letsencrypt-fiware-eks
+        ingressClassName: nginx
+        tls: kong-ips-dsba-tls
+        hostname: ips-kong.dsba.aws.fiware.io
+      route:
+        enabled: false
+
+    # Provide the kong.yml configuration (either as existing CM, secret or directly in the values.yaml)
+    dblessConfig:
+      configMap: ""
+      secret: ""
+      config: |
+        _format_version: "2.1"
+        _transform: true
+
+        consumers:
+        - username: token-consumer
+          keyauth_credentials:
+          - tags:
+            - token-key
+            - tir-key
+
+        services:
+          - host: "ips-dsc-orion"
+            name: "ips"
+            port: 1026
+            protocol: http
+
+            routes:
+              - name: ips
+                paths:
+                  - /ips
+                strip_path: true
+
+            plugins:
+              - name: pep-plugin
+                config:
+                  pathprefix: "/ips"
+                  authorizationendpointtype: ExtAuthz
+                  authorizationendpointaddress: http://ips-dsc-dsba-pdp:8080/authz
+
+              - name: request-transformer
+                config:
+                  remove:
+                    headers:
+                      - Authorization
+                      - authorization
 
 contract-management:
   # Enable the deployment of application: contract-management

@@ -45,6 +45,7 @@ variable "services_names" {
     til        = string
     tir        = string
     verifier   = string
+    keycloak   = string
     keyrock    = string
   })
   description = "Service names (pods)"
@@ -59,6 +60,7 @@ variable "services_names" {
     til        = "trusted-issuers-list"
     tir        = "trusted-issuers-registry"
     verifier   = "verifier"
+    keycloak   = "keycloak"
     keyrock    = "keyrock"
   }
 }
@@ -191,6 +193,23 @@ variable "verifier" {
   }
 }
 
+variable "keycloak" {
+  type = object({
+    enable_service = bool
+    enable_ingress = bool
+    admin_user     = string
+    admin_password = string
+    db_name        = string
+  })
+  description = "Keycloak service configuration"
+  default = {
+    enable_service = false
+    enable_ingress = true
+    admin_user     = "admin"
+    admin_password = "admin_password"
+    db_name        = "keycloak_ips"
+  }
+}
 
 variable "keyrock" {
   type = object({
