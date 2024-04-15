@@ -10,6 +10,7 @@ resource "helm_release" "connector" {
   values = [
     templatefile("${local.helm_conf_yaml_path}/connector.yaml", {
       did_domain = local.did_methods[var.did_option],
+      tpr_domain = var.trust_anchor_domain,
       # MongoDB
       mongodb_enable        = var.mongodb.enable_service,
       mongodb_name          = var.services_names.mongo,

@@ -29,6 +29,12 @@ variable "service_domain" {
   default     = "ds-connector.local"
 }
 
+variable "trust_anchor_domain" {
+  type = string
+  description = "Trust Anchor domain (Trusted Participants Registry)"
+  default = "trust-anchor.local"
+}
+
 ################################################################################
 # Services Configuration                                                       #
 ################################################################################

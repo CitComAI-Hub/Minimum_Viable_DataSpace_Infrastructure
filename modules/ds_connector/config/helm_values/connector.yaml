@@ -1453,7 +1453,7 @@ verifier:
       # Verifier config
       verifier:
         # URL endpoint of data space trusted issuers registry
-        tirAddress: https://tir.dsba.fiware.dev/v3/issuers #TODO: Change to TPR URL
+        tirAddress: https://${tpr_domain}/v3/issuers
         # DID of organisation
         did: ${did_domain}
 
@@ -1548,14 +1548,14 @@ activation-service:
         default:
           - type: "VerifiableCredential"
             trustedParticipantsLists: [
-              "https://tir.dsba.fiware.dev" #TODO: Change to TPR URL
+              "https://${tpr_domain}"
             ]
             trustedIssuersLists: [
               "http://${til_name}:8080"
             ]
           - type: "IpsActivationService"
             trustedParticipantsLists: [
-              "https://tir.dsba.fiware.dev" #TODO: Change to TPR URL
+              "https://${tpr_domain}"
             ]
             trustedIssuersLists: [
               "http://${til_name}:8080"
@@ -1665,11 +1665,11 @@ keyrock:
       # -- Identifier (EORI) of satellite
       identifier: "EU.EORI.FIWARESATELLITE"
       # -- URL of satellite
-      url: "https://tir.dsba.fiware.dev" #TODO: Change to TPR URL
+      url: "https://${tpr_domain}"
       # -- Token endpoint of satellite
-      tokenEndpoint: "https://tir.dsba.fiware.dev/token"
+      tokenEndpoint: "https://${tpr_domain}/token"
       # -- Parties endpoint of satellite
-      partiesEndpoint: "https://tir.dsba.fiware.dev/parties"
+      partiesEndpoint: "https://${tpr_domain}/parties"
 
     ## -- Configuration of local key and certificate for validation and generation of tokens
     token:
@@ -1863,7 +1863,7 @@ dsba-pdp:
           id: "EU.EORI.FIWARESATELLITE"
           tokenPath: "/token"
           trustedListPath: "/trusted_list"
-          url: "https://tir.dsba.fiware.dev"
+          url: "https://${tpr_domain}"
 
       # Verifier
       trustedVerifiers:
