@@ -8,7 +8,7 @@ locals {
     { # walt_id
       id               = local.dns_domains.walt_id
       metadata_name    = "${var.services_names.walt_id}-certificate"
-      spec_secret_name = "${var.services_names.walt_id}-tls-secret"
+      spec_secret_name = "${var.services_names.walt_id}-tls-sec"
       dns_name         = "${local.dns_domains.walt_id}.${var.service_domain}"
     },
     { # til

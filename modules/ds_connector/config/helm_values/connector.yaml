@@ -95,7 +95,7 @@ postgres:
           create.sh: |
             psql postgresql://postgres:${postgresql_root_password}@localhost:5432 -c "CREATE DATABASE ${postgresql_db_name};"
 
-#? DONE - check ingress tls secrects, waltid-certs ??
+#? DONE - check ingress tls secrects, waltid-certs ??, templates??
 vcwaltid:
   deploymentEnabled: ${waltid_enable}
 
@@ -255,6 +255,8 @@ tm-forum-api:
     fullnameOverride: ${tm_forum_api_name}
 
 ################################################################################
+# Depends on: MongoDB                                                          #
+################################################################################
 
 #* DONE
 orion-ld:
@@ -336,6 +338,9 @@ orion-ld:
                 "https://schema.lab.fiware.org/ld/context"
               ]
             }
+            }
+                
+            }          
                 
         - name: deliveryorder_happypets002.json
           data: |
@@ -390,6 +395,122 @@ orion-ld:
                 "https://schema.lab.fiware.org/ld/context"
               ]
             }
+
+################################################################################
+# Depends on: MySQL                                                            #
+################################################################################
+
+#* DONE
+credentials-config-service:
+  deploymentEnabled: ${ccs_enable}
+
+  fullnameOverride: ${ccs_name}
+
+  ##############################################################################
+  # Helm chart: Credentials Config Service                                     #
+  ##############################################################################
+  credentials-config-service:
+
+    fullnameOverride: ${ccs_name}
+
+    # Database config
+    database:
+      persistence: true
+      host: ${mysql_name}
+      name: ${ccs_db_name}
+      # Should use Secret in production environment
+      username: root
+      password: ${mysql_root_password}
+
+################################################################################
+# Depends on: WaltID, MySQL                                                    #
+################################################################################
+
+#* DONE
+trusted-issuers-list:
+  deploymentEnabled: ${til_enable}
+
+  fullnameOverride: ${til_name}
+
+  ##############################################################################
+  # Helm chart: Trusted Issuers List                                           #
+  ##############################################################################
+  trusted-issuers-list:
+
+    fullnameOverride: ${til_name}
+
+    # Ingress
+    ingress:
+      til:
+        enabled: true
+        annotations:
+          kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+          # forcing everything to use ssl
+          ingress.kubernetes.io/ssl-redirect: "true"
+          # example annotations, allowing cert-manager to automatically create tls-certs
+          kubernetes.io/tls-acme: "true"
+        hosts:
+          - host: ${til_domain}
+            paths:
+              - /
+        tls:
+          - secretName: ${til_secret_tls}
+            hosts:
+              - ${til_domain}
+      tir:
+        enabled: true
+        annotations:
+          kubernetes.io/ingress.class: "nginx"
+          # forcing everything to use ssl
+          ingress.kubernetes.io/ssl-redirect: "true"
+          # example annotations, allowing cert-manager to automatically create tls-certs
+          kubernetes.io/tls-acme: "true"
+        hosts:
+          - host: ${tir_domain}
+            paths:
+              - /
+        tls:
+          - secretName: ${tir_secret_tls}
+            hosts:
+              - ${tir_domain}
+
+    # Database config
+    database:
+      persistence: true
+      host: ${mysql_name}
+      name: ${til_db_name}
+      # Should use Secret in production environment
+      username: root
+      password: ${mysql_root_password}
+
+    # Init data
+    initData: #TODO: Check if data is created in the DB
+      initEnabled: false
+      hook: post-install
+      backoffLimit: 6
+      issuers:
+        - name: mp_create
+          issuer:
+            did: "did:web:marketplace.dsba.fiware.dev:did"
+            credentials:
+              - validFor:
+                  from: "2022-07-21T17:32:28Z"
+                  to: "2040-07-21T17:32:28Z"
+                credentialsType: "IpsActivationService"
+                claims:
+                  - name: "roles"
+                    allowedValues: 
+                      - - names:
+                          - "CREATE_ISSUER"
+                          target: ${did_domain}
+              - validFor:
+                  from: "2022-07-21T17:32:28Z"
+                  to: "2040-07-21T17:32:28Z"
+                credentialsType: "VerifiableCredential"
+
+################################################################################
+# Depends on: WaltID, Postgres                                                 #
+################################################################################
 
 #! The initialization parameters remain to be configured.
 keycloak:
@@ -1295,111 +1416,7 @@ keycloak:
           }
 
 ################################################################################
-
-#* DONE
-credentials-config-service:
-  deploymentEnabled: ${ccs_enable}
-
-  fullnameOverride: ${ccs_name}
-
-  ##############################################################################
-  # Helm chart: Credentials Config Service                                     #
-  ##############################################################################
-  credentials-config-service:
-
-    fullnameOverride: ${ccs_name}
-
-    # Database config
-    database:
-      persistence: true
-      host: ${mysql_name}
-      name: ${ccs_db_name}
-      # Should use Secret in production environment
-      username: root
-      password: ${mysql_root_password}
-
-#* DONE
-trusted-issuers-list:
-  deploymentEnabled: ${til_enable}
-
-  fullnameOverride: ${til_name}
-
-  ##############################################################################
-  # Helm chart: Trusted Issuers List                                           #
-  ##############################################################################
-  trusted-issuers-list:
-
-    fullnameOverride: ${til_name}
-
-    # Ingress
-    ingress:
-      til:
-        enabled: true
-        annotations:
-          kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
-          # forcing everything to use ssl
-          ingress.kubernetes.io/ssl-redirect: "true"
-          # example annotations, allowing cert-manager to automatically create tls-certs
-          kubernetes.io/tls-acme: "true"
-        hosts:
-          - host: ${til_domain}
-            paths:
-              - /
-        tls:
-          - secretName: ${til_secret_tls}
-            hosts:
-              - ${til_domain}
-      tir:
-        enabled: true
-        annotations:
-          kubernetes.io/ingress.class: "nginx"
-          # forcing everything to use ssl
-          ingress.kubernetes.io/ssl-redirect: "true"
-          # example annotations, allowing cert-manager to automatically create tls-certs
-          kubernetes.io/tls-acme: "true"
-        hosts:
-          - host: ${tir_domain}
-            paths:
-              - /
-        tls:
-          - secretName: ${tir_secret_tls}
-            hosts:
-              - ${tir_domain}
-
-    # Database config
-    database:
-      persistence: true
-      host: ${mysql_name}
-      name: ${til_db_name}
-      # Should use Secret in production environment
-      username: root
-      password: ${mysql_root_password}
-
-    # Init data
-    initData: #TODO: Check if data is created in the DB
-      initEnabled: false
-      hook: post-install
-      backoffLimit: 6
-      issuers:
-        - name: mp_create
-          issuer:
-            did: "did:web:marketplace.dsba.fiware.dev:did"
-            credentials:
-              - validFor:
-                  from: "2022-07-21T17:32:28Z"
-                  to: "2040-07-21T17:32:28Z"
-                credentialsType: "IpsActivationService"
-                claims:
-                  - name: "roles"
-                    allowedValues: 
-                      - - names:
-                          - "CREATE_ISSUER"
-                          target: ${did_domain}
-              - validFor:
-                  from: "2022-07-21T17:32:28Z"
-                  to: "2040-07-21T17:32:28Z"
-                credentialsType: "VerifiableCredential"
-
+# Depends on: WaltID, Credentials Config Service, Trusted Participants Registry
 ################################################################################
 
 #* DONE
@@ -1461,6 +1478,10 @@ verifier:
       configRepo:
         configEndpoint: http://${ccs_name}:8080/
 
+################################################################################
+# Depends on: Trusted Issuers List, TM Forum API                               #
+################################################################################
+
 #* DONE
 contract-management:
   deploymentEnabled: ${contract_management_enable}
@@ -1493,6 +1514,9 @@ contract-management:
       til:
         url: http://${til_name}:8080
 
+################################################################################
+# Depends on: WaltID, Credentials Config Service, Trusted Participants Registry,
+#             Trusted Issuers List, Verifier                                   # 
 ################################################################################
 
 #* DONE
@@ -1598,6 +1622,8 @@ activation-service:
           updateRole: "UPDATE_ISSUER"
           deleteRole: "DELETE_ISSUER"
 
+################################################################################
+# Depends on: MySQL, Trusted Participants Registry                             #
 ################################################################################
 
 #! ERROR
@@ -1818,6 +1844,8 @@ keyrock:
           EOF
 
 ################################################################################
+# Depends on: Verifier, Keyrock                                                #
+################################################################################
 
 #* DONE
 dsba-pdp:
@@ -1879,6 +1907,8 @@ dsba-pdp:
       - name: ISHARE_KEY_PATH
         value: /iShare/tls.key
 
+################################################################################
+# Depends on: OrionLD, PDP                                                     #
 ################################################################################
 
 #? DONE - fullnameOverride not working

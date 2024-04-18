@@ -30,14 +30,52 @@ variable "service_domain" {
 }
 
 variable "trust_anchor_domain" {
-  type = string
+  type        = string
   description = "Trust Anchor domain (Trusted Participants Registry)"
-  default = "trust-anchor.local"
+  default     = "trust-anchor.local"
 }
 
 ################################################################################
 # Services Configuration                                                       #
 ################################################################################
+
+variable "flags_deployment" {
+  type = object({
+    mongodb             = bool
+    mysql               = bool
+    postgresql          = bool
+    walt_id             = bool
+    tm_forum_api        = bool
+    orion_ld            = bool
+    ccs                 = bool
+    til                 = bool
+    verifier            = bool
+    contract_management = bool
+    activation          = bool
+    keycloak            = bool
+    keyrock             = bool
+    pdp                 = bool
+    kong                = bool
+  })
+  description = "Whether to deploy resources."
+  default = {
+    mongodb             = true
+    mysql               = true
+    postgresql          = true
+    walt_id             = true
+    tm_forum_api        = true
+    orion_ld            = true
+    ccs                 = true
+    til                 = true
+    verifier            = true
+    contract_management = true
+    activation          = true
+    keycloak            = false
+    keyrock             = true
+    pdp                 = true
+    kong                = true
+  }
+}
 
 variable "services_names" {
   type = object({
@@ -107,137 +145,113 @@ variable "connector" {
 
 variable "mongodb" {
   type = object({
-    enable_service = bool
-    auth_enabled   = bool
-    root_password  = string
+    auth_enabled  = bool
+    root_password = string
   })
   description = "MongoDB service configuration"
   default = {
-    enable_service = true
-    auth_enabled   = true
-    root_password  = "root"
+    auth_enabled  = true
+    root_password = "root"
   }
 }
 
 variable "mysql" {
   type = object({
-    enable_service = bool
-    root_password  = string
+    root_password = string
   })
   description = "MySQL service configuration"
   default = {
-    enable_service = true
-    root_password  = "root"
+    root_password = "root"
   }
-
 }
 
 variable "postgresql" {
   type = object({
-    enable_service = bool
-    root_password  = string
-    user_name      = string
-    user_password  = string
-    db_name        = string
+    root_password = string
+    user_name     = string
+    user_password = string
+    db_name       = string
   })
   description = "PostgreSQL service configuration"
   default = {
-    enable_service = true
-    root_password  = "root"
-    user_name      = "keycloak"
-    user_password  = "keycloak_password"
-    db_name        = "keycloak_ips"
+    root_password = "root"
+    user_name     = "keycloak"
+    user_password = "keycloak_password"
+    db_name       = "keycloak_ips"
   }
 }
 
 variable "walt_id" {
   type = object({
-    enable_service = bool
     enable_ingress = bool
   })
   description = "Walt-ID service configuration"
   default = {
-    enable_service = false
     enable_ingress = true
   }
 }
 
-variable "tm_forum_api" {
-  type = object({
-    enable_service = bool
-  })
-  description = "TM Forum API service configuration"
-  default = {
-    enable_service = true
-  }
-}
+# variable "tm_forum_api" {
+#   type = object({
+#   })
+#   description = "TM Forum API service configuration"
+#   default = {
+#   }
+# }
 
-variable "orion_ld" {
-  type = object({
-    enable_service = bool
-  })
-  description = "Orion-LD service configuration"
-  default = {
-    enable_service = true
-  }
-
-}
+# variable "orion_ld" {
+#   type = object({
+#   })
+#   description = "Orion-LD service configuration"
+#   default = {
+#   }
+# }
 
 variable "credentials_config_service" {
   type = object({
-    enable_service = bool
-    db_name        = string
+    db_name = string
   })
   description = "Credentials Config Service configuration"
   default = {
-    enable_service = true
-    db_name        = "ccs"
+    db_name = "ccs"
   }
 }
 
 variable "trusted_issuers_list" {
   type = object({
-    enable_service = bool
-    db_name        = string
+    db_name = string
   })
   description = "Trusted Issuers List service configuration"
   default = {
-    enable_service = true
-    db_name        = "til"
+    db_name = "til"
   }
 }
 
 variable "verifier" {
   type = object({
-    enable_service = bool
     enable_ingress = bool
   })
   description = "Verifier service configuration"
   default = {
-    enable_service = true
     enable_ingress = true
   }
 }
 
-variable "contract_management" {
-  type = object({
-    enable_service = bool
-  })
-  description = "Contract Management service configuration"
-  default = {
-    enable_service = true
-  }
-}
+# variable "contract_management" {
+#   type = object({
+#   })
+#   description = "Contract Management service configuration"
+#   default = {
+#   }
+# }
 
 variable "activation" {
   type = object({
-    enable_service = bool
     enable_ingress = bool
     client_id      = string
   })
   description = "Activaion service configuration"
   default = {
-    enable_service = true
     enable_ingress = true
     client_id      = "ips-activation-service"
   }
@@ -245,7 +259,6 @@ variable "activation" {
 
 variable "keycloak" {
   type = object({
-    enable_service = bool
     enable_ingress = bool
     admin_user     = string
     admin_password = string
@@ -253,7 +266,6 @@ variable "keycloak" {
   })
   description = "Keycloak service configuration"
   default = {
-    enable_service = false
     enable_ingress = true
     admin_user     = "admin"
     admin_password = "admin_password"
@@ -263,7 +275,6 @@ variable "keycloak" {
 
 variable "keyrock" {
   type = object({
-    enable_service = bool
     admin_user     = string
     admin_password = string
     admin_email    = string
@@ -272,7 +283,6 @@ variable "keyrock" {
   })
   description = "Keyrock service configuration"
   default = {
-    enable_service = false
     admin_user     = "admin"
     admin_password = "admin_password"
     admin_email    = "admin@keyrock-connector.org"
@@ -281,24 +291,20 @@ variable "keyrock" {
   }
 }
 
-variable "pdp" {
-  type = object({
-    enable_service = bool
-  })
-  description = "PDP service configuration"
-  default = {
-    enable_service = true
-  }
-}
+# variable "pdp" {
+#   type = object({
+#   })
+#   description = "PDP service configuration"
+#   default = {
+#   }
+# }
 
 variable "kong" {
   type = object({
-    enable_service = bool
     enable_ingress = bool
   })
   description = "Kong service configuration"
   default = {
-    enable_service = true
     enable_ingress = true
   }
 }
