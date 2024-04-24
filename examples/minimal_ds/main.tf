@@ -2,7 +2,7 @@
 
 locals {
   trust_anchor_domain = "ds-operator.local"
-  tpr_domain = "tpr.${local.trust_anchor_domain}"
+  tpr_domain          = "tpr.${local.trust_anchor_domain}"
 }
 
 module "ca_configuration" {
@@ -17,9 +17,9 @@ module "ca_configuration" {
 }
 
 module "ds_operator" {
-  source     = "../../modules/ds_operator/"
-  depends_on = [module.ca_configuration]
-  namespace  = "ds-operator"
+  source         = "../../modules/ds_operator/"
+  depends_on     = [module.ca_configuration]
+  namespace      = "ds-operator"
   service_domain = local.trust_anchor_domain
   providers = {
     helm = helm
@@ -43,12 +43,29 @@ module "ds_operator" {
 }
 
 module "connector_A" {
-  source         = "../../modules/ds_connector/"
-  depends_on     = [module.ca_configuration, module.ds_operator]
-  namespace      = "ds-connector-a"
-  service_domain = "ds-connector-a.local"
+  source              = "../../modules/ds_connector/"
+  depends_on          = [module.ca_configuration, module.ds_operator]
+  namespace           = "ds-connector-a"
+  service_domain      = "ds-connector-a.local"
   trust_anchor_domain = local.tpr_domain
   providers = {
     helm = helm
+  }
+  flags_deployment = {
+    mongodb             = true
+    mysql               = true
+    postgresql          = true
+    walt_id             = true
+    tm_forum_api        = true
+    orion_ld            = true
+    ccs                 = true
+    til                 = true
+    verifier            = true
+    contract_management = true
+    activation          = true
+    keycloak            = true
+    keyrock             = false #<<
+    pdp                 = true
+    kong                = true
   }
 }

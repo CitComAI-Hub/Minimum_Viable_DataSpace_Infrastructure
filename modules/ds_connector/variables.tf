@@ -70,7 +70,7 @@ variable "flags_deployment" {
     verifier            = true
     contract_management = true
     activation          = true
-    keycloak            = false
+    keycloak            = true
     keyrock             = true
     pdp                 = true
     kong                = true
@@ -191,22 +191,6 @@ variable "walt_id" {
   }
 }
 
-# variable "tm_forum_api" {
-#   type = object({
-#   })
-#   description = "TM Forum API service configuration"
-#   default = {
-#   }
-# }
-
-# variable "orion_ld" {
-#   type = object({
-#   })
-#   description = "Orion-LD service configuration"
-#   default = {
-#   }
-# }
-
 variable "credentials_config_service" {
   type = object({
     db_name = string
@@ -237,14 +221,6 @@ variable "verifier" {
   }
 }
 
-# variable "contract_management" {
-#   type = object({
-#   })
-#   description = "Contract Management service configuration"
-#   default = {
-#   }
-# }
-
 variable "activation" {
   type = object({
     enable_ingress = bool
@@ -263,6 +239,10 @@ variable "keycloak" {
     admin_user     = string
     admin_password = string
     db_name        = string
+    configmap = object({
+      did_config = string
+      profile    = string
+    })
   })
   description = "Keycloak service configuration"
   default = {
@@ -270,6 +250,10 @@ variable "keycloak" {
     admin_user     = "admin"
     admin_password = "admin_password"
     db_name        = "keycloak_ips"
+    configmap = {
+      did_config = "my-keycloak-did-config"
+      profile    = "my-keycloak-profile"
+    }
   }
 }
 
@@ -290,14 +274,6 @@ variable "keyrock" {
     enable_ingress = true
   }
 }
-
-# variable "pdp" {
-#   type = object({
-#   })
-#   description = "PDP service configuration"
-#   default = {
-#   }
-# }
 
 variable "kong" {
   type = object({

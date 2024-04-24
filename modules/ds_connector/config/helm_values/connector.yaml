@@ -59,7 +59,7 @@ mysql:
   mysql:
     
     fullnameOverride: ${mysql_name}
-    
+
     auth:
       # Should use a Secret on production deployments
       rootPassword: ${mysql_root_password}
@@ -117,9 +117,6 @@ vcwaltid:
     # configure the ingress' tls
     tls:
       enabled: true
-      # - secretName: ${waltid_secret_tls}
-      #   hosts:
-      #     - ${waltid_domain}
   
   # OpenShift Route
   route:
@@ -512,7 +509,7 @@ trusted-issuers-list:
 # Depends on: WaltID, Postgres                                                 #
 ################################################################################
 
-#! The initialization parameters remain to be configured.
+#! The initialization parameters remain to be configured. Readiness probe failed: Get "http://10.244.2.185:8080/realms/master": dial tcp 10.244.2.185:8080: connect: connection refused
 keycloak:
   deploymentEnabled: ${keycloak_enable}
 
@@ -536,6 +533,9 @@ keycloak:
   keycloak:
 
     fullnameOverride: ${keycloak_name}
+
+    service:
+      type: ClusterIP
 
     # Ingress
     ingress:
@@ -586,50 +586,49 @@ keycloak:
       value: "http://${waltid_name}"
 
     # Volumes
-    # extraVolumes:
-    #   - name: data
-    #     emptyDir: {}
-    #   - name: providers
-    #     emptyDir: {}
-    #   - name: did-secret
-    #     secret:
-    #       secretName: ${waltid_secret_tls}
-    #   - name: profiles
-    #     configMap:
-    #       name: ips-dsc-keycloak-profile #TODO: Check 
-    #   - name: did-config
-    #     configMap:
-    #       name: ips-dsc-keycloak-did-config #TODO: Check 
-
-    # # Init containers for VC issuer and loading of DID
-    # initContainers:
-    #   - name: add-vc-issuer
-    #     image: quay.io/fiware/keycloak-vc-issuer:0.5.0
-    #     imagePullPolicy: Always
-    #     volumeMounts:
-    #       - name: providers
-    #         mountPath: /target
-    #   - name: load-did
-    #     image: quay.io/opencloudio/curl:4.2.0-build.8
-    #     imagePullPolicy: Always
-    #     command:
-    #       - /bin/sh
-    #       - /opt/did/script/import.sh
-    #     env:
-    #       - name: WALTID_CORE_ADDRESS
-    #         value: "${waltid_name}:7000"
-    #     volumeMounts:
-    #       - name: did-config
-    #         mountPath: /opt/did/script
-    #       - name: did-secret
-    #         mountPath: /opt/did/secret
+    extraVolumes:
+      - name: data
+        emptyDir: {}
+      - name: providers
+        emptyDir: {}
+      - name: did-secret
+        secret:
+          secretName: ${waltid_secret_tls}
+      - name: did-config
+        configMap:
+          name: ${keycloak_configmap_did}
+      - name: profiles
+        configMap:
+          name: ${keycloak_configmap_prof}
+    
+    # Init containers for VC issuer and loading of DID
+    initContainers:
+      - name: add-vc-issuer
+        image: quay.io/fiware/keycloak-vc-issuer:0.5.0
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: providers
+            mountPath: /target
+      - name: load-did
+        image: quay.io/opencloudio/curl:4.2.0-build.8
+        imagePullPolicy: Always
+        command:
+          - /bin/sh
+          - /opt/did/script/import.sh
+        env:
+          - name: WALTID_CORE_ADDRESS
+            value: "${waltid_name}:7000"
+        volumeMounts:
+          - name: did-config
+            mountPath: /opt/did/script
+          - name: did-secret
+            mountPath: /opt/did/secret
 
     # CLI config
-    #! hard-coded parameter for fiware example
     keycloakConfigCli:
       enabled: false # TODO: Check if this is needed. True by default.
-      
       # Realm config - either provide configuration or existing ConfigMap
+      #! hard-coded parameter for fiware example
       configuration:
         realm.json: |-
           {
@@ -640,7 +639,7 @@ keycloak:
             "displayNameHtml": "<div class=\"kc-logo-text\"><span>IPS Keycloak</span></div>",
             "enabled": true,
             "attributes": {
-              "frontendUrl": "https://ips-kc.dsba.aws.fiware.io"
+              "frontendUrl": "https://${keycloak_domain}"
             },
             "sslRequired": "none",
             "roles": {
@@ -655,7 +654,7 @@ keycloak:
                 }
               ],
               "client": {
-                "did:web:onboarding.dsba.fiware.dev:did": [
+                "did:web:onboarding.dsba.fiware.dev:did": [ #TODO: operator did?
                   {
                     "name": "LEGAL_REPRESENTATIVE",
                     "description": "Is allowed to register participants",
@@ -664,18 +663,6 @@ keycloak:
                   {
                     "name": "EMPLOYEE",
                     "description": "Is allowed to see participants",
-                    "clientRole": true
-                  }
-                ],
-                "did:web:marketplace.dsba.fiware.dev:did": [
-                  {
-                    "name": "customer",
-                    "description": "Is allowed to buy.",
-                    "clientRole": true
-                  },
-                  {
-                    "name": "seller",
-                    "description": "Is allowed to offer.",
                     "clientRole": true
                   }
                 ],
@@ -721,7 +708,7 @@ keycloak:
                   }
                 ],
                 "clientRoles": {
-                  "did:web:onboarding.dsba.fiware.dev:did": [
+                  "did:web:onboarding.dsba.fiware.dev:did": [ #TODO: operator did?
                     "LEGAL_REPRESENTATIVE",
                     "EMPLOYEE"
                   ],
@@ -748,11 +735,7 @@ keycloak:
                   }
                 ],
                 "clientRoles": {
-                  "did:web:marketplace.dsba.fiware.dev:did" : [
-                    "customer",
-                    "seller"
-                  ],
-                  "did:web:onboarding.dsba.fiware.dev:did": [
+                  "did:web:onboarding.dsba.fiware.dev:did": [ #TODO: operator did?
                     "LEGAL_REPRESENTATIVE"
                   ],
                   "account": [
@@ -776,7 +759,7 @@ keycloak:
                   }
                 ],
                 "clientRoles": {
-                  "did:web:onboarding.dsba.fiware.dev:did": [
+                  "did:web:onboarding.dsba.fiware.dev:did": [ #TODO: operator did?
                     "EMPLOYEE"
                   ],
                   ${did_domain}: [
@@ -826,39 +809,7 @@ keycloak:
                 "optionalClientScopes": []
               },
               {
-                "clientId": "did:web:marketplace.dsba.fiware.dev:did",
-                "enabled": true,
-                "description": "Client to connect to the marketplace",
-                "surrogateAuthRequired": false,
-                "alwaysDisplayInConsole": false,
-                "clientAuthenticatorType": "client-secret",
-                "defaultRoles": [],
-                "redirectUris": [],
-                "webOrigins": [],
-                "notBefore": 0,
-                "bearerOnly": false,
-                "consentRequired": false,
-                "standardFlowEnabled": true,
-                "implicitFlowEnabled": false,
-                "directAccessGrantsEnabled": false,
-                "serviceAccountsEnabled": false,
-                "publicClient": false,
-                "frontchannelLogout": false,
-                "protocol": "SIOP-2",
-                "attributes": {
-                    "client.secret.creation.time": "1675260539",
-                    "expiryInMin": "3600",
-                    "vctypes_MarketplaceUserCredential": "ldp_vc,jwt_vc_json",
-                    "MarketplaceUserCredential_claims": "email,firstName,lastName,roles"
-                },
-                "authenticationFlowBindingOverrides": {},
-                "fullScopeAllowed": true,
-                "nodeReRegistrationTimeout": -1,
-                "defaultClientScopes": [],
-                "optionalClientScopes": []
-              },
-              {
-                "clientId": "did:web:onboarding.dsba.fiware.dev:did",
+                "clientId": "did:web:onboarding.dsba.fiware.dev:did", #TODO: operator did?
                 "enabled": true,
                 "description": "Client to connect the onboarding service at portal.dsba.fiware.dev",
                 "surrogateAuthRequired": false,
@@ -893,38 +844,6 @@ keycloak:
                 "defaultClientScopes": [],
                 "optionalClientScopes": []
               },
-              {
-                "clientId": "did:web:marketplace.dsba.fiware.dev:did",
-                "enabled": true,
-                "description": "Client to connect to the marketplace",
-                "surrogateAuthRequired": false,
-                "alwaysDisplayInConsole": false,
-                "clientAuthenticatorType": "client-secret",
-                "defaultRoles": [],
-                "redirectUris": [],
-                "webOrigins": [],
-                "notBefore": 0,
-                "bearerOnly": false,
-                "consentRequired": false,
-                "standardFlowEnabled": true,
-                "implicitFlowEnabled": false,
-                "directAccessGrantsEnabled": false,
-                "serviceAccountsEnabled": false,
-                "publicClient": false,
-                "frontchannelLogout": false,
-                "protocol": "SIOP-2",
-                "attributes": {
-                    "client.secret.creation.time": "1675260539",
-                    "expiryInMin": "3600",
-                    "vctypes_MarketplaceUserCredential": "ldp_vc,jwt_vc_json",
-                    "MarketplaceUserCredential_claims": "email,firstName,lastName,roles"
-                },
-                "authenticationFlowBindingOverrides": {},
-                "fullScopeAllowed": true,
-                "nodeReRegistrationTimeout": -1,
-                "defaultClientScopes": [],
-                "optionalClientScopes": []
-              }
             ],
             "clientScopes": [
               {
@@ -1714,24 +1633,28 @@ keyrock:
         value: ${keyrock_db_name}
       - name: IDM_DB_SEED
         value: "true"
+      - name: IDM_AR_TOKEN_ENDPOINT
+        value: "https://${keyrock_domain}/connect/token"
+      - name: IDM_AR_DELEGATION_ENDPOINT
+        value: "https://${keyrock_domain}/delegation"
       - name: IDM_SERVER_MAX_HEADER_SIZE
         value: "32768"
       - name: IDM_PR_CLIENT_ID
         value: ${did_domain}
       - name: IDM_PR_CLIENT_KEY
         valueFrom:
-            secretKeyRef:
-              name: ${waltid_secret_tls}
-              key: tls.key
+          secretKeyRef:
+            name: ${waltid_secret_tls}
+            key: tls.key
       - name: IDM_PR_CLIENT_CRT
         valueFrom:
-            secretKeyRef:
-              name: ${waltid_secret_tls}
-              key: tls.crt
+          secretKeyRef:
+            name: ${waltid_secret_tls}
+            key: tls.crt
 
     # Init data
     initData:
-      initEnabled: true
+      initEnabled: false #TODO: default true
       hook: post-install
       backoffLimit: 6
       command: 
@@ -1740,9 +1663,6 @@ keyrock:
       volumeMount:
         name: scripts
         mountPath: /scripts
-      # env:
-      #   - name: DB_PASSWORD
-      #     value: "dbPassword"
       scriptData:
         create.sh: |-
           mysql -h ${mysql_name} -u root -p${mysql_root_password} ${keyrock_db_name} <<EOF
@@ -1915,7 +1835,8 @@ dsba-pdp:
 kong:
   deploymentEnabled: ${kong_enable}
 
-  fullnameOverride: ${kong_name}
+  # fullnameOverride: ${kong_name}
+  nameOverride: ${kong_name}
 
   ##############################################################################
   # Helm chart: Kong                                                           #
@@ -1929,6 +1850,7 @@ kong:
     proxy:
       enabled: true
       tls:
+        # Enable HTTPS listen for the proxy
         enabled: false
 
       # Provide Ingress or Route config here

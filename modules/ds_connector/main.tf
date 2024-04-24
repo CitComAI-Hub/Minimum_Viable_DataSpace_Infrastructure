@@ -1,3 +1,37 @@
+data "template_file" "keycloak_did_config" {
+  template = file("${local.helm_config_map_path}/keycloak/did_import.sh")
+
+  vars = {
+    waltid_domain = local.dns_dir[local.dns_domains.walt_id]
+  }
+}
+
+data "template_file" "keycloak_profile" {
+  template = file("${local.helm_config_map_path}/keycloak/profile.properties")
+}
+
+resource "kubernetes_config_map" "keycloak_did_config" {
+  metadata {
+    name      = var.keycloak.configmap.did_config
+    namespace = var.namespace
+  }
+
+  data = {
+    "import.sh" = data.template_file.keycloak_did_config.rendered
+  }
+}
+
+resource "kubernetes_config_map" "keycloak_profile" {
+  metadata {
+    name      = var.keycloak.configmap.profile
+    namespace = var.namespace
+  }
+
+  data = {
+    "profile.properties" = data.template_file.keycloak_profile.rendered
+  }
+}
+
 resource "helm_release" "connector" {
   chart            = var.connector.chart_name
   version          = var.connector.version
@@ -68,7 +102,7 @@ resource "helm_release" "connector" {
       activation_id         = var.activation.client_id,
       activation_domain     = local.dns_dir[local.dns_domains.activation],
       activation_secret_tls = local.secrets_tls[local.dns_domains.activation],
-      # Keycloack
+      # Keycloak
       keycloak_enable         = var.flags_deployment.keycloak,
       keycloak_name           = var.services_names.keycloak,
       keycloak_ingress        = var.keycloak.enable_ingress,
@@ -77,6 +111,8 @@ resource "helm_release" "connector" {
       keycloak_db_name        = var.keycloak.db_name,
       keycloak_domain         = local.dns_dir[local.dns_domains.keycloak],
       keycloak_secret_tls     = local.secrets_tls[local.dns_domains.keycloak],
+      keycloak_configmap_did  = var.keycloak.configmap.did_config,
+      keycloak_configmap_prof = var.keycloak.configmap.profile,
       # Keyrock
       keyrock_enable         = var.flags_deployment.keyrock,
       keyrock_name           = var.services_names.keyrock,
