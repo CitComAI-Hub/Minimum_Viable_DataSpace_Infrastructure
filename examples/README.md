@@ -28,6 +28,10 @@ Deployment of the Fiware [Demo Setup DSBA-compliant Data Space](https://github.c
 
 ### Cheatsheet
 
+#### Portainer
+
+Portainer is a lightweight management UI which allows you to easily manage your different Docker environments (Docker hosts or Swarm clusters).
+
 ```
 https://localhost:9443
 ```
@@ -49,3 +53,14 @@ Minimal Data Space deployment.
 **Source:** [minimal_ds](minimal_ds/)
 
 ![minimal_ds](images/minimum_dataspace_arch.png)
+
+### Cheetsheet
+
+- Get the pods status:
+```bash
+watch kubectl get pods --context kind-minimal-dataspace-cluster --kubeconfig ~/.kube/config_minimalDS --all-namespaces
+```
+
+```bash
+watch kubectl get pods --context kind-minimal-dataspace-cluster --kubeconfig ~/.kube/config_minimalDS -n ds-connector-a
+```
