@@ -131,7 +131,7 @@ The following commands can be used to install some of the necessary software:
 
 1. Clone the repository.
 
-2. Access one of the [examples](#examples/README.md), in this case we will use as an example: `kind_cluster`
+2. Access one of the [examples](examples/), in this case we will use as an example: `kind_cluster`
 
   ```bash
   cd examples/kind_cluster
