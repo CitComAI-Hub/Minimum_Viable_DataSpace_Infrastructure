@@ -509,7 +509,7 @@ trusted-issuers-list:
 # Depends on: WaltID, Postgres                                                 #
 ################################################################################
 
-#! The initialization parameters remain to be configured. Readiness probe failed: Get "http://10.244.2.185:8080/realms/master": dial tcp 10.244.2.185:8080: connect: connection refused
+#? DONE - realm.json has parameters to modify
 keycloak:
   deploymentEnabled: ${keycloak_enable}
 
@@ -570,8 +570,8 @@ keycloak:
       enabled: false
     externalDatabase:
       host: ${postgresql_name}
-      user: ${postgresql_user_name}
-      password: ${postgresql_user_password}
+      user: postgres #root user
+      password: ${postgresql_root_password}
       database: ${keycloak_db_name}
 
     # ENVs
@@ -626,7 +626,7 @@ keycloak:
 
     # CLI config
     keycloakConfigCli:
-      enabled: false # TODO: Check if this is needed. True by default.
+      enabled: true
       # Realm config - either provide configuration or existing ConfigMap
       #! hard-coded parameter for fiware example
       configuration:
@@ -1654,7 +1654,7 @@ keyrock:
 
     # Init data
     initData:
-      initEnabled: false #TODO: default true
+      initEnabled: true #TODO: default true
       hook: post-install
       backoffLimit: 6
       command: 
