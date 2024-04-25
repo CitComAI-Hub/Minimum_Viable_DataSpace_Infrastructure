@@ -7,7 +7,6 @@ resource "kubernetes_namespace" "ds_operator" {
 
 resource "kubernetes_manifest" "certs_creation" {
   # Create a certificate for the web server
-  # kubectl get cert --all-namespaces
   depends_on = [kubernetes_namespace.ds_operator]
   for_each   = local.cert_properties_map
   manifest = {

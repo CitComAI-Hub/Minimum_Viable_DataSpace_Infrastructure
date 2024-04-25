@@ -64,3 +64,8 @@ watch kubectl get pods --context kind-minimal-dataspace-cluster --kubeconfig ~/.
 ```bash
 watch kubectl get pods --context kind-minimal-dataspace-cluster --kubeconfig ~/.kube/config_minimalDS -n ds-connector-a
 ```
+
+- Get all certificates:
+```bash
+  kubectl get cert --context kind-minimal-dataspace-cluster --kubeconfig ~/.kube/config_minimalDS --all-namespaces
+```
