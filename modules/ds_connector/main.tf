@@ -20,11 +20,13 @@ resource "helm_release" "connector" {
       # MySQL
       mysql_enable        = var.flags_deployment.mysql,
       mysql_name          = var.services_names.mysql,
+      mysql_root_user     = var.mysql.root_user_name,
       mysql_root_password = var.mysql.root_password,
       mysql_password      = var.mysql.root_password,
       # Postgresql
       postgresql_enable        = var.flags_deployment.postgresql,
       postgresql_name          = var.services_names.postgresql,
+      postgresql_root_user     = var.postgresql.root_user_name,
       postgresql_root_password = var.postgresql.root_password,
       postgresql_user_name     = var.postgresql.user_name,
       postgresql_user_password = var.postgresql.user_password,

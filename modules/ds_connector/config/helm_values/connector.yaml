@@ -63,7 +63,12 @@ mysql:
     auth:
       # Should use a Secret on production deployments
       rootPassword: ${mysql_root_password}
-      password: ${mysql_password}
+      # password: ${mysql_password}
+
+    initdbScripts:
+      create.sql: |
+        CREATE DATABASE til;
+        CREATE DATABASE ccs;
 
 #* DONE
 postgres:
@@ -93,7 +98,7 @@ postgres:
       initdb:
         scripts:
           create.sh: |
-            psql postgresql://postgres:${postgresql_root_password}@localhost:5432 -c "CREATE DATABASE ${postgresql_db_name};"
+            psql postgresql://${postgresql_root_user}:${postgresql_root_password}@localhost:5432 -c "CREATE DATABASE ${postgresql_db_name};"
 
 #? DONE - check ingress tls secrects, waltid-certs ??, templates??
 vcwaltid:
@@ -416,14 +421,14 @@ credentials-config-service:
       host: ${mysql_name}
       name: ${ccs_db_name}
       # Should use Secret in production environment
-      username: root
+      username: ${mysql_root_user}
       password: ${mysql_root_password}
 
 ################################################################################
 # Depends on: WaltID, MySQL                                                    #
 ################################################################################
 
-#* DONE
+#? DONE - initial data is not created
 trusted-issuers-list:
   deploymentEnabled: ${til_enable}
 
@@ -471,39 +476,39 @@ trusted-issuers-list:
             hosts:
               - ${tir_domain}
 
+    # # Init data
+    # initData:
+    #   initEnabled: false
+    #   hook: post-install
+    #   backoffLimit: 6
+    #   issuers:
+    #     - name: mp_create
+    #       issuer:
+    #         did: "did:web:marketplace.dsba.fiware.dev:did"
+    #         credentials:
+    #           - validFor:
+    #               from: "2022-07-21T17:32:28Z"
+    #               to: "2040-07-21T17:32:28Z"
+    #             credentialsType: "IpsActivationService"
+    #             claims:
+    #               - name: "roles"
+    #                 allowedValues: 
+    #                   - - names:
+    #                       - "CREATE_ISSUER"
+    #                       target: ${did_domain}
+    #           - validFor:
+    #               from: "2022-07-21T17:32:28Z"
+    #               to: "2040-07-21T17:32:28Z"
+    #             credentialsType: "VerifiableCredential"
+
     # Database config
     database:
       persistence: true
       host: ${mysql_name}
       name: ${til_db_name}
       # Should use Secret in production environment
-      username: root
+      username: ${mysql_root_user}
       password: ${mysql_root_password}
-
-    # Init data
-    initData: #TODO: Check if data is created in the DB
-      initEnabled: false
-      hook: post-install
-      backoffLimit: 6
-      issuers:
-        - name: mp_create
-          issuer:
-            did: "did:web:marketplace.dsba.fiware.dev:did"
-            credentials:
-              - validFor:
-                  from: "2022-07-21T17:32:28Z"
-                  to: "2040-07-21T17:32:28Z"
-                credentialsType: "IpsActivationService"
-                claims:
-                  - name: "roles"
-                    allowedValues: 
-                      - - names:
-                          - "CREATE_ISSUER"
-                          target: ${did_domain}
-              - validFor:
-                  from: "2022-07-21T17:32:28Z"
-                  to: "2040-07-21T17:32:28Z"
-                credentialsType: "VerifiableCredential"
 
 ################################################################################
 # Depends on: WaltID, Postgres                                                 #
@@ -570,7 +575,7 @@ keycloak:
       enabled: false
     externalDatabase:
       host: ${postgresql_name}
-      user: postgres #root user
+      user: ${postgresql_root_user}
       password: ${postgresql_root_password}
       database: ${keycloak_db_name}
 
@@ -1579,7 +1584,7 @@ keyrock:
     
     # MySQL DB config
     db:
-      user: root
+      user: ${mysql_root_user}
       password: ${mysql_root_password}
       host: ${mysql_name}
 
@@ -1624,7 +1629,7 @@ keyrock:
     # ENV variables for Keyrock
     additionalEnvVars:
       - name: IDM_TITLE
-        value: "IPS AR"
+        value: "Keyrock DS Connector"
       - name: IDM_DEBUG
         value: "true"
       - name: DEBUG
@@ -1654,7 +1659,7 @@ keyrock:
 
     # Init data
     initData:
-      initEnabled: true #TODO: default true
+      initEnabled: false
       hook: post-install
       backoffLimit: 6
       command: 
@@ -1665,7 +1670,7 @@ keyrock:
         mountPath: /scripts
       scriptData:
         create.sh: |-
-          mysql -h ${mysql_name} -u root -p${mysql_root_password} ${keyrock_db_name} <<EOF
+          mysql -h ${mysql_name} -u ${mysql_root_user} -p ${mysql_root_password} ${keyrock_db_name} <<EOF
 
           -- Static objects
           SET @rules := JSON_ARRAY(

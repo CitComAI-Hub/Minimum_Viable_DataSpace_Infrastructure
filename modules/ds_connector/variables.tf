@@ -157,27 +157,31 @@ variable "mongodb" {
 
 variable "mysql" {
   type = object({
-    root_password = string
+    root_user_name = string
+    root_password  = string
   })
   description = "MySQL service configuration"
   default = {
-    root_password = "root"
+    root_user_name = "root"
+    root_password  = "root"
   }
 }
 
 variable "postgresql" {
   type = object({
-    root_password = string
-    user_name     = string
-    user_password = string
-    db_name       = string
+    root_user_name = string
+    root_password  = string
+    user_name      = string
+    user_password  = string
+    db_name        = string
   })
   description = "PostgreSQL service configuration"
   default = {
-    root_password = "root"
-    user_name     = "keycloak"
-    user_password = "keycloak_password"
-    db_name       = "keycloak_ips"
+    root_user_name = "postgres"
+    root_password  = "root"
+    user_name      = "keycloak"
+    user_password  = "keycloak_password"
+    db_name        = "keycloak_ips"
   }
 }
 
