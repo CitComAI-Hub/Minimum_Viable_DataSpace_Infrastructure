@@ -210,47 +210,6 @@ resource "helm_release" "trusted_participants_registry" {
 # Depends on: WaltID, Credentials Config Service, Trusted Issuers List         #
 ################################################################################
 
-data "template_file" "did_config" {
-  template = file("${local.helm_config_map_path}/verifier/did-config.yaml")
-
-  vars = {
-    name          = local.verifier_configmap.did_config.name
-    waltid_domain = local.dns_dir[local.dns_domains.walt_id]
-  }
-}
-
-resource "kubernetes_config_map" "did_config" {
-  metadata {
-    name      = local.verifier_configmap.did_config.name # configmap name
-    namespace = var.namespace
-  }
-
-  data = {
-    "did-config.yml" = data.template_file.did_config.rendered
-  }
-}
-
-data "template_file" "vc_config" {
-  template = file("${local.helm_config_map_path}/verifier/verifier-credential.yaml")
-
-  vars = {
-    name       = local.verifier_configmap.did_config.name
-    did_domain = local.did_methods[var.did_option],
-  }
-}
-
-#? how have the credentials been generated?
-resource "kubernetes_config_map" "vc_config" {
-  metadata {
-    name      = local.verifier_configmap.vc_config.name # configmap name
-    namespace = var.namespace
-  }
-
-  data = {
-    "verifier-credential.yml" = data.template_file.vc_config.rendered
-  }
-}
-
 #? DONE m2m?? initContainers??
 resource "helm_release" "verifier" {
   depends_on = [
@@ -330,33 +289,6 @@ resource "helm_release" "pdp" {
 ################################################################################
 # Depends on: OrionLD, pdp                                                     #
 ################################################################################
-
-data "template_file" "kong_dbless" {
-  template = file("${local.helm_config_map_path}/kong/kong_dbless.yaml")
-
-  vars = {
-    name                  = local.kong_configmap.db_less.name,
-    orion_service         = var.services_names.orion_ld,
-    orion_name            = "tir", #? What is this? #FIXME
-    orion_port            = var.orion_ld.broker_port,
-    waltid_service        = var.services_names.walt_id,
-    waltid_name           = "waltid", #? What is this? #FIXME
-    waltid_custodian_port = 7003,
-    portal_orion          = "portal-orion-ld" #? What is this? #FIXME
-    portal_orion_name     = "vc"              #? What is this? #FIXME
-  }
-}
-
-resource "kubernetes_config_map" "kong_dbless" {
-  metadata {
-    name      = local.kong_configmap.db_less.name
-    namespace = var.namespace
-  }
-
-  data = {
-    "kong.yml" = data.template_file.kong_dbless.rendered
-  }
-}
 
 #? DONE dblessConfig??
 resource "helm_release" "kong" {
