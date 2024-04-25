@@ -1,0 +1,142 @@
+fullnameOverride: ${service_name}
+
+#* Specify Kong's Docker image and repository details here
+image:
+  # FIWARE example: https://github/FIWARE-Ops/fiware-gitops/tree/master/aws/dsba
+  repository: quay.io/fiware/kong
+  tag: "0.5.2"
+  # # Official Kong helm chart example: https://github/Kong/charts/blob/kong-2.38.0/charts/kong/values.yaml
+  # repository: kong
+  # tag: "3.6"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+autoscaling:
+  enabled: false
+
+#* Specify Kong configuration
+#* This chart takes all entries defined under `.env` and transforms them into into `KONG_*`
+#* environment variables for Kong containers.
+#* Their names here should match the names used in https://github.com/Kong/kong/blob/master/kong.conf.default
+#* See https://docs.konghq.com/latest/configuration also for additional details
+#* Values here take precedence over values from other sections of values.yaml,
+#* e.g. setting pg_user here will override the value normally set when postgresql.enabled
+#* is set below. In general, you should not set values here if they are set elsewhere.
+env:
+  database: "off"
+  # the chart uses the traditional router (for Kong 3.x+) because the ingress
+  # controller generates traditional routes. if you do not use the controller,
+  # you may set this to "traditional_compatible" or "expressions" to use the new
+  # DSL-based router
+  router_flavor: "traditional" 
+  nginx_worker_processes: "2"
+  proxy_access_log: /dev/stdout
+  admin_access_log: /dev/stdout
+  admin_gui_access_log: /dev/stdout
+  portal_api_access_log: /dev/stdout
+  proxy_error_log: /dev/stderr
+  admin_error_log: /dev/stderr
+  admin_gui_error_log: /dev/stderr
+  portal_api_error_log: /dev/stderr
+  prefix: /kong_prefix/
+  log_level: debug
+  nginx_proxy_large_client_header_buffers: "16 128k"
+  nginx_proxy_http2_max_field_size: "32k"
+  nginx_proxy_http2_max_header_size: "32k"
+  pluginserver_names: pep-plugin
+  plugins: bundled,pep-plugin,ngsi-ishare-policies #! ngsi-ishare-policies??
+  pluginserver_pep_plugin_start_cmd: "/go-plugins/pep-plugin"
+  pluginserver_pep_plugin_query_cmd: "/go-plugins/pep-plugin -dump"
+
+ingressController:
+  enabled: false
+  installCRDs: false
+
+proxy:
+  type: ClusterIP
+  enabled: true
+
+  route:
+    enabled: false
+
+  tls:
+    enabled: false
+  
+  ingress:
+    enabled: true
+    # ingressClassName:
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+    # Each path in an Ingress is required to have a corresponding path type 
+    # (when used with hostname above). (ImplementationSpecific/Exact/Prefix)
+    pathType: ImplementationSpecific
+    # hostname
+    hosts:
+      - host: ${service_domain}
+        paths:
+        - /
+    # TLS secret(s)
+    tls: ${secret_tls_name}
+
+podAnnotations:
+  prometheus.io/scrape: 'true'
+  prometheus.io/port: '9102'
+
+admin:
+  enabled: true
+  type: ClusterIP  
+  http: 
+    enabled: true
+    servicePort: 8001
+    containerPort: 8001
+
+status:
+  enabled: true
+  http: 
+    enabled: true
+    containerPort: 9102
+
+#! dblessConfig:
+#!   configMap: kong-one-configmap
+dblessConfig:
+  # Either Kong's configuration is managed from an existing ConfigMap (with Key: kong.yml)
+  configMap: ${dbless_configmap}
+  # Or Kong's configuration is managed from an existing Secret (with Key: kong.yml)
+  # secret: ""
+  # Or the configuration is passed in full-text below
+  # config: |
+  #   _format_version: "2.1"
+  #   _transform: true
+  #   consumers:
+  #   - username: token-consumer #! ??
+  #     keyauth_credentials:
+  #     - tags: #! ??
+  #       - token-key
+  #       - tir-key
+  #   services:
+  #     - host: "orionld" #TODO: Set as variable
+  #       name: "orion" #! namespace?? #TODO: Set as variable 
+  #       port: 1026
+  #       protocol: http
+  #       routes:
+  #         - name: orion #! ?? #TODO: Set as variable
+  #           paths:
+  #             - /orion #! ?? #TODO: Set as variable
+  #           strip_path: true
+  #       plugins:
+  #         - name: pep-plugin
+  #           config:
+  #             pathprefix: "/orion" #! ?? #TODO: Set as variable
+  #             authorizationendpointtype: ExtAuthz
+  #             authorizationendpointaddress: http://pdp:8080/authz #TODO: Set as variable
+  #         - name: request-transformer
+  #           config:
+  #             remove:
+  #               headers:
+  #                 - Authorization
+  #                 - authorization

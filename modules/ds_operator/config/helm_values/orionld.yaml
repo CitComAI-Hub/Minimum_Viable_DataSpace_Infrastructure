@@ -1,13 +1,16 @@
+fullnameOverride: ${service_name}
+
 deployment:
   additionalAnnotations:
     prometheus.io/scrape: 'true'
     prometheus.io/port: '8000'
+
 #* Configuration for the orion-ld service
 broker:
+  port: ${orion_port}
   db:
     # The db to use. if running in multiservice mode, its used as a prefix.
-    #! maximum 10 characters
-    name: orion-oper
+    name: ${orion_db_name}
     auth: 
       user: root
       password: ${root_password}
@@ -15,7 +18,8 @@ broker:
     # Configuration of the mongo-db hosts. if multiple hosts are inserted,
     # its assumed that mongo is running as a replica set
     hosts:
-      - ${service_name}        
+      - ${mongo_service}        
+
 #* Configuration for embedding mongodb into the chart. Do not use this in production.
 mongo:
   enabled: false

@@ -4,60 +4,119 @@ variable "kubernetes_local_path" {
   default     = "~/.kube/config"
 }
 
+################################################################################
+# Certs Configuration Module                                                   #
+################################################################################
+variable "ca_clusterissuer_name" {
+  type        = string
+  description = "The name of the clusterissuer"
+  default     = "ca-certificates"
+}
+
+################################################################################
+# Cluster Configuration                                                        #
+################################################################################
+
 variable "namespace" {
   type        = string
   description = "Namespace for the DS operator deployment"
   default     = "ds-operator"
 }
 
-variable "ds_domain" {
+variable "service_domain" {
   type        = string
   description = "Data Space domain"
   default     = "ds-operator.io"
 }
 
+################################################################################
+# Services Configuration                                                       #
+################################################################################
+
 variable "flags_deployment" {
   type = object({
-    mongodb = bool
-    mysql   = bool
-    walt_id = bool
-    # depends on: mysql
-    keyrock                    = bool
-    credentials_config_service = bool
-    trusted_issuers_list       = bool
-    # depends on: mongodb
-    orion_ld = bool
-    # depends on: walt_id, credentials_config_service, trusted_issuers_list
-    verifier = bool
-    # depends on: orion_ld
-    kong                          = bool
+    mongodb                       = bool
+    mysql                         = bool
+    walt_id                       = bool
+    orion_ld                      = bool
+    credentials_config_service    = bool
+    trusted_issuers_list          = bool
     trusted_participants_registry = bool
-    # depends on: keyrock, verifier
-    pdp = bool
+    verifier                      = bool
+    portal                        = bool
+    pdp                           = bool
+    kong                          = bool
+    keyrock                       = bool
   })
   description = "Whether to deploy resources."
   default = {
     mongodb = true
     mysql   = true
     walt_id = true
-    # depends on: mysql
-    keyrock                       = true
-    credentials_config_service    = true
-    trusted_participants_registry = true
     # depends on: mongodb
     orion_ld = true
+    # depends on: mysql
+    credentials_config_service = true
+    trusted_issuers_list       = true
+    # depends on: orion_ld
+    trusted_participants_registry = true
     # depends on: walt_id, credentials_config_service, trusted_issuers_list
     verifier = true
-    # depends on: orion_ld
-    kong                 = true
-    trusted_issuers_list = true
-    # depends on: keyrock, verifier
+    # depends on: credentials_config_service, kong, verifier
+    portal = true
+    # depends on: walt_id, verifier
     pdp = true
+    # depends on: orion_ld, pdp
+    kong = true
+    # depends on: walt_id, mysql, pdp
+    keyrock = true
   }
 }
 
+variable "services_names" {
+  type = object({
+    mongo    = string
+    mysql    = string
+    walt_id  = string
+    orion_ld = string
+    ccs      = string
+    til      = string
+    tir      = string
+    tpr      = string
+    verifier = string
+    pdp      = string
+    portal   = string
+    kong     = string
+    keyrock  = string
+  })
+  description = "values for the namespace of the services"
+  default = {
+    mongo    = "mongodb"
+    mysql    = "mysql"
+    walt_id  = "waltid"
+    orion_ld = "orionld"
+    ccs      = "cred-conf-service"
+    til      = "trusted-issuers-list"
+    tir      = "trusted-issuers-registry" # this is include in the TIL service
+    tpr      = "trusted-participants-registry"
+    verifier = "verifier"
+    pdp      = "pdp"
+    portal   = "portal"
+    kong     = "proxy-kong"
+    keyrock  = "keyrock"
+  }
+}
 
-# MongoDB service
+variable "did_option" {
+  type        = string
+  description = "DID option for the services"
+  default     = "web"
+}
+
+################################################################################
+# Helm Configuration                                                           #
+################################################################################
+
 variable "mongodb" {
   type = object({
     version       = string
@@ -74,7 +133,6 @@ variable "mongodb" {
   }
 }
 
-# MySQL database
 variable "mysql" {
   type = object({
     version       = string
@@ -97,22 +155,66 @@ variable "mysql" {
   }
 }
 
-# Orion-LD broker
-variable "orion_ld" {
+variable "walt_id" {
   type = object({
     version    = string
     chart_name = string
     repository = string
   })
+  description = "Walt-ID Service"
+  default = {
+    version    = "0.0.17"
+    chart_name = "vcwaltid"
+    repository = "https://i4Trust.github.io/helm-charts"
+  }
+}
+
+variable "orion_ld" {
+  type = object({
+    version     = string
+    chart_name  = string
+    repository  = string
+    broker_port = number
+    db_name     = string
+  })
   description = "Orion-LD service"
   default = {
-    version    = "1.2.6"
-    chart_name = "orion"
+    version     = "1.2.6"
+    chart_name  = "orion"
+    repository  = "https://fiware.github.io/helm-charts"
+    broker_port = 1026
+    db_name     = "orion-oper" #! maximum 10 characters
+  }
+}
+
+variable "credentials_config_service" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "Credentials Config Service"
+  default = {
+    version    = "0.0.4"
+    chart_name = "credentials-config-service"
     repository = "https://fiware.github.io/helm-charts"
   }
 }
 
-# Trusted Participants Registry
+variable "trusted_issuers_list" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "Trusted Issuers List service"
+  default = {
+    version    = "0.5.3"
+    chart_name = "trusted-issuers-list"
+    repository = "https://fiware.github.io/helm-charts"
+  }
+}
+
 variable "trusted_participants_registry" {
   type = object({
     version    = string
@@ -127,26 +229,34 @@ variable "trusted_participants_registry" {
   }
 }
 
-# Keyrock (Authorization Registry)
-variable "keyrock" {
+variable "portal" {
   type = object({
-    version        = string
-    chart_name     = string
-    repository     = string
-    admin_password = string
-    admin_email    = string
+    version    = string
+    chart_name = string
+    repository = string
   })
-  description = "Keyrock"
+  description = "Portal Service"
   default = {
-    version        = "0.7.5"
-    chart_name     = "keyrock"
-    repository     = "https://fiware.github.io/helm-charts"
-    admin_password = "admin"
-    admin_email    = "admin@ds-operator.org"
+    version    = "2.2.5"
+    chart_name = "pdc-portal"
+    repository = "https://i4Trust.github.io/helm-charts"
   }
 }
 
-# PDP
+variable "verifier" {
+  type = object({
+    version    = string
+    chart_name = string
+    repository = string
+  })
+  description = "Verifier Service"
+  default = {
+    version    = "1.0.23"
+    chart_name = "vcverifier"
+    repository = "https://i4Trust.github.io/helm-charts"
+  }
+}
+
 variable "pdp" {
   type = object({
     version    = string
@@ -162,7 +272,6 @@ variable "pdp" {
 
 }
 
-# Kong
 variable "kong" {
   type = object({
     version    = string
@@ -175,81 +284,22 @@ variable "kong" {
     chart_name = "kong"
     repository = "https://charts.konghq.com"
   }
-
 }
 
-# Credentials Config Service
-variable "credentials_config_service" {
+variable "keyrock" {
   type = object({
-    version    = string
-    chart_name = string
-    repository = string
+    version        = string
+    chart_name     = string
+    repository     = string
+    admin_password = string
+    admin_email    = string
   })
-  description = "Credentials Config Service"
+  description = "Keyrock"
   default = {
-    version    = "0.0.4"
-    chart_name = "credentials-config-service"
-    repository = "https://fiware.github.io/helm-charts"
+    version        = "0.7.5" # latest version 0.7.7
+    chart_name     = "keyrock"
+    repository     = "https://fiware.github.io/helm-charts"
+    admin_password = "admin"
+    admin_email    = "admin@ds-operator.org"
   }
-}
-
-# Trusted issuers list
-variable "trusted_issuers_list" {
-  type = object({
-    version    = string
-    chart_name = string
-    repository = string
-  })
-  description = "Trusted Issuers List service"
-  default = {
-    version    = "0.5.3"
-    chart_name = "trusted-issuers-list"
-    repository = "https://fiware.github.io/helm-charts"
-  }
-}
-
-# Walt-ID
-variable "walt_id" {
-  type = object({
-    version    = string
-    chart_name = string
-    repository = string
-  })
-  description = "Walt-ID Service"
-  default = {
-    version    = "0.0.17"
-    chart_name = "vcwaltid"
-    repository = "https://i4Trust.github.io/helm-charts"
-  }
-}
-
-# Verifier
-variable "verifier" {
-  type = object({
-    version    = string
-    chart_name = string
-    repository = string
-  })
-  description = "Verifier Service"
-  default = {
-    version    = "1.0.15"
-    chart_name = "vcverifier"
-    repository = "https://i4Trust.github.io/helm-charts"
-  }
-}
-
-# Portal
-variable "portal" {
-  type = object({
-    version    = string
-    chart_name = string
-    repository = string
-  })
-  description = "Portal Service"
-  default = {
-    version    = "0.0.5"
-    chart_name = "vcportal"
-    repository = "https://i4Trust.github.io/helm-charts"
-  }
-
 }

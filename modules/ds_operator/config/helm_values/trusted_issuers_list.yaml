@@ -1,0 +1,50 @@
+fullnameOverride: ${service_name}
+
+## ingress configuration
+ingress:
+  # Route config for the trusted issuers list endpoint
+  til:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: ${service_domain_til}
+        paths:
+          - /
+    tls:
+      - secretName: ${secret_tls_name_til}
+        hosts:
+          - ${service_domain_til}
+  # Route config for the trusted issuers registry endpoint
+  tir:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: ${service_domain_tir}
+        paths:
+          - /
+    tls:
+      - secretName: ${secret_tls_name_tir}
+        hosts:
+          - ${service_domain_tir}
+
+deployment:
+  image:  
+    tag: 0.0.3
+
+database:
+  persistence: true
+  host: ${mysql_service}
+  port: 3306 #TODO: Set as variable
+  name: ${til_db}
+  username: root #TODO: Set as variable
+  password: ${root_password}

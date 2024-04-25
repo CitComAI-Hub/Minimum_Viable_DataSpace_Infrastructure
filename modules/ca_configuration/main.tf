@@ -46,34 +46,3 @@ resource "kubernetes_manifest" "cert_manager" {
     }
   }
 }
-
-# FIXME: It's working but maybe it's not the best way to do it.
-resource "kubernetes_manifest" "bundle_trust_manager" {
-  depends_on = [kubernetes_secret.secret_ca_certificates]
-  manifest = {
-    apiVersion = "trust.cert-manager.io/v1alpha1"
-    kind       = "Bundle"
-    metadata = {
-      name = "public-bundle"
-    }
-    spec = {
-      sources = [{
-        secret = {
-          name      = var.secret_ca_container
-          namespace = var.namespace
-          key       = "tls.crt"
-        }
-      }]
-      target = {
-        configMap = {
-          key = "my-ca-certificate.crt"
-        }
-        namespaceSelector = {
-          matchLabels = {
-            trust = "enabled"
-          }
-        }
-      }
-    }
-  }
-}
