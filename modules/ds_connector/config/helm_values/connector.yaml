@@ -1555,6 +1555,8 @@ keyrock:
   # Enable the deployment of application: keyrock
   deploymentEnabled: ${keyrock_enable}
 
+  fullnameOverride: ${keyrock_name}
+
   ##############################################################################
   # Helm chart: Keyrock                                                        #
   ##############################################################################
@@ -1584,9 +1586,9 @@ keyrock:
     
     # MySQL DB config
     db:
+      host: ${mysql_name}
       user: ${mysql_root_user}
       password: ${mysql_root_password}
-      host: ${mysql_name}
 
     # Admin user to be created
     admin:

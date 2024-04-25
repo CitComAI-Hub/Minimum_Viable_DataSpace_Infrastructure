@@ -59,13 +59,13 @@ module "connector_A" {
     tm_forum_api        = true
     orion_ld            = true
     ccs                 = true
+    keyrock             = false #crash deployment
     til                 = true
-    verifier            = true
-    contract_management = true
-    activation          = true
     keycloak            = true
-    keyrock             = false #<<
+    verifier            = true
     pdp                 = true
     kong                = true
+    contract_management = true
+    activation          = true
   }
 }
