@@ -4,8 +4,6 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#ds-fully-local">Data Space Fully Local</a>
-    </li>
     <li>
         <a href="#kind-cluster">Kind Cluster</a>
         <ul>
@@ -15,12 +13,6 @@
     <li><a href="#minimal-ds">Minimal DS</a></li>
   </ol>
 </details>
-
-## Data Space Fully Local
-
-Deployment of the Fiware [Demo Setup DSBA-compliant Data Space](https://github.com/FIWARE-Ops/fiware-gitops/tree/master/aws/dsba) in a local environment.
-
-**Source:** [ds_fully_local](ds_fully_local/)
 
 ## Kind Cluster
 
