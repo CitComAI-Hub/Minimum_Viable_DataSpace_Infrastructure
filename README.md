@@ -1,3 +1,12 @@
+> [!IMPORTANT]  
+> **Branch Temporarily Halted**
+>
+> This branch try to deploy the Fiware Data Space Connector **version 2.0.4** (`module/ds_connector`). The complete environment consists of a data space operator and a couple of connectors (`examples/minimal_ds`).
+>
+> *Current status:* All services are deployed except Keyrock.
+
+---
+
 <a name="readme-top"></a>
 
 <!-- PROJECT LOGO -->
