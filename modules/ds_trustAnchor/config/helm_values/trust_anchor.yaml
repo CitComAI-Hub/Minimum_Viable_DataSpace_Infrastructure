@@ -1,0 +1,81 @@
+# https://github.com/FIWARE-Ops/data-space-connector/blob/data-space-connector-3.0.1/charts/trust-anchor/values.yaml
+
+# Generate passwords for the mysql database automatically
+generatePasswords:
+  enabled: ${generate_passwords_enabled}
+  secretName: ${mysql_secret}
+
+# Database for the trust anchor
+mysql:
+  enabled: ${mysql_enabled}
+  fullnameOverride: ${mysql_host_name}
+  auth:
+    existingSecret: ${mysql_secret}
+  primary:
+    persistence:
+      enabled: false
+  secondary:
+    persistence:
+      enabled: false
+  initdbScripts:
+    create.sql: |
+      CREATE DATABASE ${mysql_db_name};
+
+# Trust Anchor (DS-Operator)
+trusted-issuers-list:
+  enabled: ${til_enabled}
+  fullnameOverride: ${til_host_name}
+
+  # ingress:
+  #   tir:
+  #     enabled: true
+  #     hosts:
+  #       - host: tir.io
+  #   til:
+  #     enabled: true
+  #     hosts:
+  #       - host: til.io
+  ingress:
+    til:
+      enabled: true
+      annotations:
+        kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+        # forcing everything to use ssl
+        ingress.kubernetes.io/ssl-redirect: "true"
+        # example annotations, allowing cert-manager to automatically create tls-certs
+        kubernetes.io/tls-acme: "true"
+      hosts:
+        - host: ${til_domain}
+          paths:
+            - /
+      tls:
+        - secretName: ${til_secret_tls}
+          hosts:
+            - ${til_domain}
+    tir:
+      enabled: true
+      annotations:
+        kubernetes.io/ingress.class: "nginx"
+        # forcing everything to use ssl
+        ingress.kubernetes.io/ssl-redirect: "true"
+        # example annotations, allowing cert-manager to automatically create tls-certs
+        kubernetes.io/tls-acme: "true"
+      hosts:
+        - host: ${tir_domain}
+          paths:
+            - /
+      tls:
+        - secretName: ${tir_secret_tls}
+          hosts:
+            - ${tir_domain}
+
+  
+  database:
+    persistence: true
+    host:  ${mysql_host_name}
+    username: root
+    name: ${mysql_db_name}
+    existingSecret: 
+      enabled: true
+      name: ${mysql_secret}
+      key: mysql-root-password
