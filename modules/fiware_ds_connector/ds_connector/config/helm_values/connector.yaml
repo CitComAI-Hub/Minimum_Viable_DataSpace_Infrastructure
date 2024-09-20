@@ -1,0 +1,302 @@
+# https://github.com/FIWARE/data-space-connector/blob/main/charts/data-space-connector/values.yaml
+
+# NOT USED
+keycloak:
+  enabled: false
+
+
+################################################################################
+# CONFIGURATION
+################################################################################
+
+issuance:
+  generatePasswords:
+    enabled: false
+
+did:
+  enabled: false
+
+registration:
+  enabled: false
+
+dataSpaceConfig:
+  enabled: false
+
+
+################################################################################
+# SERVICES
+################################################################################
+
+## CREDENTIALS
+################################################################################
+
+# configuration to be shared between the authentication components
+authentication:
+  # should a password for the database connection of authentication components
+  # be generated in the cluster
+  generatePasswords:
+    enabled: ${generate_passwords_enabled}
+    # name of the secret to put the generated password into
+    secretName: ${mysql_secret}
+
+# configuration for the mysql to be deployed as part of the connector, 
+# see https://github.com/bitnami/charts/tree/main/bitnami/mysql for all options
+mysql:
+  enabled: ${mysql_enabled}
+  fullnameOverride: ${mysql_host_name}
+  auth:
+    existingSecret: ${mysql_secret}
+  # scripts to be executed on db startup
+  initdbScripts:
+    create.sql: |
+      CREATE DATABASE ${mysql_tildb_name};
+      CREATE DATABASE ${mysql_ccsdb_name};
+  primary:
+    persistence:
+      enabled: false
+  secondary:
+    persistence:
+      enabled: false
+
+# configuration for the trusted-issuers-list to be deployed as part of the 
+# connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/trusted-issuers-list for all options
+trusted-issuers-list:
+  enabled: ${til_enabled}
+  fullnameOverride: ${til_host_name}
+  #TODO: Ingress
+  # # only open for clean up in the tests
+  # ingress:
+  #   til:
+  #     enabled: true
+  #     hosts:
+  #       - host: til-provider.127.0.0.1.nip.io
+  #         paths:
+  #           - /
+  database:
+    persistence: true
+    host: ${mysql_host_name}
+    username: root
+    name: ${mysql_tildb_name}
+    existingSecret: 
+      enabled: ${generate_passwords_enabled}
+      name: ${mysql_secret}
+      key: mysql-root-password
+
+# configuration for the credentials-config-service to be deployed as part of the
+# connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/credentials-config-service for all options
+credentials-config-service:
+  enabled: ${ccs_enabled}
+  fullnameOverride: ${ccs_host_name}
+  database:
+    persistence: true
+    host: ${mysql_host_name}
+    username: root
+    name: ${mysql_ccsdb_name}
+    existingSecret: 
+      enabled: ${generate_passwords_enabled}
+      name: ${mysql_secret}
+      key: mysql-root-password
+
+## CONTEXT BROKER
+################################################################################
+
+dataplane:
+  generatePasswords:
+    enabled: ${generate_passwords_enabled}
+    secretName: data-service-secret
+
+# configuration for the postgresql to be deployed as part of the connector, see 
+# https://github.com/bitnami/charts/tree/main/bitnami/postgresql for all options
+postgis:
+  enabled: ${postgis_enabled}
+  # overrides the generated name, provides stable service names - this should be
+  # avoided if multiple instances are available in the same namespace
+  fullnameOverride: data-service-postgis
+  # overrides the generated name, provides stable service names - this should be
+  # avoided if multiple instances are available in the same namespace
+  nameOverride: data-service-postgis
+  ## auth configuration for the database
+  auth:
+    existingSecret: data-service-secret
+    secretKeys:
+      adminPasswordKey: postgres-admin-password
+      userPasswordKey: postgres-user-password
+  primary:
+    persistence:
+      enabled: false
+    initdb:
+      scripts:
+        # psql postgresql://postgres:$(kubectl get secret data-service-secret -o jsonpath="{.data.postgres-password}" | base64 --decode)@localhost:5432 -c "CREATE EXTENSION postgis;"
+        enable.sh: |
+          psql postgresql://postgres:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE EXTENSION postgis;"
+          psql postgresql://postgres:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE ngb;"
+  readReplicas:
+    persistence:
+      enabled: false
+
+
+apisix:
+  enabled: true
+  image:
+    debug: true
+  dashboard:
+    enabled: false
+  dataPlane:
+    ingress:
+      enabled: false
+      hostname: mp-data-service.127.0.0.1.nip.io
+      extraHosts:
+        - name: mp-tmf-api.127.0.0.1.nip.io
+          path: /
+  catchAllRoute:
+    enabled: false
+  routes: |-
+    - uri: /.well-known/openid-configuration
+      host: mp-data-service.127.0.0.1.nip.io
+      upstream:
+        nodes:
+          verifier:3000: 1
+        type: roundrobin
+      plugins:
+        proxy-rewrite:
+          uri: /services/data-service/.well-known/openid-configuration
+    - uri: /.well-known/data-space-configuration
+      upstream:
+        nodes:
+          dsconfig:3002: 1
+        type: roundrobin
+      plugins:
+        proxy-rewrite:
+          uri: /.well-known/data-space-configuration/data-space-configuration.json
+        response-rewrite:
+          headers:
+            set:
+              content-type: application/json
+    - uri: /*
+      host: mp-data-service.127.0.0.1.nip.io
+      upstream:
+        nodes:
+          data-service-scorpio:9090: 1
+        type: roundrobin
+      plugins:
+        openid-connect:
+          bearer_only: true
+          use_jwks: true
+          client_id: data-service
+          client_secret: unused
+          ssl_verify: false
+          discovery: http://verifier:3000/services/data-service/.well-known/openid-configuration
+        opa:
+          host: "http://localhost:8181"
+          policy: policy/main
+          with_body: true
+    - uri: /.well-known/openid-configuration
+      host: mp-tmf-api.127.0.0.1.nip.io
+      upstream:
+        nodes:
+          verifier:3000: 1
+        type: roundrobin
+      plugins:
+        proxy-rewrite:
+          uri: /services/tmf-api/.well-known/openid-configuration
+    - uri: /*
+      host: mp-tmf-api.127.0.0.1.nip.io
+      upstream:
+        nodes:
+          tm-forum-api:8080: 1
+        type: roundrobin
+      plugins:
+        openid-connect:
+          bearer_only: true
+          use_jwks: true
+          client_id: contract-management
+          client_secret: unused
+          ssl_verify: false
+          discovery: http://verifier:3000/services/tmf-api/.well-known/openid-configuration
+        opa:
+          host: "http://localhost:8181"
+          policy: policy/main
+          with_body: true
+
+## configuration of the context-broker - see https://github.com/FIWARE/helm-charts/tree/main/charts/scorpio-broker-aaio for details
+scorpio:
+  # should scorpio be enabled
+  enabled: false
+
+
+
+
+
+
+
+################################################################################
+
+#! ERROR
+postgresql:
+  generatePasswords:
+    # ${generate_passwords_enabled}
+    enabled: false
+    secretName: ${postgresql_secret}
+  enabled: ${postgresql_enabled}
+  fullnameOverride: ${postgresql_host_name}
+  # configure authentication to mysql
+  auth:
+    # name of the secret to take the passowrds from
+    existingSecret: ${postgresql_secret}
+    # key of the secrets inside the secret
+    secretKeys:
+      adminPasswordKey: ${postgresql_secrect_key_adminpass}
+      userPasswordKey: ${postgresql_secrect_key_userpass}
+  # configuration for the primary of the db
+  primary:
+    persistence:
+      enabled: false
+    # scripts to be run on intialization
+    initdb:
+      scripts:
+        create.sh: |
+          psql postgresql://postgres:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE pap;"
+          psql postgresql://postgres:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE keycloak;"
+  readReplicas:
+    persistence:
+      enabled: false
+
+
+# configuration for the vcverifier to be deployed as part of the connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/vcverifier for all options
+vcverifier:
+  # should it be enabled? set to false if one outside the chart is used.
+  enabled: false
+
+# configuration for the odrl-pap to be deployed as part of the connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/odrl-pap for all options
+odrl-pap:
+  # should it be enabled? set to false if one outside the chart is used.
+  enabled: false
+
+# configuration for the open-policy-agent to be deployed as part of the connector fulfilling the role of the PDP, as a sidecar to apisix
+opa:
+  # should an opa sidecar be deployed to apisix
+  enabled: false
+
+# configuration for apisix to be deployed as part of the connector, see https://github.com/bitnami/charts/tree/main/bitnami/apisix for all options
+apisix:
+  # should it be enabled? set to false if one outside the chart is used.
+  enabled: false
+
+
+## configuration of the tm-forum-api - see https://github.com/FIWARE/helm-charts/tree/main/charts/tm-forum-api for details
+tm-forum-api:
+  # should it be enabled? set to false if one outside the chart is used.
+  enabled: false
+  # enable the api proxy
+  apiProxy:
+    enabled: false
+  # redis caching
+  redis:
+    enabled: false
+
+  registration:
+    enabled: false
+
+## configuration of the tm-forum-api - see https://github.com/FIWARE/helm-charts/tree/main/charts/contract-management for details
+contract-management:
+  enabled: false

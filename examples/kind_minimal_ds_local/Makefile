@@ -3,6 +3,8 @@ include ../kind_cluster/config/deployment.mk
 
 .PHONY: init_apply, destroy
 
+# export KUBECONFIG=./cluster-config.yaml
+
 ## Init & apply Terraform resources for the Kind cluster.
 init_apply:
 	$(call up_kind,../kind_cluster/,../../kind_minimal_ds_local/config/cluster_vars.tfvars)
@@ -11,8 +13,16 @@ init_apply:
 	terraform init -upgrade && \
 	terraform apply -auto-approve -var-file=../config/global_vars.tfvars
 
+	cd ./connector_A/ && \
+	terraform init -upgrade && \
+	terraform apply -auto-approve -var-file=../config/global_vars.tfvars
+
 ## Destroy Terraform resources for the Kind cluster.
 destroy:
+	-cd ./connector_A/ && \
+	terraform destroy -auto-approve -var-file=../config/global_vars.tfvars && \
+	$(remove_tmp_tf)
+
 	-cd ./trust_anchor/ && \
 	terraform destroy -auto-approve -var-file=../config/global_vars.tfvars && \
 	$(remove_tmp_tf)
