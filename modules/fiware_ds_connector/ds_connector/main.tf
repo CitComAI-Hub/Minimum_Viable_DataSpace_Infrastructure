@@ -17,18 +17,18 @@ resource "helm_release" "ds_connector" {
       mysql_secret     = "mysql-database-secret",
       mysql_tildb_name = "tildb",
       mysql_ccsdb_name = "ccsdb",
+      # Trusted Issuers List
+      til_enabled   = false,
+      til_host_name = var.services_names.til,
+      # Credentials Configuration Service
+      ccs_enabled   = false,
+      ccs_host_name = var.services_names.ccs,
       # PostgreSQL configuration
-      postgresql_enabled               = false,
+      postgresql_enabled               = true,
       postgresql_host_name             = var.services_names.postgresql,
       postgresql_secret                = "postgresql-database-secret",
       postgresql_secrect_key_adminpass = "postgresql-database-admin-pass",
       postgresql_secrect_key_userpass  = "postgresql-database-user-pass",
-      # Trusted Issuers List
-      til_enabled = false,
-      til_host_name = var.services_names.til,
-      # Credentials Configuration Service
-      ccs_enabled = false,
-      ccs_host_name = var.services_names.ccs,
       # Postgis
       postgis_enabled = true,
     })

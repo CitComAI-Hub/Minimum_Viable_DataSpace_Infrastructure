@@ -22,6 +22,15 @@ registration:
 dataSpaceConfig:
   enabled: false
 
+# configuration for the odrl-pap to be deployed as part of the connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/odrl-pap for all options
+odrl-pap:
+  # should it be enabled? set to false if one outside the chart is used.
+  enabled: false
+
+# configuration for the open-policy-agent to be deployed as part of the connector fulfilling the role of the PDP, as a sidecar to apisix
+opa:
+  # should an opa sidecar be deployed to apisix
+  enabled: false
 
 ################################################################################
 # SERVICES
@@ -30,7 +39,7 @@ dataSpaceConfig:
 ## CREDENTIALS
 ################################################################################
 
-# configuration to be shared between the authentication components
+#Configuration to be shared between the authentication components
 authentication:
   # should a password for the database connection of authentication components
   # be generated in the cluster
@@ -39,7 +48,7 @@ authentication:
     # name of the secret to put the generated password into
     secretName: ${mysql_secret}
 
-# configuration for the mysql to be deployed as part of the connector, 
+# Configuration for the mysql to be deployed as part of the connector, 
 # see https://github.com/bitnami/charts/tree/main/bitnami/mysql for all options
 mysql:
   enabled: ${mysql_enabled}
@@ -58,7 +67,7 @@ mysql:
     persistence:
       enabled: false
 
-# configuration for the trusted-issuers-list to be deployed as part of the 
+# Configuration for the trusted-issuers-list to be deployed as part of the 
 # connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/trusted-issuers-list for all options
 trusted-issuers-list:
   enabled: ${til_enabled}
@@ -82,7 +91,7 @@ trusted-issuers-list:
       name: ${mysql_secret}
       key: mysql-root-password
 
-# configuration for the credentials-config-service to be deployed as part of the
+# Configuration for the credentials-config-service to be deployed as part of the
 # connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/credentials-config-service for all options
 credentials-config-service:
   enabled: ${ccs_enabled}
@@ -97,6 +106,12 @@ credentials-config-service:
       name: ${mysql_secret}
       key: mysql-root-password
 
+# Configuration for the vcverifier to be deployed as part of the connector, 
+# see https://github.com/FIWARE/helm-charts/tree/main/charts/vcverifier for all options
+vcverifier:
+  enabled: false
+
+
 ## CONTEXT BROKER
 ################################################################################
 
@@ -105,7 +120,7 @@ dataplane:
     enabled: ${generate_passwords_enabled}
     secretName: data-service-secret
 
-# configuration for the postgresql to be deployed as part of the connector, see 
+# Configuration for the postgresql to be deployed as part of the connector, see 
 # https://github.com/bitnami/charts/tree/main/bitnami/postgresql for all options
 postgis:
   enabled: ${postgis_enabled}
@@ -218,25 +233,38 @@ apisix:
           policy: policy/main
           with_body: true
 
-## configuration of the context-broker - see https://github.com/FIWARE/helm-charts/tree/main/charts/scorpio-broker-aaio for details
+## Configuration of the context-broker - see https://github.com/FIWARE/helm-charts/tree/main/charts/scorpio-broker-aaio for details
 scorpio:
-  # should scorpio be enabled
+  enabled: false
+
+## MARKETPLACE
+################################################################################
+
+## configuration of the tm-forum-api - see https://github.com/FIWARE/helm-charts/tree/main/charts/tm-forum-api for details
+tm-forum-api:
+  # should it be enabled? set to false if one outside the chart is used.
+  enabled: false
+  # enable the api proxy
+  apiProxy:
+    enabled: false
+  # redis caching
+  redis:
+    enabled: false
+
+  registration:
+    enabled: false
+
+## configuration of the tm-forum-api - see https://github.com/FIWARE/helm-charts/tree/main/charts/contract-management for details
+contract-management:
   enabled: false
 
 
 
-
-
-
-
-################################################################################
-
-#! ERROR
 postgresql:
   generatePasswords:
-    # ${generate_passwords_enabled}
-    enabled: false
+    enabled: ${generate_passwords_enabled}
     secretName: ${postgresql_secret}
+  
   enabled: ${postgresql_enabled}
   fullnameOverride: ${postgresql_host_name}
   # configure authentication to mysql
@@ -261,42 +289,3 @@ postgresql:
     persistence:
       enabled: false
 
-
-# configuration for the vcverifier to be deployed as part of the connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/vcverifier for all options
-vcverifier:
-  # should it be enabled? set to false if one outside the chart is used.
-  enabled: false
-
-# configuration for the odrl-pap to be deployed as part of the connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/odrl-pap for all options
-odrl-pap:
-  # should it be enabled? set to false if one outside the chart is used.
-  enabled: false
-
-# configuration for the open-policy-agent to be deployed as part of the connector fulfilling the role of the PDP, as a sidecar to apisix
-opa:
-  # should an opa sidecar be deployed to apisix
-  enabled: false
-
-# configuration for apisix to be deployed as part of the connector, see https://github.com/bitnami/charts/tree/main/bitnami/apisix for all options
-apisix:
-  # should it be enabled? set to false if one outside the chart is used.
-  enabled: false
-
-
-## configuration of the tm-forum-api - see https://github.com/FIWARE/helm-charts/tree/main/charts/tm-forum-api for details
-tm-forum-api:
-  # should it be enabled? set to false if one outside the chart is used.
-  enabled: false
-  # enable the api proxy
-  apiProxy:
-    enabled: false
-  # redis caching
-  redis:
-    enabled: false
-
-  registration:
-    enabled: false
-
-## configuration of the tm-forum-api - see https://github.com/FIWARE/helm-charts/tree/main/charts/contract-management for details
-contract-management:
-  enabled: false
