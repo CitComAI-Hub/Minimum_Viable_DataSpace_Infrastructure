@@ -23,16 +23,11 @@ locals {
   #! Do not edit below this line                                               #
   #!############################################################################
 
-  #   helm_config_map_path = "${path.module}/config/configmaps"
-  helm_conf_yaml_path = "${path.module}/config/helm_values"
+  helm_config_map_path = "${path.module}/config/configmaps"
+  helm_conf_yaml_path  = "${path.module}/config/helm_values"
 
   # services endpoints
   dns_dir = { for prop in local.cert_properties : prop.id => prop.dns_name if contains(values(local.dns_domains), prop.id) }
-
-  #   did_methods = {
-  #     web = "did:web:${local.dns_dir[local.dns_domains.walt_id]}:did"
-  #     key = "did:key" # TODO: change to real did:key
-  #   }
 
   secrets_tls = { for prop in local.cert_properties : prop.id => prop.spec_secret_name if contains(values(local.dns_domains), prop.id) }
 

@@ -42,7 +42,7 @@ kubectl get services -n portainer
 
 Minimal Data Space deployment.
 
-**Source:** [minimal_ds](minimal_ds/)
+**Source:** [minimal_ds](kind_minimal_ds_local/)
 
 ![minimal_ds](images/minimum_dataspace_arch.png)
 

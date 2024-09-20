@@ -16,7 +16,7 @@ variable "namespace" {
 variable "service_domain" {
   type        = string
   description = "Data Space domain"
-  default     = "ds-operator.io"
+  default     = "ds-operator.local"
 }
 
 ################################################################################
@@ -39,9 +39,9 @@ variable "trust_anchor" {
   })
   description = "Fiware minimal Trust Anchor (DS Operator)"
   default = {
-    version    = "0.0.1"
+    version    = "0.2.0"
     chart_name = "trust-anchor"
-    repository = "https://fiware-ops.github.io/data-space-connector/"
+    repository = "https://fiware.github.io/data-space-connector/"
   }
 }
 

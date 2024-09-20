@@ -1,9 +1,17 @@
 # https://github.com/FIWARE-Ops/data-space-connector/blob/data-space-connector-3.0.1/charts/trust-anchor/values.yaml
 
+################################################################################
+# CONFIGURATION
+################################################################################
+
 # Generate passwords for the mysql database automatically
 generatePasswords:
   enabled: ${generate_passwords_enabled}
   secretName: ${mysql_secret}
+
+################################################################################
+# SERVICES
+################################################################################
 
 # Database for the trust anchor
 mysql:
@@ -26,15 +34,6 @@ trusted-issuers-list:
   enabled: ${til_enabled}
   fullnameOverride: ${til_host_name}
 
-  # ingress:
-  #   tir:
-  #     enabled: true
-  #     hosts:
-  #       - host: tir.io
-  #   til:
-  #     enabled: true
-  #     hosts:
-  #       - host: til.io
   ingress:
     til:
       enabled: true
@@ -48,10 +47,10 @@ trusted-issuers-list:
         - host: ${til_domain}
           paths:
             - /
-      tls:
-        - secretName: ${til_secret_tls}
-          hosts:
-            - ${til_domain}
+      # tls:
+      #   - secretName: ${til_secret_tls}
+      #     hosts:
+      #       - ${til_domain}
     tir:
       enabled: true
       annotations:
@@ -64,12 +63,11 @@ trusted-issuers-list:
         - host: ${tir_domain}
           paths:
             - /
-      tls:
-        - secretName: ${tir_secret_tls}
-          hosts:
-            - ${tir_domain}
+      # tls:
+      #   - secretName: ${tir_secret_tls}
+      #     hosts:
+      #       - ${tir_domain}
 
-  
   database:
     persistence: true
     host:  ${mysql_host_name}
