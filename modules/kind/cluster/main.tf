@@ -11,7 +11,7 @@ resource "kind_cluster" "k8s_cluster" {
     node {
       role = "control-plane"
       kubeadm_config_patches = [
-        "kind: InitConfiguration\nnodeRegistration:\n  kubeletExtraArgs:\n    node-labels: \"ingress-ready=true\"\n"
+        file("${path.module}/config/kubeadm_config_patches.yaml")
       ]
       dynamic "extra_port_mappings" {
         for_each = var.add_extra_ports

@@ -31,8 +31,12 @@ if ! command -v docker &> /dev/null; then
     echo "Docker not found. Please install Docker." > /dev/stderr
     exit 1
 fi
-docker_network=$(docker network inspect -f '{{.IPAM.Config}}' kind | cut -d ' ' -f 1)
-docker_network=${docker_network:2}
+
+if ! command -v jq &> /dev/null; then
+    echo -e "\e[31m[ERROR] => jq not found. Installing jq...\e[0m" > /dev/stderr
+    exit 1
+fi
+docker_network=$(docker network inspect kind | jq -r '.[0].IPAM.Config[] | select(.Subnet | contains(".")) | .Subnet')
 
 ##################################################################################
 # Check that the string result have a format of an IPv4 like: xxx.xxx.xxx.xxx/xx #
