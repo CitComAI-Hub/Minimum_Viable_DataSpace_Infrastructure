@@ -52,16 +52,26 @@ variable "services_names" {
   type = object({
     connector  = string
     mysql      = string
-    postgresql = string
-    til        = string
     ccs        = string
+    til        = string
+    did        = string
+    vcv        = string
+    postgresql = string
+    pap        = string
+    postgis    = string
+    scorpio    = string
   })
   description = "Services names for the DS Connector"
   default = {
     connector  = "fiware-data-space-connector"
     mysql      = "mysql"
-    postgresql = "postgresql"
-    til        = "trusted-issuers-list"
     ccs        = "credentials-config-service"
+    til        = "trusted-issuers-list"
+    did        = "did-helper" # default name, not editable
+    vcv        = "vc-verifier"
+    postgresql = "postgresql"
+    pap        = "pap-odrl"
+    postgis    = "postgis-db"
+    scorpio    = "scorpio-broker"
   }
 }
