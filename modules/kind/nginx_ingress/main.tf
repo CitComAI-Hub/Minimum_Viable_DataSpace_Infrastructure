@@ -1,15 +1,9 @@
-resource "kubernetes_namespace" "namespace_ingress_nginx" {
-  metadata {
-    name = var.namespace
-  }
-}
-
 ################################################################################
 # Admission webhook
 ################################################################################
 
 resource "kubernetes_service_account" "ingress_nginx_admission" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name      = "ingress-nginx-admission"
     namespace = var.namespace
@@ -26,7 +20,7 @@ resource "kubernetes_service_account" "ingress_nginx_admission" {
 }
 
 resource "kubernetes_role" "ingress_nginx_admission" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name      = "ingress-nginx-admission"
     namespace = var.namespace
@@ -47,7 +41,7 @@ resource "kubernetes_role" "ingress_nginx_admission" {
 }
 
 resource "kubernetes_cluster_role" "ingress_nginx_admission" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name = "ingress-nginx-admission"
     labels = {
@@ -67,7 +61,7 @@ resource "kubernetes_cluster_role" "ingress_nginx_admission" {
 }
 
 resource "kubernetes_role_binding" "ingress_nginx_admission" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name      = "ingress-nginx-admission"
     namespace = var.namespace
@@ -94,7 +88,7 @@ resource "kubernetes_role_binding" "ingress_nginx_admission" {
 }
 
 resource "kubernetes_cluster_role_binding" "ingress_nginx_admission" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name = "ingress-nginx-admission"
     labels = {
@@ -121,7 +115,7 @@ resource "kubernetes_cluster_role_binding" "ingress_nginx_admission" {
 
 
 resource "kubernetes_job" "ingress_nginx_admission_create" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name      = "ingress-nginx-admission-create"
     namespace = var.namespace
@@ -189,7 +183,7 @@ resource "kubernetes_job" "ingress_nginx_admission_create" {
 }
 
 resource "kubernetes_job" "ingress_nginx_admission_patch" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name      = "ingress-nginx-admission-patch"
     namespace = var.namespace
@@ -259,7 +253,7 @@ resource "kubernetes_job" "ingress_nginx_admission_patch" {
 }
 
 resource "kubernetes_validating_webhook_configuration" "ingress_nginx_admission" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name = "ingress-nginx-admission"
     labels = {
@@ -298,7 +292,7 @@ resource "kubernetes_validating_webhook_configuration" "ingress_nginx_admission"
 # Controller
 ################################################################################
 resource "kubernetes_config_map" "ingress_nginx_controller" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name      = "ingress-nginx-controller"
     namespace = var.namespace
@@ -317,7 +311,7 @@ resource "kubernetes_config_map" "ingress_nginx_controller" {
 }
 
 resource "kubernetes_service" "ingress_nginx_controller" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name      = "ingress-nginx-controller"
     namespace = var.namespace
@@ -353,7 +347,7 @@ resource "kubernetes_service" "ingress_nginx_controller" {
 }
 
 resource "kubernetes_service" "ingress_nginx_controller_admission" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name      = "ingress-nginx-controller-admission"
     namespace = var.namespace
@@ -383,7 +377,7 @@ resource "kubernetes_service" "ingress_nginx_controller_admission" {
 }
 
 resource "kubernetes_deployment" "ingress_nginx_controller" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name      = "ingress-nginx-controller"
     namespace = var.namespace
@@ -566,7 +560,7 @@ resource "kubernetes_deployment" "ingress_nginx_controller" {
 # Nginx
 ################################################################################
 resource "kubernetes_namespace" "ingress_nginx" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name = var.namespace
     labels = {
@@ -577,7 +571,7 @@ resource "kubernetes_namespace" "ingress_nginx" {
 }
 
 resource "kubernetes_service_account" "ingress_nginx" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name      = var.namespace
     namespace = var.namespace
@@ -594,7 +588,7 @@ resource "kubernetes_service_account" "ingress_nginx" {
 }
 
 resource "kubernetes_role" "ingress_nginx" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name      = var.namespace
     namespace = var.namespace
@@ -670,7 +664,7 @@ resource "kubernetes_role" "ingress_nginx" {
 }
 
 resource "kubernetes_cluster_role" "ingress_nginx" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name = var.namespace
     labels = {
@@ -737,7 +731,7 @@ resource "kubernetes_cluster_role" "ingress_nginx" {
 }
 
 resource "kubernetes_role_binding" "ingress_nginx" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name      = var.namespace
     namespace = var.namespace
@@ -764,7 +758,7 @@ resource "kubernetes_role_binding" "ingress_nginx" {
 }
 
 resource "kubernetes_cluster_role_binding" "ingress_nginx" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name = var.namespace
     labels = {
@@ -789,7 +783,7 @@ resource "kubernetes_cluster_role_binding" "ingress_nginx" {
 }
 
 resource "kubernetes_ingress_class" "nginx" {
-  depends_on = [kubernetes_namespace.namespace_ingress_nginx]
+  
   metadata {
     name = "nginx"
     labels = {
