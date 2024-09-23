@@ -28,6 +28,12 @@ locals {
       metadata_name    = "${var.services_names.pap}-certificate"
       spec_secret_name = "${var.services_names.pap}-tls-secret"
       dns_name         = "${local.dns_domains.pap}.${var.service_domain}"
+    },
+    { # scorpio
+      id               = local.dns_domains.scorpio
+      metadata_name    = "${var.services_names.scorpio}-certificate"
+      spec_secret_name = "${var.services_names.scorpio}-tls-secret"
+      dns_name         = "${local.dns_domains.scorpio}.${var.service_domain}"
     }
   ]
 

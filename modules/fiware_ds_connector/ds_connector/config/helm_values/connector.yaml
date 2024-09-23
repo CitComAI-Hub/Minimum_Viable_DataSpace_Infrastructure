@@ -13,6 +13,7 @@ registration:
 ## General configuration
 
 dataSpaceConfig:
+  # host name: dsconfig
   enabled: true
   serviceType: ClusterIP
   port: 3002
@@ -77,7 +78,7 @@ credentials-config-service:
 
 # Configuration for the trusted-issuers-list to be deployed as part of the 
 # connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/trusted-issuers-list
-# for all options
+# for all options.
 trusted-issuers-list:
   enabled: ${til_enabled}
   fullnameOverride: ${til_host_name}
@@ -144,7 +145,6 @@ did:
     organization: M&P Operations Inc.
     commonName: www.mp-operation.org
 
-#TODO: Fix deployment!
 # Configuration for the vcverifier to be deployed as part of the connector, 
 # see https://github.com/FIWARE/helm-charts/tree/main/charts/vcverifier for all options
 vcverifier:
@@ -169,13 +169,11 @@ vcverifier:
   deployment:
     logging:
       level: DEBUG
-    verifier:
-      # tir data space operator
-      # TODO: :8080 is not needed??
-      tirAddress: http://tir.ds-operator.local:8080/
-      did: $${DID}
     server:
       host: http://${vcv_domain}:8080
+    verifier:
+      tirAddress: http://tir.ds-operator.local:8080/ # tir data space operator
+      did: $${DID}
     configRepo:
       configEndpoint: http://${ccs_host_name}:8080
     alternativeConfig: /alternative-conf/server.yaml
@@ -214,14 +212,13 @@ vcverifier:
         image: ubuntu
         command:
           - /bin/bash
-        # TODO: :8080 is not needed??
         args:
           - -ec
           - |
             #!/bin/bash
             source /did-material/did.env
             apt-get -y update; apt-get -y install curl
-            curl -X 'POST' 'http://tir.ds-operator.local:8080/issuer' -H 'Content-Type: application/json' -d "{\"did\": \"$${DID}\", \"credentials\": []}"
+            curl -X 'POST' 'http://${til_operator_domain}:8080/issuer' -H 'Content-Type: application/json' -d "{\"did\": \"$${DID}\", \"credentials\": []}"
           # curl -X 'POST' 'http://tir.trust-anchor.svc.cluster.local:8080/issuer' -H 'Content-Type: application/json' -d "{\"did\": \"$${DID}\", \"credentials\": []}"
         volumeMounts:
           - name: did-material
@@ -348,8 +345,23 @@ apisix:
     debug: true
   dashboard:
     enabled: false
-  # dataPlane:
-  #   ingress:
+  dataPlane:
+    ingress:
+      enabled: ${apisix_ingress_enabled}
+      annotations:
+        kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+        # forcing everything to use ssl
+        ingress.kubernetes.io/ssl-redirect: "true"
+        # example annotations, allowing cert-manager to automatically create tls-certs
+        kubernetes.io/tls-acme: "true"
+      hosts:
+        - host: ${apisix_domain} #${til_domain}
+          paths:
+            - /
+      # tls:
+      #   - secretName: ${til_secret_tls}
+      #     hosts:
+      #       - ${til_domain}
   #     enabled: true
   #     hostname: mp-data-service.127.0.0.1.nip.io
   #     extraHosts:
@@ -359,10 +371,10 @@ apisix:
     enabled: false
   routes: |-
     - uri: /.well-known/openid-configuration
-      host: mp-data-service.127.0.0.1.nip.io
+      host: ${apisix_domain}
       upstream:
         nodes:
-          verifier:3000: 1
+          ${vcv_host_name}:3000: 1
         type: roundrobin
       plugins:
         proxy-rewrite:
@@ -380,10 +392,10 @@ apisix:
             set:
               content-type: application/json
     - uri: /*
-      host: mp-data-service.127.0.0.1.nip.io
+      host: ${apisix_domain}
       upstream:
         nodes:
-          data-service-scorpio:9090: 1
+          ${scorpio_host_name}:9090: 1
         type: roundrobin
       plugins:
         openid-connect:
@@ -392,38 +404,38 @@ apisix:
           client_id: data-service
           client_secret: unused
           ssl_verify: false
-          discovery: http://verifier:3000/services/data-service/.well-known/openid-configuration
+          discovery: http://${vcv_host_name}:3000/services/data-service/.well-known/openid-configuration
         opa:
           host: "http://localhost:8181"
           policy: policy/main
           with_body: true
-    - uri: /.well-known/openid-configuration
-      host: mp-tmf-api.127.0.0.1.nip.io
-      upstream:
-        nodes:
-          verifier:3000: 1
-        type: roundrobin
-      plugins:
-        proxy-rewrite:
-          uri: /services/tmf-api/.well-known/openid-configuration
-    - uri: /*
-      host: mp-tmf-api.127.0.0.1.nip.io
-      upstream:
-        nodes:
-          tm-forum-api:8080: 1
-        type: roundrobin
-      plugins:
-        openid-connect:
-          bearer_only: true
-          use_jwks: true
-          client_id: contract-management
-          client_secret: unused
-          ssl_verify: false
-          discovery: http://verifier:3000/services/tmf-api/.well-known/openid-configuration
-        opa:
-          host: "http://localhost:8181"
-          policy: policy/main
-          with_body: true
+# - uri: /.well-known/openid-configuration
+#   host: mp-tmf-api.127.0.0.1.nip.io
+#   upstream:
+#     nodes:
+#       verifier:3000: 1
+#     type: roundrobin
+#   plugins:
+#     proxy-rewrite:
+#       uri: /services/tmf-api/.well-known/openid-configuration
+# - uri: /*
+#   host: mp-tmf-api.127.0.0.1.nip.io
+#   upstream:
+#     nodes:
+#       tm-forum-api:8080: 1
+#     type: roundrobin
+#   plugins:
+#     openid-connect:
+#       bearer_only: true
+#       use_jwks: true
+#       client_id: contract-management
+#       client_secret: unused
+#       ssl_verify: false
+#       discovery: http://${vcv_host_name}:3000/services/tmf-api/.well-known/openid-configuration
+#     opa:
+#       host: "http://localhost:8181"
+#       policy: policy/main
+#       with_body: true
 
 
 ################################################################################
@@ -462,15 +474,25 @@ postgis:
 # Configuration of the context-broker
 # see https://github.com/FIWARE/helm-charts/tree/main/charts/scorpio-broker-aaio for details
 scorpio:
-  enabled: true
+  enabled: ${scorpio_enabled}
   fullnameOverride: ${scorpio_host_name}
   ingress:
-    enabled: true
     # only to make it available for the test initialization
+    enabled: ${scorpio_ingress_enabled}
+    annotations:
+      kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
     hosts:
-    - host: scorpio-provider.127.0.0.1.nip.io
-      paths:
-        - "/"
+      - host: ${scorpio_domain}
+        paths:
+          - /
+    # tls:
+    #   - secretName: ${scorpio_secret_tls}
+    #     hosts:
+    #       - ${scorpio_domain}
   # configuration of the database to be used by broker
   db:
     dbhost: ${postgis_host_name}
@@ -489,18 +511,16 @@ scorpio:
     oidcScopes:
       default:
         - type: UserCredential
-          # TODO: check domains
           trustedParticipantsLists:
-            - http://tir.trust-anchor.svc.cluster.local:8080
+            - http://${til_operator_domain}:8080
           trustedIssuersLists:
             - http://${til_host_name}:8080
       operator:
         - type: OperatorCredential
-          # TODO: check domains
           trustedParticipantsLists:
-            - http://tir.trust-anchor.svc.cluster.local:8080
+            - http://${til_operator_domain}:8080
           trustedIssuersLists:
-            - http://trusted-issuers-list:8080
+            - http://${til_host_name}:8080
 
 
 ## TODO: MARKETPLACE

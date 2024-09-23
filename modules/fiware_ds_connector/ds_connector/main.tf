@@ -9,6 +9,7 @@ resource "helm_release" "ds_connector" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/connector.yaml", {
+      til_operator_domain = "trusted-issuers-list.ds-operator.svc.cluster.local"
       ##########################################################################
       ## VERIFIERS/CREDENTIAS CONFIGURATION SERVICE                           ##
       ##########################################################################
@@ -69,6 +70,9 @@ resource "helm_release" "ds_connector" {
       opa_port    = 8181,
       # APISIX
       apisix_enabled = true,
+      # apisix_host_name = var.services_names.apisix,
+      apisix_ingress_enabled = true,
+      apisix_domain          = "apisix.provider-a.local",
       ##########################################################################
       ## BROKER                                                               ##
       ##########################################################################
@@ -80,8 +84,11 @@ resource "helm_release" "ds_connector" {
       postgis_secrect_key_userpass  = "postgres-user-password",  # not editable
       postgis_db_username           = "postgres",
       # Scorpio
-      scorpio_enabled   = false,
-      scorpio_host_name = var.services_names.scorpio,
+      scorpio_enabled         = true,
+      scorpio_host_name       = var.services_names.scorpio,
+      scorpio_ingress_enabled = true,
+      scorpio_domain          = local.dns_dir[local.dns_domains.scorpio],
+      scorpio_secret_tls      = local.secrets_tls[local.dns_domains.scorpio],
     })
   ]
 }
