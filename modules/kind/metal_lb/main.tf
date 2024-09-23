@@ -6,7 +6,14 @@ data "kubectl_file_documents" "loadbalancer_manifest" {
   content = data.http.loadbalancer_web_manifest.response_body
 }
 
+resource "kubernetes_namespace" "namespace_metallb" {
+  metadata {
+    name = "metallb-system"
+  }
+}
+
 resource "kubectl_manifest" "load_balancer" {
+  depends_on = [kubernetes_namespace.namespace_metallb]
   wait       = true
 
   for_each  = data.kubectl_file_documents.loadbalancer_manifest.manifests

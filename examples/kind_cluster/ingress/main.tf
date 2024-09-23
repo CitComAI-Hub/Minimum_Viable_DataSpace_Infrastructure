@@ -21,4 +21,8 @@ module "local_k8s_cluster" {
       protocol     = "TCP"
       target_port  = "https"
   }]
+
+  providers = {
+    kubernetes = kubernetes
+  }
 }
