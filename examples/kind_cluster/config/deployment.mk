@@ -2,6 +2,8 @@ SHELL := /bin/bash
 
 include ../config/common.mk
 
+INGRESS_PROXY = nginx_ingress # nginx_ingress or traefik_ingress
+
 #show current directory
 # $(info "Current directory: $(CURDIR)")
 
@@ -14,7 +16,7 @@ define up_kind
 	terraform init -upgrade && \
 	terraform apply -auto-approve -auto-approve  -var-file=$(2)
 
-	cd $(1)ingress && \
+	cd $(1)$(INGRESS_PROXY) && \
 	terraform init -upgrade && \
 	terraform apply -auto-approve -auto-approve  -var-file=$(2)
 
@@ -40,7 +42,7 @@ define down_kind
 	terraform destroy -auto-approve  -var-file=$(2) && \
 	$(remove_tmp_tf)
 
-	-cd $(1)ingress && \
+	-cd $(1)$(INGRESS_PROXY) && \
 	terraform destroy -auto-approve  -var-file=$(2) && \
 	$(remove_tmp_tf)
 
