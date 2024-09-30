@@ -3,7 +3,7 @@ resource "helm_release" "ingress_traefik" {
   repository       = "https://helm.traefik.io/traefik"
   chart            = "traefik"
   version          = "31.1.1"
-  namespace        = "traefik-ingress"
+  namespace        = var.namespace
   create_namespace = true
   wait             = true
 

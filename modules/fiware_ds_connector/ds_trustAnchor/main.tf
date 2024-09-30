@@ -9,6 +9,7 @@ resource "helm_release" "trust_anchor" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/trust_anchor.yaml", {
+      ingress_class = "traefik",
       # Generate a password for the database connection of trust-anchor.
       generate_passwords_enabled = true,
       # MySQL configuration

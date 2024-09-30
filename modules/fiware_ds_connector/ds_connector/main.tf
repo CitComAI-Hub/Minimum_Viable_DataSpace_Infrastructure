@@ -9,7 +9,8 @@ resource "helm_release" "ds_connector" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/connector.yaml", {
-      til_operator_domain = "trusted-issuers-list.ds-operator.svc.cluster.local"
+      ingress_class = "traefik",
+      til_operator_domain = "trusted-issuers-list.ds-operator.svc.cluster.local",
       ##########################################################################
       ## VERIFIERS/CREDENTIAS CONFIGURATION SERVICE                           ##
       ##########################################################################

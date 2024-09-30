@@ -87,7 +87,7 @@ trusted-issuers-list:
     til:
       enabled: ${til_ingress_enabled}
       annotations:
-        kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+        kubernetes.io/ingress.class: ${ingress_class} #FIXME: Ingress class not set as nginx
         # forcing everything to use ssl
         ingress.kubernetes.io/ssl-redirect: "true"
         # example annotations, allowing cert-manager to automatically create tls-certs
@@ -122,7 +122,7 @@ did:
   ingress:
     enabled: ${did_ingress_enabled}
     annotations:
-      kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+      kubernetes.io/ingress.class: ${ingress_class} #FIXME: Ingress class not set as nginx
       # forcing everything to use ssl
       ingress.kubernetes.io/ssl-redirect: "true"
       # example annotations, allowing cert-manager to automatically create tls-certs
@@ -153,7 +153,7 @@ vcverifier:
   ingress:
     enabled: ${vcv_ingress_enabled}
     annotations:
-      kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+      kubernetes.io/ingress.class: ${ingress_class} #FIXME: Ingress class not set as nginx
       # forcing everything to use ssl
       ingress.kubernetes.io/ssl-redirect: "true"
       # example annotations, allowing cert-manager to automatically create tls-certs
@@ -298,7 +298,7 @@ odrl-pap:
   ingress:
     enabled: ${odrl_pap_ingress_enabled}
     annotations:
-      kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+      kubernetes.io/ingress.class: ${ingress_class} #FIXME: Ingress class not set as nginx
       # forcing everything to use ssl
       ingress.kubernetes.io/ssl-redirect: "true"
       # example annotations, allowing cert-manager to automatically create tls-certs
@@ -339,103 +339,208 @@ opa:
     maxDelay: 15
 
 #TODO: Fix deployment!
+# Configuration for apisix to be deployed as part of the connector, 
+# see https://github.com/bitnami/charts/tree/main/bitnami/apisix for all options.
 apisix:
   enabled: ${apisix_enabled}
-  image:
-    debug: true
+  fullnameOverride: "apisix-proxy"
   dashboard:
     enabled: false
-  dataPlane:
+    service:
+      type: LoadBalancer
+    username: admin
+    password: admin
     ingress:
-      enabled: ${apisix_ingress_enabled}
-      annotations:
-        kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
-        # forcing everything to use ssl
-        ingress.kubernetes.io/ssl-redirect: "true"
-        # example annotations, allowing cert-manager to automatically create tls-certs
-        kubernetes.io/tls-acme: "true"
-      hosts:
-        - host: ${apisix_domain} #${til_domain}
-          paths:
-            - /
-      # tls:
-      #   - secretName: ${til_secret_tls}
-      #     hosts:
-      #       - ${til_domain}
-  #     enabled: true
-  #     hostname: mp-data-service.127.0.0.1.nip.io
-  #     extraHosts:
-  #       - name: mp-tmf-api.127.0.0.1.nip.io
-  #         path: /
-  catchAllRoute:
-    enabled: false
-  routes: |-
-    - uri: /.well-known/openid-configuration
-      host: ${apisix_domain}
-      upstream:
-        nodes:
-          ${vcv_host_name}:3000: 1
-        type: roundrobin
-      plugins:
-        proxy-rewrite:
-          uri: /services/data-service/.well-known/openid-configuration
-    - uri: /.well-known/data-space-configuration
-      upstream:
-        nodes:
-          dsconfig:3002: 1
-        type: roundrobin
-      plugins:
-        proxy-rewrite:
-          uri: /.well-known/data-space-configuration/data-space-configuration.json
-        response-rewrite:
-          headers:
-            set:
-              content-type: application/json
-    - uri: /*
-      host: ${apisix_domain}
-      upstream:
-        nodes:
-          ${scorpio_host_name}:9090: 1
-        type: roundrobin
-      plugins:
-        openid-connect:
-          bearer_only: true
-          use_jwks: true
-          client_id: data-service
-          client_secret: unused
-          ssl_verify: false
-          discovery: http://${vcv_host_name}:3000/services/data-service/.well-known/openid-configuration
-        opa:
-          host: "http://localhost:8181"
-          policy: policy/main
-          with_body: true
-# - uri: /.well-known/openid-configuration
-#   host: mp-tmf-api.127.0.0.1.nip.io
-#   upstream:
-#     nodes:
-#       verifier:3000: 1
-#     type: roundrobin
-#   plugins:
-#     proxy-rewrite:
-#       uri: /services/tmf-api/.well-known/openid-configuration
-# - uri: /*
-#   host: mp-tmf-api.127.0.0.1.nip.io
-#   upstream:
-#     nodes:
-#       tm-forum-api:8080: 1
-#     type: roundrobin
-#   plugins:
-#     openid-connect:
-#       bearer_only: true
-#       use_jwks: true
-#       client_id: contract-management
-#       client_secret: unused
-#       ssl_verify: false
-#       discovery: http://${vcv_host_name}:3000/services/tmf-api/.well-known/openid-configuration
-#     opa:
-#       host: "http://localhost:8181"
-#       policy: policy/main
-#       with_body: true
+      enabled: false
+      hostname: apisix-dashboard.local
+      ingressClassName: ""
+      path: /
+  # containerCommand: ["/bin/bash", "-c"]
+  # containerArgs: ["rm -f /usr/local/apisix/logs/worker_events.sock"]
+  controlPlane:
+    enabled: true
+    service:
+      type: ClusterIP
+  dataPlane:
+    enabled: true
+    service:
+      type: ClusterIP
+  # extraContainers:
+  #   - name: apisix
+  #     image: bitnami/apisix:latest
+  #     command: ["/bin/bash", "-c"]
+  #     args: ["rm -f /usr/local/apisix/logs/worker_events.sock && nginx -g 'daemon off;'"]
+  # containerArgs: ["rm -f /usr/local/apisix/logs/worker_events.sock && openresty -p /usr/local/apisix -g 'daemon off;'"]
+#   # configuration in regard to the apisix control plane
+#   controlPlane:
+#     enabled: true
+#   # configuration in regard to the apisix ingressController
+#   ingressController:
+#     enabled: false
+#   # -- configuration in regard to the apisix etcd
+#   etcd:
+#     # -- should it be enabled
+#     enabled: true
+#     # -- persistence configuration of etcd
+#     persistence:
+#       # -- should it be enabled
+#       enabled: false
+#   # -- configuration in regard to the apisix dataplane
+#   dataPlane:
+#     ingress:
+#       enabled: ${apisix_ingress_enabled}
+#       hostname: ${apisix_domain} 
+#       path: /
+#       annotations:
+#         kubernetes.io/ingress.class: ${ingress_class} #FIXME: Ingress class not set as nginx
+#         # forcing everything to use ssl
+#         ingress.kubernetes.io/ssl-redirect: "true"
+#         # example annotations, allowing cert-manager to automatically create tls-certs
+#         kubernetes.io/tls-acme: "true"
+#       # tls:
+#       #   - secretName: ${til_secret_tls}
+#       #     hosts:
+#       #       - ${til_domain}
+#   #     enabled: true
+#   #     hostname: mp-data-service.127.0.0.1.nip.io
+#   #     extraHosts:
+#   #       - name: mp-tmf-api.127.0.0.1.nip.io
+#   #         path: /
+#     # configuration for extra configmaps to be deployed
+#     extraConfig:
+#       deployment:
+#         # allows to configure apisix through a yaml file
+#         role_data_plane:
+#           config_provider: yaml
+#       apisix:
+#         extra_lua_path: /extra/apisix/plugins/?.lua
+#     # -- extra volumes
+#     # we need `routes` to declaratively configure the routes
+#     # and the config for the opa sidecar
+#     extraVolumes:
+#       - name: routes
+#         configMap:
+#           name: apisix-routes
+#       - name: opa-config
+#         configMap:
+#           name: opa-config
+#       - name: opa-lua
+#         configMap:
+#           name: opa-lua
+#     # extra volumes to be mounted
+#     extraVolumeMounts:
+#       - name: routes
+#         mountPath: /usr/local/apisix/conf/apisix.yaml
+#         subPath: apisix.yaml
+#       - name: opa-lua
+#         mountPath: /usr/local/apisix/apisix/plugins/opa/helper.lua
+#         subPath: helper.lua
+#       - name: opa-lua
+#         mountPath: /usr/local/apisix/apisix/plugins/opa.lua
+#         subPath: opa.lua
+#     # -- sidecars to be deployed for apisix
+#     sidecars:
+#       # we want to deploy the open-policy-agent as a pdp
+#       - name: open-policy-agent
+#         image: openpolicyagent/opa:0.64.1
+#         imagePullPolicy: IfNotPresent
+#         ports:
+#           - name: http
+#             containerPort: 8181
+#             protocol: TCP
+#         # opa should be started to listen at 8181 and get its config from the mounted config yaml
+#         args:
+#           - "run"
+#           - "--ignore=.*"  # exclude hidden dirs created by Kubernetes
+#           - "--server"
+#           - "-l"
+#           - "debug"
+#           - "-c"
+#           - "/config/opa.yaml"
+#           - "--addr"
+#           - "0.0.0.0:8181"
+#         volumeMounts:
+#           - name: opa-config
+#             mountPath: /config
+#   # -- configuration of a catchAll-route(e.g. /*)
+#   catchAllRoute:
+#     enabled: false
+#     # configuration to connect the upstream broker
+#     upstream:
+#       url: http://${scorpio_host_name}:8000
+#     # -- configuration to verify the jwt, coming from the verifier
+#     oidc:
+#       clientId: mySecuredService
+#       discoveryEndpoint: http://{vcv_host_name}:3000/services/mySecuredService/.well-known/openid-configuration
+
+  
+#   # routes: |-
+#   #   - uri: /.well-known/openid-configuration
+#   #     host: ${apisix_domain}
+#   #     upstream:
+#   #       nodes:
+#   #         ${vcv_host_name}:3000: 1
+#   #       type: roundrobin
+#   #     plugins:
+#   #       proxy-rewrite:
+#   #         uri: /services/data-service/.well-known/openid-configuration
+#   # - uri: /.well-known/data-space-configuration
+#   #   upstream:
+#   #     nodes:
+#   #       dsconfig:3002: 1
+#   #     type: roundrobin
+#   #   plugins:
+#   #     proxy-rewrite:
+#   #       uri: /.well-known/data-space-configuration/data-space-configuration.json
+#   #     response-rewrite:
+#   #       headers:
+#   #         set:
+#   #           content-type: application/json
+#   # - uri: /*
+#   #   host: ${apisix_domain}
+#   #   upstream:
+#   #     nodes:
+#   #       ${scorpio_host_name}:9090: 1
+#   #     type: roundrobin
+#   #   plugins:
+#   #     openid-connect:
+#   #       bearer_only: true
+#   #       use_jwks: true
+#   #       client_id: data-service
+#   #       client_secret: unused
+#   #       ssl_verify: false
+#   #       discovery: http://${vcv_host_name}:3000/services/data-service/.well-known/openid-configuration
+#   #     opa:
+#   #       host: "http://localhost:8181"
+#   #       policy: policy/main
+#   #       with_body: true
+# # - uri: /.well-known/openid-configuration
+# #   host: mp-tmf-api.127.0.0.1.nip.io
+# #   upstream:
+# #     nodes:
+# #       verifier:3000: 1
+# #     type: roundrobin
+# #   plugins:
+# #     proxy-rewrite:
+# #       uri: /services/tmf-api/.well-known/openid-configuration
+# # - uri: /*
+# #   host: mp-tmf-api.127.0.0.1.nip.io
+# #   upstream:
+# #     nodes:
+# #       tm-forum-api:8080: 1
+# #     type: roundrobin
+# #   plugins:
+# #     openid-connect:
+# #       bearer_only: true
+# #       use_jwks: true
+# #       client_id: contract-management
+# #       client_secret: unused
+# #       ssl_verify: false
+# #       discovery: http://${vcv_host_name}:3000/services/tmf-api/.well-known/openid-configuration
+# #     opa:
+# #       host: "http://localhost:8181"
+# #       policy: policy/main
+# #       with_body: true
 
 
 ################################################################################
@@ -480,7 +585,7 @@ scorpio:
     # only to make it available for the test initialization
     enabled: ${scorpio_ingress_enabled}
     annotations:
-      kubernetes.io/ingress.class: nginx #FIXME: Ingress class not set as nginx
+      kubernetes.io/ingress.class: ${ingress_class} #FIXME: Ingress class not set as nginx
       # forcing everything to use ssl
       ingress.kubernetes.io/ssl-redirect: "true"
       # example annotations, allowing cert-manager to automatically create tls-certs
