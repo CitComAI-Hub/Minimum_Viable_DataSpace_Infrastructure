@@ -6,10 +6,11 @@ resource "helm_release" "ds_connector" {
   namespace        = var.namespace
   create_namespace = true
   wait             = true
+  timeout          = 2400 # 40 minutes
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/connector.yaml", {
-      ingress_class = "traefik",
+      ingress_class       = "traefik",
       til_operator_domain = "trusted-issuers-list.ds-operator.svc.cluster.local",
       ##########################################################################
       ## VERIFIERS/CREDENTIAS CONFIGURATION SERVICE                           ##
