@@ -50,28 +50,32 @@ variable "connector" {
 ################################################################################
 variable "services_names" {
   type = object({
-    connector  = string
-    mysql      = string
-    ccs        = string
-    til        = string
-    did        = string
-    vcv        = string
-    postgresql = string
-    pap        = string
-    postgis    = string
-    scorpio    = string
+    connector      = string
+    mysql          = string
+    ccs            = string
+    til            = string
+    did            = string
+    vcv            = string
+    postgresql     = string
+    pap            = string
+    postgis        = string
+    scorpio        = string
+    apisix_service = string
+    apisix_api     = string
   })
   description = "Services names for the DS Connector"
   default = {
-    connector  = "fiware-data-space-connector"
-    mysql      = "mysql"
-    ccs        = "credentials-config-service"
-    til        = "trusted-issuers-list"
-    did        = "did-helper" # default name, not editable
-    vcv        = "vc-verifier"
-    postgresql = "postgresql"
-    pap        = "pap-odrl"
-    postgis    = "postgis-db"
-    scorpio    = "scorpio-broker"
+    connector      = "fiware-data-space-connector"
+    mysql          = "mysql"
+    ccs            = "credentials-config-service"
+    til            = "trusted-issuers-list"
+    did            = "did-helper" # default name, not editable
+    vcv            = "vc-verifier"
+    postgresql     = "postgresql"
+    pap            = "pap-odrl"
+    postgis        = "postgis-db"
+    scorpio        = "scorpio-broker"
+    apisix_service = "apisix-proxy"
+    apisix_api     = "apisix-api"
   }
 }

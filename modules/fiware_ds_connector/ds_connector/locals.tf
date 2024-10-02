@@ -29,6 +29,18 @@ locals {
       spec_secret_name = "${var.services_names.pap}-tls-secret"
       dns_name         = "${local.dns_domains.pap}.${var.service_domain}"
     },
+    { # apisix-service
+      id               = local.dns_domains.apisix_service
+      metadata_name    = "${var.services_names.apisix_service}-certificate"
+      spec_secret_name = "${var.services_names.apisix_service}-tls-secret"
+      dns_name         = "${local.dns_domains.apisix_service}.${var.service_domain}"
+    },
+    { # apisix-api
+      id               = local.dns_domains.apisix_api
+      metadata_name    = "${var.services_names.apisix_api}-certificate"
+      spec_secret_name = "${var.services_names.apisix_api}-tls-secret"
+      dns_name         = "${local.dns_domains.apisix_api}.${var.service_domain}"
+    },
     { # scorpio
       id               = local.dns_domains.scorpio
       metadata_name    = "${var.services_names.scorpio}-certificate"
