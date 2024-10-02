@@ -1,4 +1,4 @@
-module "trust_anchor" {
+module "provider_connector_a" {
   source         = "../../../modules/fiware_ds_connector/ds_connector/"
   namespace      = "provider-a"
   service_domain = "provider-a.local"
