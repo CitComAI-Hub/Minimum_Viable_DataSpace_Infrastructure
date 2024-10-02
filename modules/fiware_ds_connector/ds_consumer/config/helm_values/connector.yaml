@@ -14,7 +14,7 @@ keycloak:
     enabled: false
   # host of the external db to be used
   externalDatabase:
-    host: ${postgresql_enabled}
+    host: ${postgresql_host_name}
   # the default init container is deactivated, since it conflicts with the n
   # on-bitnami image.
   enableDefaultInitContainers: false
