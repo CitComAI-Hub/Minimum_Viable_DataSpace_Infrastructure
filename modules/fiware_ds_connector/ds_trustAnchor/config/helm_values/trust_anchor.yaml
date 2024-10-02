@@ -38,12 +38,12 @@ trusted-issuers-list:
     til:
       enabled: true
       annotations:
-        kubernetes.io/ingress.class: traefik #FIXME: Ingress class not set as nginx
-        traefik.ingress.kubernetes.io/router.entrypoints: web
-        # # forcing everything to use ssl
-        # ingress.kubernetes.io/ssl-redirect: "true"
-        # # example annotations, allowing cert-manager to automatically create tls-certs
-        # kubernetes.io/tls-acme: "true"
+        kubernetes.io/ingress.class: ${ingress_class} 
+        # traefik.ingress.kubernetes.io/router.entrypoints: web
+        # forcing everything to use ssl
+        ingress.kubernetes.io/ssl-redirect: "true"
+        # example annotations, allowing cert-manager to automatically create tls-certs
+        kubernetes.io/tls-acme: "true"
       hosts:
         - host: ${til_domain}
           paths:
@@ -56,11 +56,11 @@ trusted-issuers-list:
     tir:
       enabled: true
       annotations:
-        kubernetes.io/ingress.class: traefik
-        # # forcing everything to use ssl
-        # ingress.kubernetes.io/ssl-redirect: "true"
-        # # example annotations, allowing cert-manager to automatically create tls-certs
-        # kubernetes.io/tls-acme: "true"
+        kubernetes.io/ingress.class: ${ingress_class}
+        # forcing everything to use ssl
+        ingress.kubernetes.io/ssl-redirect: "true"
+        # example annotations, allowing cert-manager to automatically create tls-certs
+        kubernetes.io/tls-acme: "true"
       hosts:
         - host: ${tir_domain}
           paths:
