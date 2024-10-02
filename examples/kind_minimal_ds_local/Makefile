@@ -13,13 +13,13 @@ init_apply:
 	terraform init -upgrade && \
 	terraform apply -auto-approve -var-file=../config/global_vars.tfvars
 
-	cd ./provider_A/ && \
+	cd ./connectors/ && \
 	terraform init -upgrade && \
 	terraform apply -auto-approve -var-file=../config/global_vars.tfvars
 
 ## Destroy Terraform resources for the Kind cluster.
 destroy:
-	-cd ./provider_A/ && \
+	-cd ./connectors/ && \
 	terraform destroy -auto-approve -var-file=../config/global_vars.tfvars && \
 	$(remove_tmp_tf)
 
