@@ -95,12 +95,12 @@ variable "services_names" {
   description = "Services names for the DS Connector"
   default = {
     connector      = "fiware-data-space-connector"
-    mysql          = "mysql"
+    mysql          = "mysql-db"
     ccs            = "credentials-config-service"
     til            = "trusted-issuers-list"
     did            = "did-helper" # default name, not editable
     vcv            = "vc-verifier"
-    postgresql     = "postgresql"
+    postgresql     = "postgresql-db"
     pap            = "pap-odrl"
     apisix_service = "apisix-proxy"
     apisix_api     = "apisix-api"
@@ -111,10 +111,28 @@ variable "services_names" {
   }
 }
 
+variable "dataspace_config" {
+  type = object({
+    port = number
+  })
+  description = "Data Space Configuration"
+  default = {
+    port = 3002
+  }
+}
+
 variable "mysql" {
-  type        = map(string)
+  type = object({
+    port        = number
+    secret      = string
+    db_name_til = string
+    db_name_ccs = string
+    root_pass   = string
+    secret_key  = string
+  })
   description = "MySQL configuration"
   default = {
+    port        = 3306
     secret      = "mysql-database-secret"
     db_name_til = "tildb"
     db_name_ccs = "ccsdb"
@@ -144,9 +162,15 @@ variable "did" {
 }
 
 variable "postgresql" {
-  type        = map(string)
+  type = object({
+    port      = number
+    user_name = string
+    db_name   = string
+    secret    = string
+  })
   description = "PostgreSQL configuration"
   default = {
+    port      = 5432
     user_name = "postgres"
     db_name   = "pap"
     secret    = "postgresql-database-secret"
@@ -154,11 +178,26 @@ variable "postgresql" {
 }
 
 variable "postgis" {
-  type        = map(string)
+  type = object({
+    port      = number
+    user_name = string
+    secret    = string
+  })
   description = "Postgis configuration"
   default = {
+    port      = 5432
     user_name = "postgres"
     secret    = "postgis-database-secret"
+  }
+}
+
+variable "odrl_pap" {
+  type = object({
+    port = number
+  })
+  description = "ODRL-PAP configuration"
+  default = {
+    port = 8080
   }
 }
 
@@ -167,6 +206,46 @@ variable "credentials_config_service" {
     port = number
   })
   description = "Credentials Configuration Service configuration"
+  default = {
+    port = 8080
+  }
+}
+
+variable "trusted_issuers_list" {
+  type = object({
+    port = number
+  })
+  description = "Trusted Issuers List configuration"
+  default = {
+    port = 8080
+  }
+}
+
+variable "scorpio" {
+  type = object({
+    port = number
+  })
+  description = "Scorpio configuration"
+  default = {
+    port = 9090
+  }
+}
+
+variable "tm_forum_api" {
+  type = object({
+    port = number
+  })
+  description = "TM Forum API configuration"
+  default = {
+    port = 8080
+  }
+}
+
+variable "contract_management" {
+  type = object({
+    port = number
+  })
+  description = "Contract Management configuration"
   default = {
     port = 8080
   }

@@ -15,6 +15,8 @@ resource "helm_release" "ds_connector" {
       services_enabled = var.enable_services,
       #
       til_operator_domain = "trusted-issuers-list.ds-operator.svc.cluster.local",
+      # Data Space Config
+      ds_config = var.dataspace_config,
       ##########################################################################
       ## VERIFIERS/CREDENTIAS CONFIGURATION SERVICE                           ##
       ##########################################################################
@@ -24,9 +26,10 @@ resource "helm_release" "ds_connector" {
       mysql_config    = var.mysql,
       # Credentials Configuration Service
       ccs_host_name = var.services_names.ccs,
-      ccs_port      = var.credentials_config_service.port,
+      ccs_config    = var.credentials_config_service,
       # Trusted Issuers List
       til_host_name  = var.services_names.til,
+      til_config     = var.trusted_issuers_list,
       til_domain     = local.dns_dir[local.dns_domains.til],
       til_secret_tls = local.secrets_tls[local.dns_domains.til],
       # DID service
@@ -48,6 +51,7 @@ resource "helm_release" "ds_connector" {
       postgresql_secrect_key_userpass  = "postgres-user-password",  # not editable
       # Odrl-pap
       odrl_pap_host_name  = var.services_names.pap,
+      odrl_pap_config     = var.odrl_pap,
       odrl_pap_domain     = local.dns_dir[local.dns_domains.pap],
       odrl_pap_secret_tls = local.secrets_tls[local.dns_domains.pap],
       # Opa
@@ -68,6 +72,7 @@ resource "helm_release" "ds_connector" {
       postgis_secrect_key_userpass  = "postgres-user-password",  # not editable
       # Scorpio
       scorpio_host_name  = var.services_names.scorpio,
+      scorpio_config     = var.scorpio,
       scorpio_domain     = local.dns_dir[local.dns_domains.scorpio],
       scorpio_secret_tls = local.secrets_tls[local.dns_domains.scorpio],
       ##########################################################################
@@ -75,10 +80,12 @@ resource "helm_release" "ds_connector" {
       ##########################################################################
       # TMF API
       tmf_api_host_name  = var.services_names.tmf_api,
+      tmf_api_config     = var.tm_forum_api,
       tmf_api_domain     = local.dns_dir[local.dns_domains.tmf_api],
       tmf_api_secret_tls = local.secrets_tls[local.dns_domains.tmf_api],
       # Contract Management
-      cm_host_name  = var.services_names.cm,
+      cm_host_name = var.services_names.cm,
+      cm_config    = var.contract_management,
     })
   ]
 }
