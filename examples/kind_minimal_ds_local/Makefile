@@ -14,7 +14,7 @@ init_apply:
 
 ## Destroy Terraform resources for the Kind cluster.
 destroy:
-	terraform destroy -auto-approve -var-file=./config/global_vars.tfvars && \
+	-terraform destroy -auto-approve -var-file=./config/global_vars.tfvars && \
 	$(remove_tmp_tf)
 
 	$(call down_kind,../kind_cluster/,../../kind_minimal_ds_local/config/cluster_vars.tfvars)
