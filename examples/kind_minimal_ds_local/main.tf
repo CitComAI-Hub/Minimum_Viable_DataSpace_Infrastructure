@@ -10,19 +10,6 @@ module "trust_anchor" {
   }
 }
 
-module "consumer_a" {
-  source     = "../../modules/fiware_ds_connector/ds_consumer/"
-  depends_on = [module.trust_anchor]
-
-  namespace      = "consumer-a"
-  service_domain = "consumer-a.local"
-
-  providers = {
-    kubernetes = kubernetes
-    helm       = helm
-  }
-}
-
 module "provider_a" {
   source     = "../../modules/fiware_ds_connector/ds_connector/"
   depends_on = [module.trust_anchor]
@@ -43,5 +30,18 @@ module "provider_a" {
     locality     = "Dresden"
     organization = "M&P Operations Inc."
     common_name  = "www.mp-operation.org"
+  }
+}
+
+module "consumer_a" {
+  source     = "../../modules/fiware_ds_connector/ds_consumer/"
+  depends_on = [module.trust_anchor]
+
+  namespace      = "consumer-a"
+  service_domain = "consumer-a.local"
+
+  providers = {
+    kubernetes = kubernetes
+    helm       = helm
   }
 }
