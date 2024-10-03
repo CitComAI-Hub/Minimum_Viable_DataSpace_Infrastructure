@@ -159,3 +159,13 @@ variable "postgis" {
     secret    = "postgis-database-secret"
   }
 }
+
+variable "credentials_config_service" {
+  type = object({
+    port = number
+  })
+  description = "Credentials Configuration Service configuration"
+  default = {
+    port = 8080
+  }
+}

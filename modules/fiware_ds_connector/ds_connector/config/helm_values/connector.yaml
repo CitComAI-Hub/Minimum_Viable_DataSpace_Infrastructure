@@ -66,6 +66,8 @@ mysql:
 credentials-config-service:
   enabled: ${services_enabled.ccs}
   fullnameOverride: ${ccs_host_name}
+  service:
+    port: ${ccs_port}
   database:
     persistence: true
     host: ${mysql_host_name}
@@ -177,7 +179,7 @@ vcverifier:
       tirAddress: http://tir.ds-operator.local:8080/ # tir data space operator
       did: $${DID}
     configRepo:
-      configEndpoint: http://${ccs_host_name}:8080
+      configEndpoint: http://${ccs_host_name}:${ccs_port}
     alternativeConfig: /alternative-conf/server.yaml
     additionalVolumes:
       - name: did-material
@@ -510,7 +512,7 @@ scorpio:
       key: ${postgis_secrect_key_adminpass}
   # configuration to register the dataplane at the credentials-config-service
   ccs:
-    endpoint: http://${ccs_host_name}:8080
+    endpoint: http://${ccs_host_name}:${ccs_port}
     configMap: scorpio-registration
     id: data-service
     defaultOidcScope:
@@ -622,7 +624,7 @@ tm-forum-api:
     name: ${tmf_api_host_name}-registration
     # configuration to register the dataplane at the credentials-config-service
     ccs:
-      endpoint: http://${ccs_host_name}:8080
+      endpoint: http://${ccs_host_name}:${ccs_port}
       # service id of the data-service to be used
       id: tmf-api
       # default scope to be created for the data plane
