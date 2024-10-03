@@ -6,7 +6,6 @@ resource "helm_release" "ds_consumer" {
   namespace        = var.namespace
   create_namespace = true
   wait             = true
-  timeout          = 2400 # 40 minutes
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/connector.yaml", {
