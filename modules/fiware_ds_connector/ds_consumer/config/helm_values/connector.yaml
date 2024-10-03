@@ -62,10 +62,7 @@ keycloak:
       ingress.kubernetes.io/ssl-redirect: "true"
       # example annotations, allowing cert-manager to automatically create tls-certs
       kubernetes.io/tls-acme: "true"
-    hosts:
-      - host: ${keycloak_domain}
-        paths:
-          - /
+    hostname: ${keycloak_domain}
     # tls:
     #   - secretName: ${keycloak_secret_tls}
     #     hosts:
