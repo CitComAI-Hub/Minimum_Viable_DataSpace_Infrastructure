@@ -67,7 +67,6 @@ resource "helm_release" "ds_connector" {
       postgis_secrect_key_adminpass = "postgres-admin-password", # not editable
       postgis_secrect_key_userpass  = "postgres-user-password",  # not editable
       # Scorpio
-      scorpio_enabled    = var.enable_services.scorpio,
       scorpio_host_name  = var.services_names.scorpio,
       scorpio_domain     = local.dns_dir[local.dns_domains.scorpio],
       scorpio_secret_tls = local.secrets_tls[local.dns_domains.scorpio],
@@ -75,7 +74,6 @@ resource "helm_release" "ds_connector" {
       ## MARKETPLACE                                                          ##
       ##########################################################################
       # TMF API
-      tmf_api_enabled    = var.enable_services.tmf_api,
       tmf_api_host_name  = var.services_names.tmf_api,
       tmf_api_domain     = local.dns_dir[local.dns_domains.tmf_api],
       tmf_api_secret_tls = local.secrets_tls[local.dns_domains.tmf_api],
