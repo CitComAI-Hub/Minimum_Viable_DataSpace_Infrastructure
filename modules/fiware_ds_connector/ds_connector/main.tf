@@ -78,6 +78,7 @@ resource "helm_release" "ds_connector" {
       tmf_api_domain     = local.dns_dir[local.dns_domains.tmf_api],
       tmf_api_secret_tls = local.secrets_tls[local.dns_domains.tmf_api],
       # Contract Management
+      cm_host_name  = var.services_names.cm,
     })
   ]
 }

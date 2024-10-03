@@ -438,7 +438,7 @@ apisix:
         openid-connect:
           bearer_only: true
           use_jwks: true
-          client_id: contract-management
+          client_id: ${cm_host_name}
           client_secret: unused
           ssl_verify: false
           discovery: http://${vcv_host_name}:3000/services/tmf-api/.well-known/openid-configuration
@@ -640,4 +640,14 @@ tm-forum-api:
 # Configuration of the tm-forum-api - see 
 # https://github.com/FIWARE/helm-charts/tree/main/charts/contract-management for details.
 contract-management:
-  enabled: false
+  enabled: ${services_enabled.cm}
+  fullnameOverride: ${cm_host_name}
+  services:
+    til:
+      url: http://${til_host_name}:8080
+    product:
+      url: http://${tmf_api_host_name}:8080
+    party:
+      url: http:/${tmf_api_host_name}:8080
+  til:
+    credentialType: OperatorCredential

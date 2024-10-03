@@ -53,6 +53,20 @@ variable "connector" {
   }
 }
 
+variable "enable_ingress" {
+  type        = map(bool)
+  description = "Enable ingress for the DS Connector"
+  default = {
+    til     = true # True only in test environment
+    did     = true
+    vcv     = true
+    pap     = true
+    apisix  = true
+    scorpio = true # True only in test environment
+    tmf_api = true
+  }
+}
+
 ## Services Configuration ##
 variable "enable_services" {
   type        = map(bool)
@@ -72,20 +86,7 @@ variable "enable_services" {
     postgis            = true
     scorpio            = true
     tmf_api            = true
-  }
-}
-
-variable "enable_ingress" {
-  type        = map(bool)
-  description = "Enable ingress for the DS Connector"
-  default = {
-    til     = true # True only in test environment
-    did     = true
-    vcv     = true
-    pap     = true
-    apisix  = true
-    scorpio = true # True only in test environment
-    tmf_api = true
+    cm                 = true
   }
 }
 
@@ -106,6 +107,7 @@ variable "services_names" {
     postgis        = "postgis-db"
     scorpio        = "scorpio-broker"
     tmf_api        = "tm-forum-api"
+    cm             = "contract-management"
   }
 }
 
