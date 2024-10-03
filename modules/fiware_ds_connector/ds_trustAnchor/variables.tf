@@ -16,7 +16,7 @@ variable "namespace" {
 variable "service_domain" {
   type        = string
   description = "Data Space domain"
-  default     = "ds-operator.local"
+  default     = "ds-trust-anchor.local"
 }
 
 ################################################################################

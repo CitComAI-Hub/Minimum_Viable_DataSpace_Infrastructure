@@ -1,5 +1,19 @@
-module "consumer_connector_a" {
-  source         = "../../../modules/fiware_ds_connector/ds_consumer/"
+module "trust_anchor" {
+  source = "../../modules/fiware_ds_connector/ds_trustAnchor/"
+
+  namespace      = "ds-operator"
+  service_domain = "ds-operator.local"
+
+  providers = {
+    kubernetes = kubernetes
+    helm       = helm
+  }
+}
+
+module "consumer_a" {
+  source     = "../../modules/fiware_ds_connector/ds_consumer/"
+  depends_on = [module.trust_anchor]
+
   namespace      = "consumer-a"
   service_domain = "consumer-a.local"
 
@@ -9,11 +23,13 @@ module "consumer_connector_a" {
   }
 }
 
-module "provider_connector_a" {
-  source         = "../../../modules/fiware_ds_connector/ds_connector/"
+module "provider_a" {
+  source     = "../../modules/fiware_ds_connector/ds_connector/"
+  depends_on = [module.trust_anchor]
+
   namespace      = "provider-a"
   service_domain = "provider-a.local"
-  
+
   providers = {
     kubernetes = kubernetes
     helm       = helm
