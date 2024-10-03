@@ -7,6 +7,18 @@ variable "kubernetes_local_path" {
   default     = "~/.kube/config"
 }
 
+variable "timeout" {
+  type        = number
+  description = "Timeout for the helm installation (default 40 minutes)"
+  default     = 2400
+}
+
+variable "ingress_class" {
+  type        = string
+  description = "Ingress class for the DS operator deployment (nginx or traefik)"
+  default     = "traefik"
+}
+
 variable "namespace" {
   type        = string
   description = "Namespace for the DS operator deployment"
@@ -32,11 +44,7 @@ variable "ca_clusterissuer_name" {
 # Helm Configuration                                                           #
 ################################################################################
 variable "connector" {
-  type = object({
-    version    = string
-    chart_name = string
-    repository = string
-  })
+  type        = map(string)
   description = "Fiware Data Space Connector"
   default = {
     version    = "7.3.1"
@@ -45,24 +53,40 @@ variable "connector" {
   }
 }
 
-################################################################################
-# Services Configuration                                                       #
-################################################################################
+## Services Configuration ##
+variable "enable_services" {
+  type        = map(bool)
+  description = "Enable services for the DS Connector"
+  default = {
+    mysql          = true
+    ccs            = true
+    til            = true
+    did            = true
+    vcv            = true
+    postgresql     = true
+    pap            = true
+    opa            = true
+    apisix_service = true
+    postgis        = true
+    scorpio        = true
+  }
+}
+
+variable "enable_ingress" {
+  type        = map(bool)
+  description = "Enable ingress for the DS Connector"
+  default = {
+    til     = true # True only in test environment
+    did     = true
+    vcv     = true
+    pap     = true
+    apisix  = true
+    scorpio = true # True only in test environment
+  }
+}
+
 variable "services_names" {
-  type = object({
-    connector      = string
-    mysql          = string
-    ccs            = string
-    til            = string
-    did            = string
-    vcv            = string
-    postgresql     = string
-    pap            = string
-    postgis        = string
-    scorpio        = string
-    apisix_service = string
-    apisix_api     = string
-  })
+  type        = map(string)
   description = "Services names for the DS Connector"
   default = {
     connector      = "fiware-data-space-connector"
@@ -73,9 +97,60 @@ variable "services_names" {
     vcv            = "vc-verifier"
     postgresql     = "postgresql"
     pap            = "pap-odrl"
-    postgis        = "postgis-db"
-    scorpio        = "scorpio-broker"
     apisix_service = "apisix-proxy"
     apisix_api     = "apisix-api"
+    postgis        = "postgis-db"
+    scorpio        = "scorpio-broker"
+  }
+}
+
+variable "mysql" {
+  type        = map(string)
+  description = "MySQL configuration"
+  default = {
+    secret      = "mysql-database-secret"
+    db_name_til = "tildb"
+    db_name_ccs = "ccsdb"
+    root_pass   = "root"
+    secret_key  = "mysql-root-password"
+  }
+}
+
+variable "did" {
+  type = object({
+    port         = number
+    country      = string
+    state        = string
+    locality     = string
+    organization = string
+    common_name  = string
+  })
+  description = "DID service configuration"
+  default = {
+    port         = 3002
+    country      = "DE"
+    state        = "SAXONY"
+    locality     = "Dresden"
+    organization = "M&P Operations Inc."
+    common_name  = "www.mp-operation.org"
+  }
+}
+
+variable "postgresql" {
+  type        = map(string)
+  description = "PostgreSQL configuration"
+  default = {
+    user_name = "postgres"
+    db_name   = "pap"
+    secret    = "postgresql-database-secret"
+  }
+}
+
+variable "postgis" {
+  type        = map(string)
+  description = "Postgis configuration"
+  default = {
+    user_name = "postgres"
+    secret    = "postgis-database-secret"
   }
 }

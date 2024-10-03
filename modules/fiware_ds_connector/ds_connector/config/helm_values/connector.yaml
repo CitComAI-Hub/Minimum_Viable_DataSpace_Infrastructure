@@ -39,7 +39,7 @@ authentication:
   generatePasswords:
     enabled: ${generate_passwords_enabled}
     # name of the secret to put the generated password into
-    secretName: ${mysql_secret}
+    secretName: ${mysql_config.secret}
 
 # Configuration for the mysql to be deployed as part of the connector, 
 # see https://github.com/bitnami/charts/tree/main/bitnami/mysql for all options.
@@ -53,12 +53,12 @@ mysql:
     persistence:
       enabled: false
   auth:
-    existingSecret: ${mysql_secret}
+    existingSecret: ${mysql_config.secret}
   initdbScripts:
     # scripts to be executed on db startup
     create.sql: |
-      CREATE DATABASE ${mysql_tildb_name};
-      CREATE DATABASE ${mysql_ccsdb_name};
+      CREATE DATABASE ${mysql_config.db_name_til};
+      CREATE DATABASE ${mysql_config.db_name_ccs};
 
 # Configuration for the credentials-config-service to be deployed as part of the
 # connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/credentials-config-service
@@ -67,14 +67,14 @@ credentials-config-service:
   enabled: ${ccs_enabled}
   fullnameOverride: ${ccs_host_name}
   database:
-    persistence: ${ccs_db_persistence}
+    persistence: true
     host: ${mysql_host_name}
-    username: ${mysql_root_pass}
-    name: ${mysql_ccsdb_name}
+    username: ${mysql_config.root_pass}
+    name: ${mysql_config.db_name_ccs}
     existingSecret: 
       enabled: ${generate_passwords_enabled}
-      name: ${mysql_secret}
-      key: ${mysql_secret_key}
+      name: ${mysql_config.secret}
+      key: ${mysql_config.secret_key}
 
 # Configuration for the trusted-issuers-list to be deployed as part of the 
 # connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/trusted-issuers-list
@@ -82,10 +82,10 @@ credentials-config-service:
 trusted-issuers-list:
   enabled: ${til_enabled}
   fullnameOverride: ${til_host_name}
-  # only open for clean up in the tests
+  #! INGRESS: only open for clean up in the tests
   ingress:
     til:
-      enabled: ${til_ingress_enabled}
+      enabled: ${ingress_enabled.til}
       annotations:
         kubernetes.io/ingress.class: ${ingress_class} 
         # forcing everything to use ssl
@@ -101,14 +101,14 @@ trusted-issuers-list:
       #     hosts:
       #       - ${til_domain}
   database:
-    persistence: ${til_db_persistence}
+    persistence: true
     host: ${mysql_host_name}
-    username: ${mysql_root_pass}
-    name: ${mysql_tildb_name}
+    username: ${mysql_config.root_pass}
+    name: ${mysql_config.db_name_til}
     existingSecret: 
       enabled: ${generate_passwords_enabled}
-      name: ${mysql_secret}
-      key: ${mysql_secret_key}
+      name: ${mysql_config.secret}
+      key: ${mysql_config.secret_key}
 
 # Configuration to be shared between the issuance components.
 issuance:
@@ -122,7 +122,7 @@ did:
   enabled: ${did_enabled}
   # fullnameOverride: ${did_host_name} NOT AVAILABLE, default name: did-helper
   ingress:
-    enabled: ${did_ingress_enabled}
+    enabled: ${ingress_enabled.did}
     annotations:
       kubernetes.io/ingress.class: ${ingress_class} 
       # forcing everything to use ssl
@@ -139,13 +139,13 @@ did:
     #       - ${did_domain}
   secret: ${iss_secret}
   serviceType: ClusterIP
-  port: ${did_port}
+  port: ${did_config.port}
   cert:
-    country: DE
-    state: SAXONY
-    locality: Dresden
-    organization: M&P Operations Inc.
-    commonName: www.mp-operation.org
+    country: ${did_config.country}
+    state: ${did_config.state}
+    locality: ${did_config.locality}
+    organization: ${did_config.organization}
+    commonName: ${did_config.common_name}
 
 # Configuration for the vcverifier to be deployed as part of the connector, 
 # see https://github.com/FIWARE/helm-charts/tree/main/charts/vcverifier for all options
@@ -153,7 +153,7 @@ vcverifier:
   enabled: ${vcv_enabled}
   fullnameOverride: ${vcv_host_name}
   ingress:
-    enabled: ${vcv_ingress_enabled}
+    enabled: ${ingress_enabled.vcv}
     annotations:
       kubernetes.io/ingress.class: ${ingress_class} 
       # forcing everything to use ssl
@@ -234,14 +234,14 @@ vcverifier:
 postgresql:
   generatePasswords:
     enabled: ${generate_passwords_enabled}
-    secretName: ${postgresql_secret}
+    secretName: ${postgresql_config.secret}
   
   enabled: ${postgresql_enabled}
   fullnameOverride: ${postgresql_host_name}
   # configure authentication to mysql
   auth:
     # name of the secret to take the passowrds from
-    existingSecret: ${postgresql_secret}
+    existingSecret: ${postgresql_config.secret}
     # key of the secrets inside the secret
     secretKeys:
       adminPasswordKey: ${postgresql_secrect_key_adminpass}
@@ -254,8 +254,7 @@ postgresql:
     initdb:
       scripts:
         create.sh: |
-          psql postgresql://postgres:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE ${postgresql_papdb_name};"
-        # psql postgresql://postgres:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE keycloak;"
+          psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE ${postgresql_config.db_name};"
   readReplicas:
     persistence:
       enabled: false
@@ -266,6 +265,22 @@ postgresql:
 odrl-pap:
   enabled: ${odrl_pap_enabled}
   fullnameOverride: ${odrl_pap_host_name}
+  ingress:
+    enabled: ${ingress_enabled.pap}
+    annotations:
+      kubernetes.io/ingress.class: ${ingress_class} 
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: ${odrl_pap_domain}
+        paths:
+          - /
+    # tls:
+    #   - secretName: ${odrl_pap_secret_tls}
+    #     hosts:
+    #       - ${odrl_pap_domain}
   deployment:
     initContainers:
       - name: get-did
@@ -297,28 +312,12 @@ odrl-pap:
         source /did-material/did.env
         export GENERAL_ORGANIZATION_DID=$DID
         ./application -Dquarkus.http.host=0.0.0.0
-  ingress:
-    enabled: ${odrl_pap_ingress_enabled}
-    annotations:
-      kubernetes.io/ingress.class: ${ingress_class} 
-      # forcing everything to use ssl
-      ingress.kubernetes.io/ssl-redirect: "true"
-      # example annotations, allowing cert-manager to automatically create tls-certs
-      kubernetes.io/tls-acme: "true"
-    hosts:
-      - host: ${odrl_pap_domain}
-        paths:
-          - /
-    # tls:
-    #   - secretName: ${odrl_pap_secret_tls}
-    #     hosts:
-    #       - ${odrl_pap_domain}
   database:
     username: postgres
-    url: jdbc:postgresql://postgresql:5432/${postgresql_papdb_name}
+    url: jdbc:postgresql://postgresql:5432/${postgresql_config.db_name}
     existingSecret:
       enabled: ${generate_passwords_enabled}
-      name: ${postgresql_secret}
+      name: ${postgresql_config.secret}
       key: ${postgresql_secrect_key_adminpass}
 
 # Configuration for the open-policy-agent to be deployed as part of the connector
@@ -345,16 +344,25 @@ opa:
 apisix:
   enabled: ${apisix_enabled}
   fullnameOverride: ${apisix_host_name}
+  # service:
+  #   type: ClusterIP
   image:
     debug: true
-  controlPlane:
-    enabled: true
+  # autoscaling:
+  #   enabled: true
+  #   version: v2
+  #   minReplicas: 2
+  #   maxReplicas: 5
+  #   targetCPUUtilizationPercentage: 80
+  #   targetMemoryUtilizationPercentage: 80
   dashboard:
     enabled: false
+  controlPlane:
+    enabled: true
   dataPlane:
     enabled: true
     ingress:
-      enabled: true
+      enabled: ${ingress_enabled.apisix}
       annotations:
         kubernetes.io/ingress.class: ${ingress_class} 
         # forcing everything to use ssl
@@ -446,7 +454,7 @@ apisix:
 dataplane:
   generatePasswords:
     enabled: ${generate_passwords_enabled}
-    secretName: ${postgis_secret}
+    secretName: ${postgis_config.secret}
 
 # Configuration for the postgresql to be deployed as part of the connector, see 
 # https://github.com/bitnami/charts/tree/main/bitnami/postgresql for all options
@@ -455,7 +463,7 @@ postgis:
   fullnameOverride: ${postgis_host_name}
   nameOverride: ${postgis_host_name}
   auth:
-    existingSecret: ${postgis_secret}
+    existingSecret: ${postgis_config.secret}
     secretKeys:
       adminPasswordKey: ${postgis_secrect_key_adminpass}
       userPasswordKey: ${postgis_secrect_key_userpass}
@@ -464,10 +472,10 @@ postgis:
       enabled: false
     initdb:
       scripts:
-        # psql postgresql://postgres:$(kubectl get secret ${postgis_secret} -o jsonpath="{.data.postgres-password}" | base64 --decode)@localhost:5432 -c "CREATE EXTENSION postgis;"
+        # psql postgresql://${postgis_config.user_name}$(kubectl get secret ${postgis_config.secret} -o jsonpath="{.data.postgres-password}" | base64 --decode)@localhost:5432 -c "CREATE EXTENSION postgis;"
         enable.sh: |
-          psql postgresql://postgres:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE EXTENSION postgis;"
-          psql postgresql://postgres:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE ngb;"
+          psql postgresql://${postgis_config.user_name}:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE EXTENSION postgis;"
+          psql postgresql://${postgis_config.user_name}:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE ngb;"
   readReplicas:
     persistence:
       enabled: false
@@ -478,8 +486,8 @@ scorpio:
   enabled: ${scorpio_enabled}
   fullnameOverride: ${scorpio_host_name}
   ingress:
-    # only to make it available for the test initialization
-    enabled: ${scorpio_ingress_enabled}
+    #! INGRESS: only open for clean up in the tests
+    enabled: ${ingress_enabled.scorpio}
     annotations:
       kubernetes.io/ingress.class: ${ingress_class} 
       # forcing everything to use ssl
@@ -497,10 +505,10 @@ scorpio:
   # configuration of the database to be used by broker
   db:
     dbhost: ${postgis_host_name}
-    user: ${postgis_db_username}
+    user: ${postgis_config.user_name}
     existingSecret:
       enabled: ${generate_passwords_enabled}
-      name: ${postgis_secret}
+      name: ${postgis_config.secret}
       key: ${postgis_secrect_key_adminpass}
   # configuration to register the dataplane at the credentials-config-service
   ccs:
@@ -523,7 +531,7 @@ scorpio:
           trustedIssuersLists:
             - http://${til_host_name}:8080
 
-
+################################################################################
 ## TODO: MARKETPLACE
 ################################################################################
 
