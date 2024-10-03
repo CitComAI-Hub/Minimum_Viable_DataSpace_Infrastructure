@@ -14,7 +14,7 @@ registration:
 
 dataSpaceConfig:
   # host name: dsconfig
-  enabled: true
+  enabled: ${services_enabled.dsconfig}
   serviceType: ClusterIP
   port: 3002
   supportedModels:
@@ -28,7 +28,7 @@ dataSpaceConfig:
 
 
 ################################################################################
-## CREDENTIALS/VERIFIERS (Services)
+# CREDENTIALS/VERIFIERS (Services)                                             #
 ################################################################################
 
 # Configuration to be shared between the authentication components 
@@ -37,14 +37,14 @@ authentication:
   # should a password for the database connection of authentication components
   # be generated in the cluster
   generatePasswords:
-    enabled: ${generate_passwords_enabled}
+    enabled: ${services_enabled.generate_passwords}
     # name of the secret to put the generated password into
     secretName: ${mysql_config.secret}
 
 # Configuration for the mysql to be deployed as part of the connector, 
 # see https://github.com/bitnami/charts/tree/main/bitnami/mysql for all options.
 mysql:
-  enabled: ${mysql_enabled}
+  enabled: ${services_enabled.mysql}
   fullnameOverride: ${mysql_host_name}
   primary:
     persistence:
@@ -64,7 +64,7 @@ mysql:
 # connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/credentials-config-service
 # for all options.
 credentials-config-service:
-  enabled: ${ccs_enabled}
+  enabled: ${services_enabled.ccs}
   fullnameOverride: ${ccs_host_name}
   database:
     persistence: true
@@ -72,7 +72,7 @@ credentials-config-service:
     username: ${mysql_config.root_pass}
     name: ${mysql_config.db_name_ccs}
     existingSecret: 
-      enabled: ${generate_passwords_enabled}
+      enabled: ${services_enabled.generate_passwords}
       name: ${mysql_config.secret}
       key: ${mysql_config.secret_key}
 
@@ -80,7 +80,7 @@ credentials-config-service:
 # connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/trusted-issuers-list
 # for all options.
 trusted-issuers-list:
-  enabled: ${til_enabled}
+  enabled: ${services_enabled.til}
   fullnameOverride: ${til_host_name}
   #! INGRESS: only open for clean up in the tests
   ingress:
@@ -106,20 +106,20 @@ trusted-issuers-list:
     username: ${mysql_config.root_pass}
     name: ${mysql_config.db_name_til}
     existingSecret: 
-      enabled: ${generate_passwords_enabled}
+      enabled: ${services_enabled.generate_passwords}
       name: ${mysql_config.secret}
       key: ${mysql_config.secret_key}
 
 # Configuration to be shared between the issuance components.
 issuance:
   generatePasswords:
-    enabled: ${generate_passwords_enabled}
+    enabled: ${services_enabled.generate_passwords}
     secretName: ${iss_secret}
 
 # Configuration for the did-helper, should only be used for demonstrational 
-# deployments, see https://github.com/wistefan/did-helper
+# deployments, see https://github.com/wistefan/did-helper.
 did:
-  enabled: ${did_enabled}
+  enabled: ${services_enabled.did}
   # fullnameOverride: ${did_host_name} NOT AVAILABLE, default name: did-helper
   ingress:
     enabled: ${ingress_enabled.did}
@@ -148,9 +148,9 @@ did:
     commonName: ${did_config.common_name}
 
 # Configuration for the vcverifier to be deployed as part of the connector, 
-# see https://github.com/FIWARE/helm-charts/tree/main/charts/vcverifier for all options
+# see https://github.com/FIWARE/helm-charts/tree/main/charts/vcverifier for all options.
 vcverifier:
-  enabled: ${vcv_enabled}
+  enabled: ${services_enabled.vcv}
   fullnameOverride: ${vcv_host_name}
   ingress:
     enabled: ${ingress_enabled.vcv}
@@ -221,22 +221,21 @@ vcverifier:
             source /did-material/did.env
             apt-get -y update; apt-get -y install curl
             curl -X 'POST' 'http://${til_operator_domain}:8080/issuer' -H 'Content-Type: application/json' -d "{\"did\": \"$${DID}\", \"credentials\": []}"
-          # curl -X 'POST' 'http://tir.trust-anchor.svc.cluster.local:8080/issuer' -H 'Content-Type: application/json' -d "{\"did\": \"$${DID}\", \"credentials\": []}"
         volumeMounts:
           - name: did-material
             mountPath: /did-material
 
 
 ################################################################################
-## PROXY
+# PROXY                                                                        #
 ################################################################################
 
 postgresql:
   generatePasswords:
-    enabled: ${generate_passwords_enabled}
+    enabled: ${services_enabled.generate_passwords}
     secretName: ${postgresql_config.secret}
   
-  enabled: ${postgresql_enabled}
+  enabled: ${services_enabled.postgresql}
   fullnameOverride: ${postgresql_host_name}
   # configure authentication to mysql
   auth:
@@ -260,10 +259,9 @@ postgresql:
       enabled: false
 
 # Configuration for the odrl-pap to be deployed as part of the connector, 
-# see https://github.com/FIWARE/helm-charts/tree/main/charts/odrl-pap for all
-# options.
+# see https://github.com/FIWARE/helm-charts/tree/main/charts/odrl-pap for all options.
 odrl-pap:
-  enabled: ${odrl_pap_enabled}
+  enabled: ${services_enabled.pap}
   fullnameOverride: ${odrl_pap_host_name}
   ingress:
     enabled: ${ingress_enabled.pap}
@@ -316,14 +314,14 @@ odrl-pap:
     username: postgres
     url: jdbc:postgresql://postgresql:5432/${postgresql_config.db_name}
     existingSecret:
-      enabled: ${generate_passwords_enabled}
+      enabled: ${services_enabled.generate_passwords}
       name: ${postgresql_config.secret}
       key: ${postgresql_secrect_key_adminpass}
 
 # Configuration for the open-policy-agent to be deployed as part of the connector
-# fulfilling the role of the PDP, as a sidecar to apisix
+# fulfilling the role of the PDP, as a sidecar to apisix.
 opa:
-  enabled: ${opa_enabled}
+  enabled: ${services_enabled.opa}
   resourceUrl: http://${odrl_pap_host_name}:8080/bundles/service/v1
   port: ${opa_port}
   # pull delays for the policies bundle
@@ -342,7 +340,7 @@ opa:
 # Configuration for apisix to be deployed as part of the connector, 
 # see https://github.com/bitnami/charts/tree/main/bitnami/apisix for all options.
 apisix:
-  enabled: ${apisix_enabled}
+  enabled: ${services_enabled.apisix_service}
   fullnameOverride: ${apisix_host_name}
   # service:
   #   type: ClusterIP
@@ -432,7 +430,7 @@ apisix:
       host: ${apisix_api_domain}
       upstream:
         nodes:
-          tm-forum-api:8080: 1
+          ${tmf_api_host_name}:8080: 1
         type: roundrobin
       plugins:
         openid-connect:
@@ -448,18 +446,18 @@ apisix:
           with_body: true
 
 ################################################################################
-# BROKER
+# BROKER                                                                       #
 ################################################################################
 
 dataplane:
   generatePasswords:
-    enabled: ${generate_passwords_enabled}
+    enabled: ${services_enabled.generate_passwords}
     secretName: ${postgis_config.secret}
 
 # Configuration for the postgresql to be deployed as part of the connector, see 
-# https://github.com/bitnami/charts/tree/main/bitnami/postgresql for all options
+# https://github.com/bitnami/charts/tree/main/bitnami/postgresql for all options.
 postgis:
-  enabled: ${postgis_enabled}
+  enabled: ${services_enabled.postgis}
   fullnameOverride: ${postgis_host_name}
   nameOverride: ${postgis_host_name}
   auth:
@@ -481,9 +479,9 @@ postgis:
       enabled: false
 
 # Configuration of the context-broker
-# see https://github.com/FIWARE/helm-charts/tree/main/charts/scorpio-broker-aaio for details
+# see https://github.com/FIWARE/helm-charts/tree/main/charts/scorpio-broker-aaio for details.
 scorpio:
-  enabled: ${scorpio_enabled}
+  enabled: ${services_enabled.scorpio}
   fullnameOverride: ${scorpio_host_name}
   ingress:
     #! INGRESS: only open for clean up in the tests
@@ -507,7 +505,7 @@ scorpio:
     dbhost: ${postgis_host_name}
     user: ${postgis_config.user_name}
     existingSecret:
-      enabled: ${generate_passwords_enabled}
+      enabled: ${services_enabled.generate_passwords}
       name: ${postgis_config.secret}
       key: ${postgis_secrect_key_adminpass}
   # configuration to register the dataplane at the credentials-config-service
@@ -532,23 +530,112 @@ scorpio:
             - http://${til_host_name}:8080
 
 ################################################################################
-## TODO: MARKETPLACE
+# MARKETPLACE                                                                  #
 ################################################################################
 
-## configuration of the tm-forum-api - see https://github.com/FIWARE/helm-charts/tree/main/charts/tm-forum-api for details
+# Configuration of the tm-forum-api - see 
+# https://github.com/FIWARE/helm-charts/tree/main/charts/tm-forum-api for details.
 tm-forum-api:
-  # should it be enabled? set to false if one outside the chart is used.
-  enabled: false
+  enabled: ${services_enabled.tmf_api}
+  fullnameOverride: ${tmf_api_host_name}
+  defaultConfig:
+    ngsiLd:
+      url: http://${scorpio_host_name}:9090
+    contextUrl: https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld
+  ingress:
+    enabled: ${ingress_enabled.tmf_api}
+    annotations:
+      kubernetes.io/ingress.class: ${ingress_class} 
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: ${tmf_api_domain} # tm-forum-api.127.0.0.1.nip.io
+        paths:
+          - /
+    # tls:
+    #   - secretName: ${tmf_api_secret_tls}
+    #     hosts:
+    #       - ${tmf_api_domain}
   # enable the api proxy
   apiProxy:
-    enabled: false
+    enabled: true
+    service:
+      # name to be used for the proxy service.
+      nameOverride: ${tmf_api_host_name}-proxy
+  
+  # List of apis to be deployed:
+  # - every api needs to define a name and image. Basepath is required when routes
+  #   or ingress will be enabled. Beside that, they can overwrite the default-config
+  #   by using the same keys.
+  # - be aware: when you change the image repositrory or the tag for an api, you
+  #   have to provide both values for the changes to take effect.
+  apis:
+    - name: party-catalog
+      image: tmforum-party-catalog
+      basePath: /tmf-api/party/v4
+
+    - name: customer-bill-management
+      image: tmforum-customer-bill-management
+      basePath: /tmf-api/customerBillManagement/v4
+
+    - name: customer-management
+      image: tmforum-customer-management
+      basePath: /tmf-api/customerManagement/v4
+
+    - name: product-catalog
+      image: tmforum-product-catalog
+      basePath: /tmf-api/productCatalogManagement/v4
+
+    - name: product-inventory
+      image: tmforum-product-inventory
+      basePath: /tmf-api/productInventory/v4
+
+    - name: product-ordering-management
+      image: tmforum-product-ordering-management
+      basePath: /tmf-api/productOrderingManagement/v4
+
+    - name: resource-catalog
+      image: tmforum-resource-catalog
+      basePath: /tmf-api/resourceCatalog/v4
+
+    - name: resource-function-activation
+      image: tmforum-resource-function-activation
+      basePath: /tmf-api/resourceFunctionActivation/v4
+
+    - name: resource-inventory
+      image: tmforum-resource-inventory
+      basePath: /tmf-api/resourceInventoryManagement/v4
+
+    - name: service-catalog
+      image: tmforum-service-catalog
+      basePath: /tmf-api/serviceCatalogManagement/v4
+
   # redis caching
   redis:
     enabled: false
-
+  
   registration:
-    enabled: false
+    enabled: true
+    # name to be used for the registration jobs
+    name: ${tmf_api_host_name}-registration
+    # configuration to register the dataplane at the credentials-config-service
+    ccs:
+      endpoint: http://${ccs_host_name}:8080
+      # service id of the data-service to be used
+      id: tmf-api
+      # default scope to be created for the data plane
+      defaultOidcScope:
+        # name of the scope
+        name: default
+        # name of the default credential to be configured
+        credentialType: UserCredential
+        #! needs to be updated for the concrete dataspace
+        trustedParticipantsLists: http://${til_operator_domain}:8080
+        trustedIssuersLists: http://${til_host_name}:8080
 
-## configuration of the tm-forum-api - see https://github.com/FIWARE/helm-charts/tree/main/charts/contract-management for details
+# Configuration of the tm-forum-api - see 
+# https://github.com/FIWARE/helm-charts/tree/main/charts/contract-management for details.
 contract-management:
   enabled: false

@@ -58,17 +58,20 @@ variable "enable_services" {
   type        = map(bool)
   description = "Enable services for the DS Connector"
   default = {
-    mysql          = true
-    ccs            = true
-    til            = true
-    did            = true
-    vcv            = true
-    postgresql     = true
-    pap            = true
-    opa            = true
-    apisix_service = true
-    postgis        = true
-    scorpio        = true
+    generate_passwords = true
+    dsconfig           = true
+    mysql              = true
+    ccs                = true
+    til                = true
+    did                = true
+    vcv                = true
+    postgresql         = true
+    pap                = true
+    opa                = true
+    apisix_service     = true
+    postgis            = true
+    scorpio            = true
+    tmf_api            = true
   }
 }
 
@@ -82,6 +85,7 @@ variable "enable_ingress" {
     pap     = true
     apisix  = true
     scorpio = true # True only in test environment
+    tmf_api = true
   }
 }
 
@@ -101,6 +105,7 @@ variable "services_names" {
     apisix_api     = "apisix-api"
     postgis        = "postgis-db"
     scorpio        = "scorpio-broker"
+    tmf_api        = "tm-forum-api"
   }
 }
 

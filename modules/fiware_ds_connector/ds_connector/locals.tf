@@ -46,7 +46,13 @@ locals {
       metadata_name    = "${var.services_names.scorpio}-certificate"
       spec_secret_name = "${var.services_names.scorpio}-tls-secret"
       dns_name         = "${local.dns_domains.scorpio}.${var.service_domain}"
-    }
+    },
+    { # tmf-api
+      id               = local.dns_domains.tmf_api
+      metadata_name    = "${var.services_names.tmf_api}-certificate"
+      spec_secret_name = "${var.services_names.tmf_api}-tls-secret"
+      dns_name         = "${local.dns_domains.tmf_api}.${var.service_domain}"
+    },
   ]
 
   #!############################################################################
