@@ -146,16 +146,13 @@ did:
   port: ${did_config.port}
   ingress:
     enabled: ${ingress_enabled.did}
+    host: ${did_domain}
     annotations:
       kubernetes.io/ingress.class: ${ingress_class} 
       # forcing everything to use ssl
       ingress.kubernetes.io/ssl-redirect: "true"
       # example annotations, allowing cert-manager to automatically create tls-certs
       kubernetes.io/tls-acme: "true"
-    hosts:
-      - host: ${did_domain}
-        paths:
-          - /
     # tls:
     #   - secretName: ${did_secret_tls}
     #     hosts:
