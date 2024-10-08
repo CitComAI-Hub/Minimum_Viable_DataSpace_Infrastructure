@@ -189,9 +189,9 @@ vcverifier:
     logging:
       level: DEBUG
     server:
-      host: http://${vcv_domain}:8080
-    ${vcv_host_name}:
-      tirAddress: http://tir.ds-operator.local:8080/ # tir data space operator
+      host: http://${vcv_domain} #:8080
+    verifier:
+      tirAddress: http://${til_host_name} #tir.ds-operator.local #:8080/ # tir data space operator
       did: $${DID}
     configRepo:
       configEndpoint: http://${ccs_host_name}:${ccs_config.port}
