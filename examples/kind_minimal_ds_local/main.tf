@@ -35,7 +35,7 @@ module "provider_a" {
 
 module "consumer_a" {
   source     = "../../modules/fiware_ds_connector/ds_consumer/"
-  depends_on = [module.trust_anchor]
+  depends_on = [module.trust_anchor, module.provider_a]
 
   namespace      = "consumer-a"
   service_domain = "consumer-a.local"
@@ -43,5 +43,14 @@ module "consumer_a" {
   providers = {
     kubernetes = kubernetes
     helm       = helm
+  }
+
+  did = {
+    port         = 3001,
+    country      = "BE"
+    state        = "BRUSSELS"
+    locality     = "Brussels"
+    organization = "Fancy Marketplace Co."
+    common_name  = "www.fancy-marketplace.biz"
   }
 }
