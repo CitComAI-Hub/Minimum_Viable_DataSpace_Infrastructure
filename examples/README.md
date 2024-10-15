@@ -29,4 +29,4 @@ Remember move to the example folder you want to use.
 cd ./examples/<example_folder>
 ```
 
-In the example folder, deploy the infrastructure using: `make init_apply`. Or destroy the infrastructure using: `make destroy`.
+In the example folder, **deploy** the infrastructure using: `make init_apply`. Or **destroy** the infrastructure using: `make destroy`.
