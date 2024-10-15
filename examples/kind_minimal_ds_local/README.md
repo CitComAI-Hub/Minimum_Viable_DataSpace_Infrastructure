@@ -1,35 +1,92 @@
 # Minimal Data Space Local - Kind Cluster
 
-![minimal_ds](../images/minimum_dataspace_arch.png)
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+        <a href="#ds-operator-trust-anchor">DS Operator (Trust Anchor)</a>
+    </li>
+    <li>
+        <a href="#example-of-use">Example of use</a>
+    </li>
+  </ol>
+</details>
 
-## DS Operator (Trust Anchor)
+This example is based on the [FIWARE's local deployment](https://github.com/FIWARE/data-space-connector/blob/main/doc/deployment-integration/local-deployment/LOCAL.MD). The main difference is that we are using a Kind cluster (with 3 nodes) and Terraform to manage all the resources.
 
-Get ingress domain name:
+The following diagram shows the main blocks of the architecture of the minimal data space. This example is composed of the following blocks:
+
+- **DS Operator**: Trust Anchor that manages the issuers and credentials.
+- **DS Connector A (provider)**: Connector that manages the data sources.
+- **DS Connector B (consumer)**: Connector that manages the data consumers.
+
+![minimal_ds](./images/minimum_dataspace_arch.png)
+
+## Deployment
 
 ```bash
-kubectl get ingress -n ds-operator --kubeconfig ./cluster-config.yaml
+make init_apply
 ```
 
-Add the domain name to your `/etc/hosts` file:
+To connect to the cluster, there are two options:
 
+1. Using the `KUBECONFIG` variable:
+  ```bash
+  export KUBECONFIG=./cluster-config.yaml
+  kubectl get pods --all-namespaces
+  ```
+2. Using the `--kubeconfig` flag:
+  ```bash
+  kubectl get nodes --kubeconfig ./cluster-config.yaml --all-namespaces
+  ```
+> [!WARNING]
+>
+> **Temporary Solution** Also to access to the different services, you need to add all domain names to your `/etc/hosts` file.
+>
+> 1. Check the Traefik IP address: 
+>
+> ```bash
+> kubectl get services -n traefik --kubeconfig ./cluster-config.yaml
+> ```
+>
+> 2. Add the domain names to your `/etc/hosts` file:
+>
+> ```bash
+> 127.0.0.1       til.ds-operator.local
+> 127.0.0.1       tir.ds-operator.local
+> ```
+
+
+
+## Cheetsheet
+
+- Get the pods status:
 ```bash
-127.0.0.1       til.ds-operator.local
-127.0.0.1       tir.ds-operator.local
+watch kubectl get pods --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml --all-namespaces
 ```
 
-Create a new issuer:
-
 ```bash
-curl -X POST http://til.ds-operator.local/issuer \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "did": "did:key:myKey",
-        "credentials": []
-}'
+watch kubectl get pods --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml -n provider-a
 ```
 
-Get the list of issuers:
-
+- Get all certificates:
 ```bash
-curl -X GET http://tir.ds-operator.local/v4/issuers
+  kubectl get cert --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml --all-namespaces
+```
+
+- Get all secrets:
+```bash
+  kubectl get secrets --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml --all-namespaces
+```
+
+- Get secrect content:
+```bash
+  kubectl get secret --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml -n <namespace_name> <secret_name> -o jsonpath="{.data['tls\.crt']}" | base64 --decode
+
+  kubectl get secret --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml -n ds-operator mysql-database-secret -o json
+
+  kubectl get secret --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml -n ds-operator mysql-database-secret -o jsonpath="{.data}" | jq
+
+  kubectl get secret --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml -n ds-operator mysql-database-secret -o json | jq -r '.data | to_entries[] | .key + ": " + (.value | @base64d)'
 ```
