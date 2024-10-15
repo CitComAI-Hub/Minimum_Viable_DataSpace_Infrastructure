@@ -47,17 +47,18 @@ To connect to the cluster, there are two options:
 > 1. Check the Traefik IP address: 
 >
 > ```bash
-> kubectl get services -n traefik --kubeconfig ./cluster-config.yaml
+> kubectl get services -n traefik-ingress --kubeconfig ./cluster-config.yaml
+> NAME                        TYPE           CLUSTER-IP    EXTERNAL-IP      PORT(S)          AGE
+> traefik-dashboard-service   LoadBalancer   10.96.97.1    172.18.255.201   8080:30137/TCP   10m
+>traefik-web-service         LoadBalancer   10.96.72.80   172.18.255.200   80:31910/TCP     10m
 > ```
 >
 > 2. Add the domain names to your `/etc/hosts` file:
 >
 > ```bash
-> 127.0.0.1       til.ds-operator.local
-> 127.0.0.1       tir.ds-operator.local
+> 172.18.255.200       til.ds-operator.local
+> 172.18.255.200       tir.ds-operator.local
 > ```
-
-
 
 ## Cheetsheet
 
