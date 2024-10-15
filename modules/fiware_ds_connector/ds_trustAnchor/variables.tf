@@ -71,12 +71,7 @@ variable "enable_services" {
 }
 
 variable "services_names" {
-  type = object({
-    trust_anchor = string
-    mysql        = string
-    til          = string
-    tir          = string
-  })
+  type = map(string)
   description = "Services names for the DS Operator"
   default = {
     trust_anchor = "fiware-minimal-trust-anchor"
@@ -90,12 +85,7 @@ variable "services_names" {
 # Services Configuration                                                       #
 ################################################################################
 variable "mysql" {
-  type = object({
-    secret      = string
-    db_name_tir = string
-    root_pass   = string
-    secret_key  = string
-  })
+  type = map(string)
   description = "MySQL configuration"
   default = {
     db_name_tir = "tirdb"
