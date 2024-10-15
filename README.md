@@ -82,11 +82,11 @@ These are the necessary requirements to be able to execute the project:
 
 |                    Software                              | Version |
 | --------------------------------------------------------:|:------- |
-| [Docker](https://docs.docker.com/engine/install/ubuntu/) | 26.0.1  |
-| [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installing-from-release-binaries) | 0.20.0  |
-| [Helm](https://helm.sh/docs/intro/install/#from-apt-debianubuntu) | 3.14.2  |
-| [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) | 1.28.3  |
-| [Terraform](https://developer.hashicorp.com/terraform/install?product_intent=terraform) | 1.8.1 |
+| [Docker](https://docs.docker.com/engine/install/ubuntu/) | 27.2.0 |
+| [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installing-from-release-binaries) | 0.21.0  |
+| [Helm](https://helm.sh/docs/intro/install/#from-apt-debianubuntu) | 3.15.4  |
+| [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) | 1.30.2  |
+| [Terraform](https://developer.hashicorp.com/terraform/install?product_intent=terraform) | 1.9.5 |
 | [Make](https://www.gnu.org/software/make/) | 4.3 |
 
 ### Cheatsheet
@@ -144,6 +144,11 @@ The following commands can be used to install some of the necessary software:
   # make destroy
   ```
 
+> [!NOTE]
+> **Available examples:**
+>
+> Mose details in: [Examples](examples/README.md)
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- LICENSE -->
@@ -168,9 +173,9 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 ## References
 
 * [Readme Template](https://github.com/othneildrew/Best-README-Template)
-* [FIWARE Demo-Setup DSBA-compliant Dataspace](https://github.com/FIWARE-Ops/fiware-gitops/tree/master/aws/dsba)
-* [FIWARE Data Space Connector (Documentation)](https://github.com/FIWARE/data-space-connector)
-* [FIWARE Data Space Connector (Deployment)](https://github.com/FIWARE-Ops/data-space-connector)
+* Legacy version: [FIWARE Demo-Setup DSBA-compliant Dataspace](https://github.com/FIWARE-Ops/fiware-gitops/tree/master/aws/dsba)
+* Latest version: [FIWARE Data Space Connector](https://github.com/FIWARE/data-space-connector)
+* Local deployment: [FIWARE Data Space Connector (Local)](https://github.com/FIWARE/data-space-connector/blob/main/doc/deployment-integration/local-deployment/LOCAL.MD)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
