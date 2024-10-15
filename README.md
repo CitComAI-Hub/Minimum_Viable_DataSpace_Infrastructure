@@ -144,10 +144,10 @@ The following commands can be used to install some of the necessary software:
   # make destroy
   ```
 
-> [!NOTE]
+> [!IMPORTANT]
 > **Available examples:**
 >
-> Mose details in: [Examples](examples/README.md)
+> Mose details in: [Examples](examples/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
