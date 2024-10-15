@@ -9,16 +9,13 @@ resource "helm_release" "trust_anchor" {
 
   values = [
     templatefile("${local.helm_conf_yaml_path}/trust_anchor.yaml", {
-      ingress_class = "traefik",
-      # Generate a password for the database connection of trust-anchor.
-      generate_passwords_enabled = true,
+      ingress_class    = var.ingress_class,
+      ingress_enabled  = var.enable_ingress,
+      services_enabled = var.enable_services,
       # MySQL configuration
-      mysql_enabled   = true,
-      mysql_secret    = "mysql-database-secret",
       mysql_host_name = var.services_names.mysql,
-      mysql_db_name   = "tirdb",
+      mysql_config    = var.mysql,
       # Trusted Issuers List (Trust Anchor)
-      til_enabled    = true,
       til_host_name  = var.services_names.til,
       til_domain     = local.dns_dir[local.dns_domains.til],
       til_secret_tls = local.secrets_tls[local.dns_domains.til],

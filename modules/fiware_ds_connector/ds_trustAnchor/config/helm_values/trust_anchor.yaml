@@ -1,24 +1,16 @@
 # https://github.com/FIWARE-Ops/data-space-connector/blob/data-space-connector-3.0.1/charts/trust-anchor/values.yaml
 
-################################################################################
-# CONFIGURATION
-################################################################################
-
 # Generate passwords for the mysql database automatically
 generatePasswords:
-  enabled: ${generate_passwords_enabled}
-  secretName: ${mysql_secret}
-
-################################################################################
-# SERVICES
-################################################################################
+  enabled: ${services_enabled.generate_passwords}
+  secretName: ${mysql_config.secret}
 
 # Database for the trust anchor
 mysql:
-  enabled: ${mysql_enabled}
+  enabled: ${services_enabled.mysql}
   fullnameOverride: ${mysql_host_name}
   auth:
-    existingSecret: ${mysql_secret}
+    existingSecret: ${mysql_config.secret}
   primary:
     persistence:
       enabled: false
@@ -27,19 +19,17 @@ mysql:
       enabled: false
   initdbScripts:
     create.sql: |
-      CREATE DATABASE ${mysql_db_name};
+      CREATE DATABASE ${mysql_config.db_name_tir};
 
 # Trust Anchor (DS-Operator)
 trusted-issuers-list:
-  enabled: ${til_enabled}
+  enabled: ${services_enabled.til}
   fullnameOverride: ${til_host_name}
-
   ingress:
     til:
-      enabled: true
+      enabled: ${ingress_enabled.til}
       annotations:
         kubernetes.io/ingress.class: ${ingress_class} 
-        # traefik.ingress.kubernetes.io/router.entrypoints: web
         # forcing everything to use ssl
         ingress.kubernetes.io/ssl-redirect: "true"
         # example annotations, allowing cert-manager to automatically create tls-certs
@@ -54,7 +44,7 @@ trusted-issuers-list:
       #     hosts:
       #       - ${til_domain}
     tir:
-      enabled: true
+      enabled: ${ingress_enabled.tir}
       annotations:
         kubernetes.io/ingress.class: ${ingress_class}
         # forcing everything to use ssl
@@ -69,13 +59,12 @@ trusted-issuers-list:
       #   - secretName: ${tir_secret_tls}
       #     hosts:
       #       - ${tir_domain}
-
   database:
     persistence: true
     host:  ${mysql_host_name}
-    username: root
-    name: ${mysql_db_name}
+    username: ${mysql_config.root_pass}
+    name: ${mysql_config.db_name_tir}
     existingSecret: 
       enabled: true
-      name: ${mysql_secret}
-      key: mysql-root-password
+      name: ${mysql_config.secret}
+      key: ${mysql_config.secret_key}

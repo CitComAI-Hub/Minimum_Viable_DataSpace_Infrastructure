@@ -19,6 +19,12 @@ variable "service_domain" {
   default     = "ds-trust-anchor.local"
 }
 
+variable "ingress_class" {
+  type        = string
+  description = "Ingress class for the DS operator deployment (nginx or traefik)"
+  default     = "traefik"
+}
+
 ################################################################################
 # Certs Configuration Module                                                   #
 ################################################################################
@@ -45,9 +51,25 @@ variable "trust_anchor" {
   }
 }
 
-################################################################################
-# Services Configuration                                                       #
-################################################################################
+variable "enable_ingress" {
+  type        = map(bool)
+  description = "Enable ingress for the DS Trust Anchor"
+  default = {
+    til = true
+    tir = true
+  }
+}
+
+variable "enable_services" {
+  type        = map(bool)
+  description = "Enable services for the DS Trust Anchor"
+  default = {
+    generate_passwords = true
+    mysql              = true
+    til                = true
+  }
+}
+
 variable "services_names" {
   type = object({
     trust_anchor = string
@@ -61,5 +83,24 @@ variable "services_names" {
     mysql        = "mysql"
     til          = "trusted-issuers-list"
     tir          = "trusted-issuers-registry"
+  }
+}
+
+################################################################################
+# Services Configuration                                                       #
+################################################################################
+variable "mysql" {
+  type = object({
+    secret      = string
+    db_name_tir = string
+    root_pass   = string
+    secret_key  = string
+  })
+  description = "MySQL configuration"
+  default = {
+    db_name_tir = "tirdb"
+    root_pass   = "root"
+    secret      = "mysql-database-secret"
+    secret_key  = "mysql-root-password"
   }
 }
