@@ -385,10 +385,13 @@ apisix:
   #   targetMemoryUtilizationPercentage: 80
   dashboard:
     enabled: false
+    resourcesPreset: ${apisix_config.resource_preset}
   controlPlane:
     enabled: true
+    resourcesPreset: ${apisix_config.resource_preset}
   dataPlane:
     enabled: true
+    resourcesPreset: ${apisix_config.resource_preset}
     ingress:
       enabled: ${ingress_enabled.apisix}
       annotations:

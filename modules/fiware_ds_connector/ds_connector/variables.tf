@@ -47,7 +47,7 @@ variable "connector" {
   type        = map(string)
   description = "Fiware Data Space Connector"
   default = {
-    version    = "7.3.1"
+    version    = "7.3.3"
     chart_name = "data-space-connector"
     repository = "https://fiware.github.io/data-space-connector/"
   }
@@ -248,5 +248,16 @@ variable "contract_management" {
   description = "Contract Management configuration"
   default = {
     port = 8080
+  }
+}
+
+variable "apisix" {
+  type = object({
+    resource_preset = string
+  })
+  description = "Apisix configuration"
+  default = {
+    # Issue solved: https://github.com/FIWARE/data-space-connector/issues/18
+    resource_preset = "small"
   }
 }

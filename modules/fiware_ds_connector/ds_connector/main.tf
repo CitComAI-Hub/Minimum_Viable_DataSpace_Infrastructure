@@ -58,6 +58,7 @@ resource "helm_release" "ds_connector" {
       opa_port = 8181,
       # APISIX
       apisix_host_name      = var.services_names.apisix_service,
+      apisix_config         = var.apisix,
       apisix_domain         = local.dns_dir[local.dns_domains.apisix_service],
       apisix_secret_tls     = local.secrets_tls[local.dns_domains.apisix_service],
       apisix_api_domain     = local.dns_dir[local.dns_domains.apisix_api],
