@@ -20,24 +20,6 @@
 
 ### Cheatsheet
 
-#### Portainer
-
-Portainer is a lightweight management UI which allows you to easily manage your different Docker environments (Docker hosts or Swarm clusters).
-
-```
-https://localhost:9443
-```
-
-Add a pass, for example: `LSvJz#5Q$hw!sY`
-
-Using kubectl get the ip for the portainer service:
-
-```bash
-kubectl get services -n portainer
-```
-
-![config_portainer](images/portainer_config.png)
-
 ## Minimal Data Space
 
 Minimal Data Space deployment.
