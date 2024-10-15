@@ -2,13 +2,13 @@
 # https://github.com/FIWARE/data-space-connector/blob/main/charts/data-space-connector/values.yaml
 
 keycloak:
-  enabled: ${keycloak_enabled}
+  enabled: ${services_enabled.keycloak}
   fullnameOverride: ${keycloak_host_name}
   # -- authentication config for keycloak
   auth:
     existingSecret: ${iss_secret}
-    adminUser: ${keycloak_user}
-    passwordSecretKey: ${keycloak_pass}
+    adminUser: ${keycloak_config.user_key}
+    passwordSecretKey: ${keycloak_config.pass_key}
   # should the db be deployed as part of the keycloak chart
   postgresql:
     enabled: false
@@ -32,13 +32,13 @@ keycloak:
     - name: KC_DB_URL_HOST
       value: ${postgresql_host_name}
     - name: KC_DB_URL_DATABASE
-      value: ${postgresql_keycloakdb_name}
+      value: ${postgresql_config.keycloak_db_name}
     - name: KC_DB_USERNAME
-      value: ${postgresql_user}
+      value: ${postgresql_config.user}
     - name: KC_DB_PASSWORD
       valueFrom:
         secretKeyRef:
-          name: ${postgresql_secret}
+          name: ${postgresql_config.secret}
           key: ${postgresql_secrect_key_adminpass}
     # password for reading the key store connected to the did
     - name: STORE_PASS
@@ -51,11 +51,11 @@ keycloak:
       valueFrom:
         secretKeyRef:
           name: ${iss_secret}
-          key: ${keycloak_pass}
+          key: ${keycloak_config.pass_key}
 
   ingress:
     # only to make it available for the test initialization
-    enabled: ${keycloak_ingress_enabled}
+    enabled: ${ingress_enabled.keycloak}
     annotations:
       kubernetes.io/ingress.class: ${ingress_class} 
       # forcing everything to use ssl
@@ -305,7 +305,7 @@ keycloak:
 # Register the consumer at the til. Only possible if it runs in the same 
 # environment and recommendable for demo deployments
 registration:
-  enabled: true
+  enabled: ${services_enabled.registration}
   configMap: consumer-til-registration
   til: http://${til_operator_domain}:8080
   did: $${DID}
@@ -313,7 +313,7 @@ registration:
 
 dataSpaceConfig:
   # host name: dsconfig
-  enabled: true
+  enabled: ${services_enabled.dsconfig}
   serviceType: ClusterIP
   port: 3002
   supportedModels:
@@ -328,16 +328,19 @@ dataSpaceConfig:
 # Configuration to be shared between the issuance components.
 issuance:
   generatePasswords:
-    enabled: ${generate_passwords_enabled}
+    enabled: ${services_enabled.generate_passwords}
     secretName: ${iss_secret}
 
 # Configuration for the did-helper, should only be used for demonstrational 
 # deployments, see https://github.com/wistefan/did-helper
 did:
-  enabled: ${did_enabled}
+  enabled: ${services_enabled.did}
   # fullnameOverride: ${did_host_name} NOT AVAILABLE, default name: did-helper
+  secret: ${iss_secret}
+  serviceType: ClusterIP
+  port: ${did_config.port}
   ingress:
-    enabled: ${did_ingress_enabled}
+    enabled: ${ingress_enabled.did}
     host: ${did_domain}
     annotations:
       kubernetes.io/ingress.class: ${ingress_class} 
@@ -349,27 +352,24 @@ did:
     #   - secretName: ${did_secret_tls}
     #     hosts:
     #       - ${did_domain}
-  secret: ${iss_secret}
-  serviceType: ClusterIP
-  port: ${did_port}
   cert:
-    country: BE
-    state: BRUSSELS
-    locality: Brussels
-    organization: Fancy Marketplace Co.
-    commonName: ww.fancy-marketplace.biz
+    country: ${did_config.country}
+    state: ${did_config.state}
+    locality: ${did_config.locality}
+    organization: ${did_config.organization}
+    commonName: ${did_config.common_name}
 
 postgresql:
   generatePasswords:
-    enabled: ${generate_passwords_enabled}
-    secretName: ${postgresql_secret}
+    enabled: ${services_enabled.generate_passwords}
+    secretName: ${postgresql_config.secret}
   
-  enabled: ${postgresql_enabled}
+  enabled: ${services_enabled.postgresql}
   fullnameOverride: ${postgresql_host_name}
   # configure authentication to mysql
   auth:
     # name of the secret to take the passowrds from
-    existingSecret: ${postgresql_secret}
+    existingSecret: ${postgresql_config.secret}
     # key of the secrets inside the secret
     secretKeys:
       adminPasswordKey: ${postgresql_secrect_key_adminpass}
@@ -382,7 +382,7 @@ postgresql:
     initdb:
       scripts:
         create.sh: |
-          psql postgresql://${postgresql_user}:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE ${postgresql_keycloakdb_name};"
+          psql postgresql://${postgresql_config.user}:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE ${postgresql_config.keycloak_db_name};"
   readReplicas:
     persistence:
       enabled: false

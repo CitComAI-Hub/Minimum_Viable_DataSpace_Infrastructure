@@ -19,6 +19,12 @@ variable "service_domain" {
   default     = "ds-consumer.local"
 }
 
+variable "ingress_class" {
+  type        = string
+  description = "Ingress class for the DS operator deployment (nginx or traefik)"
+  default     = "traefik"
+}
+
 ################################################################################
 # Certs Configuration Module                                                   #
 ################################################################################
@@ -32,34 +38,86 @@ variable "ca_clusterissuer_name" {
 # Helm Configuration                                                           #
 ################################################################################
 variable "connector" {
-  type = object({
-    version    = string
-    chart_name = string
-    repository = string
-  })
+  type        = map(string)
   description = "Fiware Data Space Connector"
   default = {
-    version    = "7.3.1"
+    version    = "7.3.3"
     chart_name = "data-space-connector"
     repository = "https://fiware.github.io/data-space-connector/"
+  }
+}
+
+variable "enable_ingress" {
+  type        = map(bool)
+  description = "Enable ingress for the DS Connector (consumer)"
+  default = {
+    did      = true
+    keycloak = true
+  }
+}
+
+variable "enable_services" {
+  type        = map(bool)
+  description = "Enable services for the DS Connector"
+  default = {
+    keycloak           = true
+    registration       = true
+    dsconfig           = true
+    generate_passwords = true
+    did                = true
+    postgresql         = true
+  }
+}
+
+variable "services_names" {
+  type        = map(string)
+  description = "Services names for the DS Connector"
+  default = {
+    connector  = "fiware-data-space-connector"
+    keycloak   = "keycloak"
+    did        = "did-helper" # default name, not editable
+    postgresql = "postgresql"
   }
 }
 
 ################################################################################
 # Services Configuration                                                       #
 ################################################################################
-variable "services_names" {
-  type = object({
-    connector  = string
-    did        = string
-    postgresql = string
-    keycloak   = string
-  })
-  description = "Services names for the DS Connector"
+variable "keycloak" {
+  type        = map(string)
+  description = "Keycloak service configuration"
   default = {
-    connector  = "fiware-data-space-connector"
-    did        = "did-helper" # default name, not editable
-    postgresql = "postgresql"
-    keycloak   = "keycloak"
+    user_key = "keycloak-admin"
+    pass_key = "keycloak-admin"
+  }
+}
+
+variable "did" {
+  type = object({
+    port         = number
+    country      = string
+    state        = string
+    locality     = string
+    organization = string
+    common_name  = string
+  })
+  description = "DID service configuration"
+  default = {
+    port         = 3001
+    country      = "BE"
+    state        = "BRUSSELS"
+    locality     = "Brussels"
+    organization = "Fancy Marketplace Co."
+    common_name  = "www.fancy-marketplace.biz"
+  }
+}
+
+variable "postgresql" {
+  type        = map(string)
+  description = "Keycloak service configuration"
+  default = {
+    user             = "postgres"
+    keycloak_db_name = "keycloak"
+    secret           = "postgresql-database-secret"
   }
 }
