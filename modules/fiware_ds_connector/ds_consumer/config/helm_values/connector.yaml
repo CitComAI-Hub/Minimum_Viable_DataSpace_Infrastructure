@@ -172,7 +172,7 @@ keycloak:
         name: consumer-til-registration
         defaultMode: 0755
   realm:
-    frontendUrl: http://${keycloak_domain}:8080
+    frontendUrl: http://${keycloak_domain} #:8080
     import: true
     name: test-realm
     clientRoles: |
