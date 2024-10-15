@@ -7,18 +7,6 @@ variable "kubernetes_local_path" {
   default     = "~/.kube/config"
 }
 
-variable "timeout" {
-  type        = number
-  description = "Timeout for the helm installation (default 40 minutes)"
-  default     = 2400
-}
-
-variable "ingress_class" {
-  type        = string
-  description = "Ingress class for the DS operator deployment (nginx or traefik)"
-  default     = "traefik"
-}
-
 variable "namespace" {
   type        = string
   description = "Namespace for the DS operator deployment"
@@ -29,6 +17,18 @@ variable "service_domain" {
   type        = string
   description = "Data Space domain"
   default     = "ds-connector.local"
+}
+
+variable "timeout" {
+  type        = number
+  description = "Timeout for the helm installation (default 40 minutes)"
+  default     = 2400
+}
+
+variable "ingress_class" {
+  type        = string
+  description = "Ingress class for the DS operator deployment (nginx or traefik)"
+  default     = "traefik"
 }
 
 ################################################################################
@@ -111,6 +111,9 @@ variable "services_names" {
   }
 }
 
+################################################################################
+# Services Configuration                                                       #
+################################################################################
 variable "dataspace_config" {
   type = object({
     port = number
