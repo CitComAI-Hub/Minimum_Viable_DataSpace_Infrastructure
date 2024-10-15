@@ -1,4 +1,4 @@
-# Examples developed
+# Examples
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -6,6 +6,9 @@
   <ol>
     <li>
         <a href="#infrastructure">Infrastructure</a>
+    </li>
+    <li>
+        <a href="#example-of-use">Example of use</a>
     </li>
   </ol>
 </details>
