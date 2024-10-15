@@ -147,7 +147,7 @@ The following commands can be used to install some of the necessary software:
 > [!NOTE]
 > **Available examples:**
 >
-> Mose details in: [Examples](examples/README.md)
+> More details in: [Examples](examples/README.md)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
