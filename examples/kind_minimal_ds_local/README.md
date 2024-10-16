@@ -17,11 +17,15 @@ This example is based on the [FIWARE's local deployment](https://github.com/FIWA
 
 The following diagram shows the main blocks of the architecture of the minimal data space. This example is composed of the following blocks:
 
-- **DS Operator**: Trust Anchor that manages the issuers and credentials.
-- **DS Connector A (provider)**: Connector that manages the data sources.
-- **DS Connector B (consumer)**: Connector that manages the data consumers.
+- **DS Operator (trust anchor)**: Trust Anchor that manages the issuers and credentials.
+- **DS Connector A (provider)**: Entity that provides and consumes data from the data space.
+- **DS Connector B (consumer)**: Entity that only consumes data from the data space.
 
 ![minimal_ds](./images/minimum_dataspace_arch.png)
+
+> [!NOTE]
+>
+> See FIWARE [module](../../modules/fiware_ds_connector/) for more details.
 
 ## Deployment
 
@@ -56,8 +60,18 @@ To connect to the cluster, there are two options:
 > 2. Add the domain names to your `/etc/hosts` file:
 >
 > ```bash
-> 172.18.255.200       til.ds-operator.local
-> 172.18.255.200       tir.ds-operator.local
+> 172.18.255.200     did-helper.consumer-a.local
+> 172.18.255.200     keycloak.consumer-a.local
+> 172.18.255.200     til.ds-operator.local
+> 172.18.255.200     tir.ds-operator.local
+> 172.18.255.200     apisix-proxy.provider-a.local
+> 172.18.255.200     apisix-api.provider-a.local
+> 172.18.255.200     did-helper.provider-a.local
+> 172.18.255.200     pap-odrl.provider-a.local
+> 172.18.255.200     scorpio-broker.provider-a.local
+> 172.18.255.200     tm-forum-api.provider-a.local
+> 172.18.255.200     til.provider-a.local
+> 172.18.255.200     vc-verifier.provider-a.local
 > ```
 
 ## Cheetsheet
