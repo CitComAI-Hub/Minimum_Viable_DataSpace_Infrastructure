@@ -5,10 +5,10 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
-        <a href="#ds-operator-trust-anchor">DS Operator (Trust Anchor)</a>
+        <a href="#deployment">Deployment</a>
     </li>
     <li>
-        <a href="#example-of-use">Example of use</a>
+        <a href="#cheetsheet">Cheetsheet</a>
     </li>
   </ol>
 </details>
