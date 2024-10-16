@@ -17,7 +17,7 @@
 
 | Example | Link | Description | 
 | ------- | ---- | ----------- |
-| Minimal DS Local | [minimal_ds](kind_minimal_ds_local/) | Minimal Data Space (FIWARE) deployment in a local Kind cluster. |
+| Minimal DS Local | [kind_minimal_ds_local](kind_minimal_ds_local/) | Minimal Data Space (FIWARE) deployment in a local Kind cluster. |
 | Kind Cluster | [kind_cluster](kind_cluster/) | Kind cluster deployment. |
 | K3s Cluster | [k3s_cluster](k3s_cluster/) | K3s cluster deployment. |
 
