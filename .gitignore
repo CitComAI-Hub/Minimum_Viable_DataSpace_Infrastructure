@@ -42,3 +42,9 @@ terraform.rc
 !**.gitkeep
 !**.gitignore
 !**/config/*
+
+# Ignore k3s kubeconfig
+**/k3s/kubeconfig.yaml
+
+# Ignore kind kubeconfig
+**/cluster-config.yaml

@@ -1,27 +1,11 @@
-include ../config/common.mk
+include ./config/deployment.mk
 
 .PHONY: init_apply, destroy
 
-## Init & apply ALL Terraform resources (cluster + services).
+## Init & apply ALL Terraform resources for Kind cluster.
 init_apply:
-	terraform init
-	terraform apply -auto-approve \
-		-target=module.local_k8s_cluster
-	terraform apply -auto-approve \
-		-target=module.cluster_config
-	terraform apply -auto-approve \
-		-target=module.portainer
-	terraform apply -auto-approve \
-		-target=module.cert_trust_manager
-
-## Destroy ALL Terraform resources (cluster + services).
+	$(call up_kind,./,../config/cluster.tfvars)
+	
+## Destroy ALL Terraform resources for Kind cluster.
 destroy:
-	terraform destroy -auto-approve \
-		-target=module.cert_trust_manager
-	terraform destroy -auto-approve \
-		-target=module.portainer
-	terraform destroy -auto-approve \
-		-target=module.cluster_config
-	terraform destroy -auto-approve \
-		-target=module.local_k8s_cluster
-	$(remove_tmp_tf)
+	$(call down_kind,./,../config/cluster.tfvars)

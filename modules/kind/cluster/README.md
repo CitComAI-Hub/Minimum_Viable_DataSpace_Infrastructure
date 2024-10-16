@@ -5,3 +5,5 @@ This module creates a Kubernetes in Docker (kind) cluster. Also add ingress-ngin
 > **Warning**: Check that scripts have execution permissions.
 
 > **Warning**: kube-proxy does not deploy correctly when multiple kind clusters are deployed.
+
+![cluster](./images/kind_cluster.png)
