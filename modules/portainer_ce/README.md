@@ -1,10 +1,24 @@
 # Portainer CE in Docker
 
-This module deploys [Portainer](https://www.portainer.io/) CE in a Docker container.
+This module deploys [Portainer](https://www.portainer.io/) CE in a Docker container. Portainer is a lightweight management UI which allows you to easily manage your different Docker environments (Docker hosts or Swarm clusters).
 
 Needs a kubernetes cluster to run.
 
 ## Other configurations
+
+### Dashboard access
+
+```
+https://localhost:9443
+```
+
+![config_portainer](./images/portainer_config.png)
+
+### Admin pass
+
+Example of pass to add to the user admin. 
+
+`LSvJz#5Q$hw!sY`
 
 ### Volumes
 
@@ -19,8 +33,10 @@ resource "docker_volume" "portainer_data" {
 }
 ```
 
-### Admin pass
+### Get the IP
 
-Example of pass to add to the user admin. 
+Using kubectl get the ip for the portainer service:
 
-`LSvJz#5Q$hw!sY`
+```bash
+kubectl get services -n portainer
+```

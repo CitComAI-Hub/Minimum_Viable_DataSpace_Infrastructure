@@ -1,3 +1,6 @@
+#vscode local config
+.vscode
+
 # Local .terraform directories
 **/.terraform/*
 
@@ -34,3 +37,14 @@ override.tf.json
 terraform.rc
 
 .terraform.lock.hcl
+
+**/data/*
+!**.gitkeep
+!**.gitignore
+!**/config/*
+
+# Ignore k3s kubeconfig
+**/k3s/kubeconfig.yaml
+
+# Ignore kind kubeconfig
+**/cluster-config.yaml

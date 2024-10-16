@@ -1,0 +1,48 @@
+locals {
+  ca_path = "${path.module}/${var.data_ca_path}"
+}
+
+resource "null_resource" "create_ca_certificates" {
+  provisioner "local-exec" {
+    command = "${path.module}/scripts/generate_ca_certificates.sh ${local.ca_path}"
+  }
+}
+
+data "local_file" "ca_certificates" {
+  depends_on = [null_resource.create_ca_certificates]
+  for_each = {
+    #! Terraform encode automatically to base64
+    ca_cert = "${local.ca_path}/ca.crt"
+    ca_key  = "${local.ca_path}/ca.key"
+  }
+  filename = each.value
+}
+
+resource "kubernetes_secret" "secret_ca_certificates" {
+  depends_on = [data.local_file.ca_certificates]
+  metadata {
+    name      = var.secret_ca_container
+    namespace = var.namespace
+  }
+  type = "Opaque"
+  data = {
+    "tls.crt" = data.local_file.ca_certificates["ca_cert"].content
+    "tls.key" = data.local_file.ca_certificates["ca_key"].content
+  }
+}
+
+resource "kubernetes_manifest" "cert_manager" {
+  depends_on = [kubernetes_secret.secret_ca_certificates]
+  manifest = {
+    apiVersion = "cert-manager.io/v1"
+    kind       = "ClusterIssuer"
+    metadata = {
+      name = var.clusterissuer_name
+    }
+    spec = {
+      ca = {
+        secretName = var.secret_ca_container
+      }
+    }
+  }
+}

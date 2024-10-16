@@ -1,0 +1,435 @@
+# Source code:
+# https://github.com/FIWARE/data-space-connector/blob/main/charts/data-space-connector/values.yaml
+
+keycloak:
+  enabled: ${services_enabled.keycloak}
+  fullnameOverride: ${keycloak_host_name}
+  # -- authentication config for keycloak
+  auth:
+    existingSecret: ${iss_secret}
+    adminUser: ${keycloak_config.user_key}
+    passwordSecretKey: ${keycloak_config.pass_key}
+  # should the db be deployed as part of the keycloak chart
+  postgresql:
+    enabled: false
+  # host of the external db to be used
+  externalDatabase:
+    host: ${postgresql_host_name}
+  # the default init container is deactivated, since it conflicts with the n
+  # on-bitnami image.
+  enableDefaultInitContainers: false
+
+  # extra env vars to be set. we require them at the moment, since some of the
+  # chart config mechanisms only work with the bitnami-image
+  extraEnvVars:
+    # indicates ssl is terminated at the edge
+    - name: KC_PROXY
+      value: "edge"
+    # point the transaction store to the (writeable!) empty volume
+    - name: QUARKUS_TRANSACTION_MANAGER_OBJECT_STORE_DIRECTORY
+      value: /qtm-tmp
+    # config for the db connection
+    - name: KC_DB_URL_HOST
+      value: ${postgresql_host_name}
+    - name: KC_DB_URL_DATABASE
+      value: ${postgresql_config.keycloak_db_name}
+    - name: KC_DB_USERNAME
+      value: ${postgresql_config.user}
+    - name: KC_DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: ${postgresql_config.secret}
+          key: ${postgresql_secrect_key_adminpass}
+    # password for reading the key store connected to the did
+    - name: STORE_PASS
+      valueFrom:
+        secretKeyRef:
+          name: ${iss_secret}
+          key: store-pass
+    # keycloak admin password
+    - name: KC_ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: ${iss_secret}
+          key: ${keycloak_config.pass_key}
+
+  ingress:
+    # only to make it available for the test initialization
+    enabled: ${ingress_enabled.keycloak}
+    annotations:
+      kubernetes.io/ingress.class: ${ingress_class} 
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+    hostname: ${keycloak_domain}
+    # tls:
+    #   - secretName: ${keycloak_secret_tls}
+    #     hosts:
+    #       - ${keycloak_domain}
+  args:
+    - -ec
+    - |
+      #!/bin/sh
+      export $(cat /did-material/did.env)
+      export KC_HOSTNAME=${keycloak_domain}
+      env | grep DID
+      /opt/keycloak/bin/kc.sh start --features oid4vc-vci --import-realm
+  initContainers:
+    - name: read-only-workaround
+      image: quay.io/wi_stefan/keycloak:25.0.0-PRE
+      command:
+        - /bin/bash
+      args:
+        - -ec
+        - |
+          #!/bin/bash
+          cp -r /opt/keycloak/lib/quarkus/* /quarkus
+      volumeMounts:
+        - name: empty-dir
+          mountPath: /quarkus
+          subPath: app-quarkus-dir
+
+    - name: get-did
+      image: ubuntu
+      command:
+        - /bin/bash
+      args:
+        - -ec
+        - |
+          #!/bin/bash
+          apt-get -y update; apt-get -y install wget; apt-get -y install sed;
+          
+          cd /did-material
+          wget http://${did_host_name}:3001/did-material/cert.pfx
+          wget http://${did_host_name}:3001/did-material/did.env
+          mkdir -p /did-material/client
+          cd /did-material/client
+          wget http://${did_provider_domain}:3002/did-material/did.env
+          sed -i -e 's/DID/CLIENT_DID/g' /did-material/client/did.env
+          echo "" >> /did-material/did.env
+          echo $(cat /did-material/client/did.env) >> /did-material/did.env
+          echo $(cat /did-material/did.env)
+      volumeMounts:
+        - name: did-material
+          mountPath: /did-material
+
+    - name: register-at-tir
+      image: ubuntu
+      command:
+        - /bin/bash
+      args:
+        - -ec
+        - |
+          #!/bin/bash
+          source /did-material/did.env
+          apt-get -y update; apt-get -y install curl
+          curl -X 'POST' 'http://${til_operator_domain}:8080/issuer' -H 'Content-Type: application/json' -d "{\"did\": \"$${DID}\", \"credentials\": []}"
+      volumeMounts:
+        - name: did-material
+          mountPath: /did-material
+
+    - name: register-at-til
+      image: quay.io/curl/curl:8.1.2
+      command:
+        - /bin/sh
+      args:
+        - -ec
+        - |
+          #!/bin/sh
+          export $(cat /did-material/did.env)
+          /bin/init.sh
+      volumeMounts:
+        - name: consumer-til-registration
+          mountPath: /bin/init.sh
+          subPath: init.sh
+        - name: did-material
+          mountPath: /did-material
+  
+  extraVolumeMounts:
+    - name: empty-dir
+      mountPath: /opt/keycloak/lib/quarkus
+      subPath: app-quarkus-dir
+    - name: qtm-temp
+      mountPath: /qtm-tmp
+    - name: did-material
+      mountPath: /did-material
+    - name: did-material
+      mountPath: "/etc/env"
+      readOnly: true
+    - name: realms
+      mountPath: /opt/keycloak/data/import
+  extraVolumes:
+    - name: did-material
+      emptyDir: { }
+    - name: qtm-temp
+      emptyDir: { }
+    - name: realms
+      configMap:
+        name: test-realm-realm
+    - name: consumer-til-registration
+      configMap:
+        name: consumer-til-registration
+        defaultMode: 0755
+  realm:
+    frontendUrl: http://${keycloak_domain} #:8080
+    import: true
+    name: test-realm
+    clientRoles: |
+      "$${CLIENT_DID}": [
+        {
+          "name": "READER",
+          "description": "Is allowed to see offers etc.",
+          "clientRole": true
+        },
+        {
+          "name": "OPERATOR",
+          "description": "Is allowed to operate clusters.",
+          "clientRole": true
+        }
+      ]
+
+    users: |
+      {
+        "username": "test-user",
+        "enabled": true,
+        "email": "test@user.org",
+        "firstName": "Test",
+        "lastName": "Reader",
+        "credentials": [
+          {
+            "type": "password",
+            "value": "test"
+          }
+        ],
+        "clientRoles": {
+          "$${CLIENT_DID}": [
+            "OPERATOR"
+          ],
+          "account": [
+            "view-profile",
+            "manage-account"
+          ]
+        },
+        "groups": [
+        ]
+      }
+    clients: |
+      {
+        "clientId": "$${CLIENT_DID}",
+        "enabled": true,
+        "description": "Client to connect test.org",
+        "surrogateAuthRequired": false,
+        "alwaysDisplayInConsole": false,
+        "clientAuthenticatorType": "client-secret",
+        "defaultRoles": [],
+        "redirectUris": [],
+        "webOrigins": [],
+        "notBefore": 0,
+        "bearerOnly": false,
+        "consentRequired": false,
+        "standardFlowEnabled": true,
+        "implicitFlowEnabled": false,
+        "directAccessGrantsEnabled": false,
+        "serviceAccountsEnabled": false,
+        "publicClient": false,
+        "frontchannelLogout": false,
+        "protocol": "oid4vc",
+        "attributes": {
+          "client.secret.creation.time": "1675260539",
+          "vc.user-credential.format": "jwt_vc",
+          "vc.user-credential.scope": "UserCredential",
+          "vc.verifiable-credential.format": "jwt_vc",
+          "vc.verifiable-credential.scope": "VerifiableCredential",
+          "vc.operator-credential.format": "jwt_vc",
+          "vc.operator-credential.scope": "OperatorCredential"
+        },
+        "protocolMappers": [
+          {
+            "name": "target-role-mapper",
+            "protocol": "oid4vc",
+            "protocolMapper": "oid4vc-target-role-mapper",
+            "config": {
+              "subjectProperty": "roles",
+              "clientId": "$${CLIENT_DID}",
+              "supportedCredentialTypes": "OperatorCredential"
+            }
+          },
+          {
+            "name": "context-mapper",
+            "protocol": "oid4vc",
+            "protocolMapper": "oid4vc-context-mapper",
+            "config": {
+              "context": "https://www.w3.org/2018/credentials/v1",
+              "supportedCredentialTypes": "VerifiableCredential,UserCredential,OperatorCredential"
+            }
+          },
+          {
+            "name": "email-mapper",
+            "protocol": "oid4vc",
+            "protocolMapper": "oid4vc-user-attribute-mapper",
+            "config": {
+              "subjectProperty": "email",
+              "userAttribute": "email",
+              "supportedCredentialTypes": "UserCredential,OperatorCredential"
+            }
+          },
+          {
+            "name": "firstName-mapper",
+            "protocol": "oid4vc",
+            "protocolMapper": "oid4vc-user-attribute-mapper",
+            "config": {
+              "subjectProperty": "firstName",
+              "userAttribute": "firstName",
+              "supportedCredentialTypes": "UserCredential,OperatorCredential"
+            }
+          },
+          {
+            "name": "lastName-mapper",
+            "protocol": "oid4vc",
+            "protocolMapper": "oid4vc-user-attribute-mapper",
+            "config": {
+              "subjectProperty": "lastName",
+              "userAttribute": "lastName",
+              "supportedCredentialTypes": "UserCredential,OperatorCredential"
+            }
+          }
+        ],
+        "authenticationFlowBindingOverrides": {},
+        "fullScopeAllowed": true,
+        "nodeReRegistrationTimeout": -1,
+        "defaultClientScopes": [],
+        "optionalClientScopes": []
+      }
+
+# Register the consumer at the til. Only possible if it runs in the same 
+# environment and recommendable for demo deployments
+registration:
+  enabled: ${services_enabled.registration}
+  configMap: consumer-til-registration
+  til: http://${til_operator_domain}:8080
+  did: $${DID}
+  credentialsType: UserCredential
+
+dataSpaceConfig:
+  # host name: dsconfig
+  enabled: ${services_enabled.dsconfig}
+  serviceType: ClusterIP
+  port: 3002
+  supportedModels:
+    - "https://raw.githubusercontent.com/smart-data-models/dataModel.Consumption/master/ConsumptionPoint/schema.json"
+    - "https://raw.githubusercontent.com/smart-data-models/dataModel.Consumption/master/ConsumptionCost/schema.json"
+  supportedProtocols:
+    - http
+    - https
+  authenticationProtocols:
+    - oid4vp
+
+# Configuration to be shared between the issuance components.
+issuance:
+  generatePasswords:
+    enabled: ${services_enabled.generate_passwords}
+    secretName: ${iss_secret}
+
+# Configuration for the did-helper, should only be used for demonstrational 
+# deployments, see https://github.com/wistefan/did-helper
+did:
+  enabled: ${services_enabled.did}
+  # fullnameOverride: ${did_host_name} NOT AVAILABLE, default name: did-helper
+  secret: ${iss_secret}
+  serviceType: ClusterIP
+  port: ${did_config.port}
+  ingress:
+    enabled: ${ingress_enabled.did}
+    host: ${did_domain}
+    annotations:
+      kubernetes.io/ingress.class: ${ingress_class} 
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+    # tls:
+    #   - secretName: ${did_secret_tls}
+    #     hosts:
+    #       - ${did_domain}
+  cert:
+    country: ${did_config.country}
+    state: ${did_config.state}
+    locality: ${did_config.locality}
+    organization: ${did_config.organization}
+    commonName: ${did_config.common_name}
+
+postgresql:
+  generatePasswords:
+    enabled: ${services_enabled.generate_passwords}
+    secretName: ${postgresql_config.secret}
+  
+  enabled: ${services_enabled.postgresql}
+  fullnameOverride: ${postgresql_host_name}
+  # configure authentication to mysql
+  auth:
+    # name of the secret to take the passowrds from
+    existingSecret: ${postgresql_config.secret}
+    # key of the secrets inside the secret
+    secretKeys:
+      adminPasswordKey: ${postgresql_secrect_key_adminpass}
+      userPasswordKey: ${postgresql_secrect_key_userpass}
+  # configuration for the primary of the db
+  primary:
+    persistence:
+      enabled: false
+    # scripts to be run on intialization
+    initdb:
+      scripts:
+        create.sh: |
+          psql postgresql://${postgresql_config.user}:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE ${postgresql_config.keycloak_db_name};"
+  readReplicas:
+    persistence:
+      enabled: false
+
+
+################################################################################
+################################################################################
+
+## Only for provider role
+
+authentication:
+  generatePasswords:
+    enabled: false
+
+mysql:
+  enabled: false
+
+credentials-config-service:
+  enabled: false
+
+trusted-issuers-list:
+  enabled: false
+
+vcverifier:
+  enabled: false
+
+odrl-pap:
+  enabled: false
+
+opa:
+  enabled: false
+
+apisix:
+  enabled: false
+
+dataplane:
+  generatePasswords:
+    enabled: false
+
+postgis:
+  enabled: false
+
+scorpio:
+  enabled: false
+
+tm-forum-api:
+  enabled: false
+
+contract-management:
+  enabled: false
