@@ -13,6 +13,18 @@ variable "namespace" {
   default     = "ds-consumer"
 }
 
+variable "operator_namespace" {
+  type        = string
+  description = "Namespace for the DS operator deployment"
+  default     = "ds-operator"
+}
+
+variable "provider_namespace" {
+  type        = string
+  description = "Namespace for the DS provider deployment"
+  default     = "ds-provider"
+}
+
 variable "service_domain" {
   type        = string
   description = "Data Space domain"
