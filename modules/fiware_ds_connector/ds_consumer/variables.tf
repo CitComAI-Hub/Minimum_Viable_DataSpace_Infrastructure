@@ -7,12 +7,6 @@ variable "kubernetes_local_path" {
   default     = "~/.kube/config"
 }
 
-variable "namespace" {
-  type        = string
-  description = "Namespace for the DS operator deployment"
-  default     = "ds-consumer"
-}
-
 variable "operator_namespace" {
   type        = string
   description = "Namespace for the DS operator deployment"
@@ -23,6 +17,12 @@ variable "provider_namespace" {
   type        = string
   description = "Namespace for the DS provider deployment"
   default     = "ds-provider"
+}
+
+variable "namespace" {
+  type        = string
+  description = "Namespace for the DS operator deployment"
+  default     = "ds-consumer"
 }
 
 variable "service_domain" {
@@ -95,6 +95,15 @@ variable "services_names" {
 ################################################################################
 # Services Configuration                                                       #
 ################################################################################
+variable "trusted_issuers_list_names" {
+  type        = map(string)
+  description = "Trusted Issuers List service name in the Operator and Provider namespaces"
+  default = {
+    operator = "trusted-issuers-list"
+    provider = "trusted-issuers-list"
+  }
+}
+
 variable "keycloak" {
   type        = map(string)
   description = "Keycloak service configuration"

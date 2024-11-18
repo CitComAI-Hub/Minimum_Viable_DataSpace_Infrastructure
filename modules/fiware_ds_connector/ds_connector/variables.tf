@@ -7,6 +7,12 @@ variable "kubernetes_local_path" {
   default     = "~/.kube/config"
 }
 
+variable "operator_namespace" {
+  type        = string
+  description = "Namespace for the DS operator deployment"
+  default     = "ds-operator"
+}
+
 variable "namespace" {
   type        = string
   description = "Namespace for the DS operator deployment"
