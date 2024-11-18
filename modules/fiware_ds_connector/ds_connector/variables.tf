@@ -126,21 +126,21 @@ variable "dataspace_config" {
 
 variable "mysql" {
   type = object({
-    port        = number
-    secret      = string
-    db_name_til = string
-    db_name_ccs = string
-    root_pass   = string
-    secret_key  = string
+    port          = number
+    secret        = string
+    db_name_til   = string
+    db_name_ccs   = string
+    username_root = string
+    secret_key    = string
   })
   description = "MySQL configuration"
   default = {
-    port        = 3306
-    secret      = "mysql-database-secret"
-    db_name_til = "tildb"
-    db_name_ccs = "ccsdb"
-    root_pass   = "root"
-    secret_key  = "mysql-root-password"
+    port          = 3306
+    secret        = "mysql-database-secret"
+    db_name_til   = "tildb"
+    db_name_ccs   = "ccsdb"
+    username_root = "root"
+    secret_key    = "mysql-root-password"
   }
 }
 
