@@ -1,8 +1,14 @@
+locals {
+  operator_namespace   = "ds-operator"
+  provider_a_namespace = "provider-a"
+  consumer_a_namespace = "consumer-a"
+}
+
 module "trust_anchor" {
   source = "../../modules/fiware_ds_connector/ds_trustAnchor/"
 
-  namespace      = "ds-operator"
-  service_domain = "ds-operator.local"
+  namespace      = local.operator_namespace
+  service_domain = "${local.operator_namespace}.local"
 
   providers = {
     kubernetes = kubernetes
@@ -14,8 +20,8 @@ module "provider_a" {
   source     = "../../modules/fiware_ds_connector/ds_connector/"
   depends_on = [module.trust_anchor]
 
-  namespace      = "provider-a"
-  service_domain = "provider-a.local"
+  namespace      = local.provider_a_namespace
+  service_domain = "${local.provider_a_namespace}.local"
 
   providers = {
     kubernetes = kubernetes
@@ -37,8 +43,10 @@ module "consumer_a" {
   source     = "../../modules/fiware_ds_connector/ds_consumer/"
   depends_on = [module.trust_anchor, module.provider_a]
 
-  namespace      = "consumer-a"
-  service_domain = "consumer-a.local"
+  operator_namespace = local.operator_namespace
+  provider_namespace = local.provider_a_namespace
+  namespace          = local.consumer_a_namespace
+  service_domain     = "${local.consumer_a_namespace}.local"
 
   providers = {
     kubernetes = kubernetes

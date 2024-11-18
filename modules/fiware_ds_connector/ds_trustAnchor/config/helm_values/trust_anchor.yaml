@@ -62,7 +62,7 @@ trusted-issuers-list:
   database:
     persistence: true
     host:  ${mysql_host_name}
-    username: ${mysql_config.root_pass}
+    username: ${mysql_config.username_root}
     name: ${mysql_config.db_name_tir}
     existingSecret: 
       enabled: true

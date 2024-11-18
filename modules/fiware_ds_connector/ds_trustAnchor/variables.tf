@@ -71,7 +71,7 @@ variable "enable_services" {
 }
 
 variable "services_names" {
-  type = map(string)
+  type        = map(string)
   description = "Services names for the DS Operator"
   default = {
     trust_anchor = "fiware-minimal-trust-anchor"
@@ -85,12 +85,12 @@ variable "services_names" {
 # Services Configuration                                                       #
 ################################################################################
 variable "mysql" {
-  type = map(string)
+  type        = map(string)
   description = "MySQL configuration"
   default = {
-    db_name_tir = "tirdb"
-    root_pass   = "root"
-    secret      = "mysql-database-secret"
-    secret_key  = "mysql-root-password"
+    db_name_tir   = "tirdb"
+    username_root = "root"
+    secret        = "mysql-database-secret"
+    secret_key    = "mysql-root-password"
   }
 }
