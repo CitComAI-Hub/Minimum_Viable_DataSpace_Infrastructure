@@ -10,10 +10,10 @@ This example is based on the [FIWARE's local deployment](https://github.com/FIWA
         <a href="#deployment">Deployment</a>
         <ul>
             <li><a href="#cluster-access">Cluster Access</a></li>
-            <li><a href="#deployment-time-monitoring">Deployment Time & Monitoring</a></li>
+            <li><a href="#deployment-time--monitoring">Deployment Time & Monitoring</a></li>
             <li><a href="#access-to-the-services">Access to the services</a>
                 <ul>
-                    <li><a href="#ingress-dashboard">Ingress Dashboard (Traefik)</a></li>
+                    <li><a href="#ingress-dashboard-traefik">Ingress Dashboard (Traefik)</a></li>
                     <li><a href="#connector-services">Connector services</a></li>
                 </ul>
             </li>
