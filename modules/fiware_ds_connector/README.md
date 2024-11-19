@@ -19,7 +19,7 @@ In the minimal version of the data space, we have the following components:
         <a href="#fds-connector">FDS Connector</a>
         <ul>
             <li><a href="#consumer">Consumer</a></li>
-            <li><a href="#provider-consumer">Provider/Consumer</a></li>
+            <li><a href="#providerconsumer">Provider/Consumer</a></li>
         </ul>
     </li>
   </ol>
