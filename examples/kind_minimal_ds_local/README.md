@@ -61,7 +61,7 @@ The kubeconfig file is generated in the `./cluster-config.yaml` file. To access 
 
 ### Deployment Time & Monitoring
 
-Depending on the resources of your machine, the deployment time can vary. In general, the deployment time is around **10 minutes** or more. 
+Depending on the resources of your machine, the deployment time can vary. In general, the deployment time is around **10 minutes**. 
 
 This deployment have two phases: 
 
@@ -181,128 +181,76 @@ With the environment deployed, you can access the services using the following d
 > 172.19.255.200     vc-verifier.provider-a.local
 > ```
 
-#### Ingress Dashboard (Traefik)
-
-Traefik dashboard: `http://172.19.255.201:8080/dashboard#`
-
-#### Connector services
-
-**Trust-Anchor**
-
-```bash
-curl -s -XGET http://tir.ds-operator.local/v4/issuers | jq
+| Service |              Domain Name                |    Description    | Data Space Role |
+|---------|-----------------------------------------|-------------------|-----------------|
+| Traefik | `http://172.19.255.201:8080/dashboard#` | Ingress dashboard | - |
+| Trusted Issuer List | `http://til.ds-operator.local` | Register new issuer | Trust-Anchor |
+| Trusted Issuer List | `http://tir.ds-operator.local` | List issuers | Trust-Anchor |
+| Keycloak | `http://keycloak.consumer-a.local`     | Admin console | Consumer |
+| Keycloak | `http://keycloak.consumer-a.local/realms/test-realm/account/oid4vci` | User console | Consumer |
+| Gateway | `http://apisix-proxy.provider-a.local`  | APISIX proxy | Provider |
 
 
+#### Consumer
+
+**Keycloak:**
+
+Keycloak can be used to issue VerifiableCredentials for users or services, to be used for authorization at other participants of the Data Space. By default, Keyclok if pre-configured with two users:
+
+| User             | Password                       | Role  |
+|------------------|--------------------------------|-------|
+| `keycloak-admin` | (generated durind deployment)¹ | Admin |
+| `test-user`      | `test`                         | User  |
+
+> [!NOTE]
+>
+>¹To get the password, you can check the logs of the Keycloak pod:
+>```bash
+>kubectl get secret issuance-secret -n consumer-a -o json | jq '.data."keycloak-admin"' -r | base64 --decode
+>```
+
+To get access to the data space, you need to create a Verifiable Credential. Verifiable credential (in jwt (_JSON Web Token_) format _header.payload.signature_):
+
+```
+eyJhbGciOiJFUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJkaWQ6a2V5OnpEbmFlVzZuTlVpUXhWbTlON3d0VWVIUmNwb2hobXQ2OHh1b3l6VGVjWEsxRTZ3WXMifQ.eyJuYmYiOjE3MzIwOTM4NTMsImp0aSI6InVybjp1dWlkOmFkOGM2MmI4LTk4MjktNGQ4YS05ZWEzLTM1YWFmZDM1ZjQyNCIsImlzcyI6ImRpZDprZXk6ekRuYWVXNm5OVWlReFZtOU43d3RVZUhSY3BvaGhtdDY4eHVveXpUZWNYSzFFNndZcyIsInZjIjp7InR5cGUiOlsiVXNlckNyZWRlbnRpYWwiXSwiaXNzdWVyIjoiZGlkOmtleTp6RG5hZVc2bk5VaVF4Vm05Tjd3dFVlSFJjcG9oaG10Njh4dW95elRlY1hLMUU2d1lzIiwiaXNzdWFuY2VEYXRlIjoxNzMyMDkzODUzNzgyLCJjcmVkZW50aWFsU3ViamVjdCI6eyJmaXJzdE5hbWUiOiJUZXN0IiwibGFzdE5hbWUiOiJSZWFkZXIiLCJlbWFpbCI6InRlc3RAdXNlci5vcmcifSwiQGNvbnRleHQiOlsiaHR0cHM6Ly93d3cudzMub3JnLzIwMTgvY3JlZGVudGlhbHMvdjEiXX19.ddd2s3AIu_d1t-14Fljkj-4siBI6rEt6m6WStKBwodVG0OGSsg6zGOMqRi_5jpPH3KIrBkCGixR3PCNwd-_Cew
+```
+
+If you decode the jwt, you will get the following information (_you can use this website [jwt.io](https://jwt.io/)_):
+
+```json
 {
-  "self": "/v4/issuers/",
-  "items": [
-    {
-      "did": "did:key:zDnaedBWBYNtDsCNqxqBbshP7p5RuEuFo5emku1ack3XzvvoU",
-      "href": "/v4/issuers/did:key:zDnaedBWBYNtDsCNqxqBbshP7p5RuEuFo5emku1ack3XzvvoU"
+  "alg": "ES256",
+  "typ": "JWT",
+  "kid": "did:key:zDnaeW6nNUiQxVm9N7wtUeHRcpohhmt68xuoyzTecXK1E6wYs"
+},
+{
+  "nbf": 1732093853,
+  "jti": "urn:uuid:ad8c62b8-9829-4d8a-9ea3-35aafd35f424",
+  "iss": "did:key:zDnaeW6nNUiQxVm9N7wtUeHRcpohhmt68xuoyzTecXK1E6wYs",
+  "vc": {
+    "type": [
+      "UserCredential"
+    ],
+    "issuer": "did:key:zDnaeW6nNUiQxVm9N7wtUeHRcpohhmt68xuoyzTecXK1E6wYs",
+    "issuanceDate": 1732093853782,
+    "credentialSubject": {
+      "firstName": "Test",
+      "lastName": "Reader",
+      "email": "test@user.org"
     },
-    {
-      "did": "did:key:zDnaezQYkXpLUpp4vXRS3DiQFhaHhWkPQphdVqCarsPuNbz95",
-      "href": "/v4/issuers/did:key:zDnaezQYkXpLUpp4vXRS3DiQFhaHhWkPQphdVqCarsPuNbz95"
-    }
-  ],
-  "total": 2,
-  "pageSize": 2,
-  "links": {
-    "first": "did:key:zDnaedBWBYNtDsCNqxqBbshP7p5RuEuFo5emku1ack3XzvvoU"
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1"
+    ]
   }
-}
+},
+{(signature content)}
 ```
 
-**Paricipants**
+#### Provider
 
-Keycloak:
+Steps to create a data policy and data creation in the broker for an example.
 
-- Admin console: `http://keycloak.consumer-a.local`
-- Realm (*test-user* | *test*): `http://keycloak.consumer-a.local/realms/test-realm/account/oid4vci`
-
-
-Retrieve an actual credential:
-
-```bash
-unset ACCESS_TOKEN; unset OFFER_URI; unset PRE_AUTHORIZED_CODE; \
-unset CREDENTIAL_ACCESS_TOKEN; unset VERIFIABLE_CREDENTIAL; unset HOLDER_DID; \
-unset VERIFIABLE_PRESENTATION; unset JWT_HEADER; unset PAYLOAD; unset SIGNATURE; unset JWT; \
-unset VP_TOKEN; unset DATA_SERVICE_ACCESS_TOKEN;
-```
-
-```bash
-export ACCESS_TOKEN=$(curl -s -X POST "http://keycloak.consumer-a.local/realms/test-realm/protocol/openid-connect/token" \
-  --header 'Accept: */*' \
-  --header 'Content-Type: application/x-www-form-urlencoded' \
-  --data grant_type=password \
-  --data client_id=admin-cli \
-  --data username=test-user \
-  --data password=test | jq '.access_token' -r); echo -e "\n>> Access token: $ACCESS_TOKEN"
-```
-
-```bash
-curl -s -X GET http://keycloak.consumer-a.local/realms/test-realm/.well-known/openid-credential-issuer | jq
-```
-
-```bash
-export OFFER_URI=$(curl -s -X GET "http://keycloak.consumer-a.local/realms/test-realm/protocol/oid4vc/credential-offer-uri?credential_configuration_id=user-credential" \
-  --header "Authorization: Bearer ${ACCESS_TOKEN}" | jq '"\(.issuer)\(.nonce)"' -r); echo -e "\n>> Offer URI: $OFFER_URI"
-
-export PRE_AUTHORIZED_CODE=$(curl -s -X GET ${OFFER_URI} \
-  --header "Authorization: Bearer ${ACCESS_TOKEN}" | jq '.grants."urn:ietf:params:oauth:grant-type:pre-authorized_code"."pre-authorized_code"' -r); echo -e "\n>> Pre-authorized code: $PRE_AUTHORIZED_CODE"
-
-export CREDENTIAL_ACCESS_TOKEN=$(curl -s -X POST "http://keycloak.consumer-a.local/realms/test-realm/protocol/openid-connect/token" \
-  --header 'Accept: */*' \
-  --header 'Content-Type: application/x-www-form-urlencoded' \
-  --data grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code \
-  --data code=${PRE_AUTHORIZED_CODE} | jq '.access_token' -r); echo -e "\n>> Credential access token: $CREDENTIAL"
-
-export VERIFIABLE_CREDENTIAL=$(curl -s -X POST "http://keycloak.consumer-a.local/realms/test-realm/protocol/oid4vc/credential" \
-  --header 'Accept: */*' \
-  --header 'Content-Type: application/json' \
-  --header "Authorization: Bearer ${CREDENTIAL_ACCESS_TOKEN}" \
-  --data '{"credential_identifier":"user-credential", "format":"jwt_vc"}' | jq '.credential' -r);echo -e "\n>> Verifiable credential: $VERIFIABLE_CREDENTIAL"
-```
-
-Authenticate via OID4VP
-
-```bash
-export TOKEN_ENDPOINT=$(curl -s -X GET 'http:/apisix-proxy.provider-a.local/.well-known/openid-configuration' | jq -r '.token_endpoint'); echo -e "\n>> Token endpoint $TOKEN_ENDPOINT"
-```
-
-```bash
-docker run -v $(pwd):/cert quay.io/wi_stefan/did-helper:0.1.1
-```
-
-```bash
-export HOLDER_DID=$(cat did.json | jq '.id' -r); echo -e "\n>> Holder DID: $HOLDER_DID"
-
-export VERIFIABLE_PRESENTATION="{
-  \"@context\": [\"https://www.w3.org/2018/credentials/v1\"],
-  \"type\": [\"VerifiablePresentation\"],
-  \"verifiableCredential\": [
-      \"${VERIFIABLE_CREDENTIAL}\"
-  ],
-  \"holder\": \"${HOLDER_DID}\"
-}"; echo -e "\n>> Verifiable presentation: $VERIFIABLE_PRESENTATION"
-
-export JWT_HEADER=$(echo -n "{\"alg\":\"ES256\", \"typ\":\"JWT\", \"kid\":\"${HOLDER_DID}\"}"| base64 -w0 | sed s/\+/-/g | sed 's/\//_/g' | sed -E s/=+$//); echo -e "\n>> JWT header: $JWT_HEADER"
-
-export PAYLOAD=$(echo -n "{\"iss\": \"${HOLDER_DID}\", \"sub\": \"${HOLDER_DID}\", \"vp\": ${VERIFIABLE_PRESENTATION}}" | base64 -w0 | sed s/\+/-/g |sed 's/\//_/g' |  sed -E s/=+$//); echo -e "\n>> Payload: $PAYLOAD"
-
-export SIGNATURE=$(echo -n "${JWT_HEADER}.${PAYLOAD}" | openssl dgst -sha256 -binary -sign private-key.pem | base64 -w0 | sed s/\+/-/g | sed 's/\//_/g' | sed -E s/=+$//); echo -e "\n >> Signature: $SIGNATURE"
-
-export JWT="${JWT_HEADER}.${PAYLOAD}.${SIGNATURE}"; echo -e "\n>> JWT: $JWT"
-
-export VP_TOKEN=$(echo -n ${JWT} | base64 -w0 | sed s/\+/-/g | sed 's/\//_/g' | sed -E s/=+$//); echo -e "\n>> VP token: $VP_TOKEN"
-
-export DATA_SERVICE_ACCESS_TOKEN=$(curl -s -X POST $TOKEN_ENDPOINT \
-    --header 'Accept: */*' \
-    --header 'Content-Type: application/x-www-form-urlencoded' \
-    --data grant_type=vp_token \
-    --data vp_token=${VP_TOKEN} \
-    --data scope=default | jq '.access_token' -r ); echo -e "\n>> Data service access token: $DATA_SERVICE_ACCESS_TOKEN"
-```
+## Examples
 
 
 
