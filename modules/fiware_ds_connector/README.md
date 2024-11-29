@@ -41,7 +41,7 @@ The FIWARE Data Space (FDS) Connector is a Helm chart that allows the deployment
 
 | Module               | Version | Repository | Chart code |
 | -------------------- | ------- | ---------- | ---------- |
-| data-space-connector | 7.3.3   | `https://fiware.github.io/data-space-connector/` | [GitHub](https://github.com/FIWARE/data-space-connector/tree/main/charts/data-space-connector) |
+| data-space-connector | 7.17.0  | `https://fiware.github.io/data-space-connector/` | [GitHub](https://github.com/FIWARE/data-space-connector/tree/main/charts/data-space-connector) |
 
 ### Consumer
 

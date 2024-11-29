@@ -9,6 +9,7 @@ locals {
     til          = "trusted-issuers-list"
     tir          = "trusted-issuers-registry"
   }
+
   provider_services_names = {
     connector      = "fiware-data-space-connector"
     mysql          = "mysql-db"
@@ -82,6 +83,7 @@ module "consumer_a" {
     helm       = helm
   }
 
+  # Services Configuration
   did = {
     port         = 3001,
     country      = "BE"
