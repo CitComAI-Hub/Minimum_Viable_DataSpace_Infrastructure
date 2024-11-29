@@ -4,54 +4,10 @@
 keycloak:
   enabled: ${services_enabled.keycloak}
   fullnameOverride: ${keycloak_host_name}
-  # -- authentication config for keycloak
-  auth:
-    existingSecret: ${iss_secret}
-    adminUser: ${keycloak_config.user_key}
-    passwordSecretKey: ${keycloak_config.pass_key}
-  # should the db be deployed as part of the keycloak chart
-  postgresql:
-    enabled: false
-  # host of the external db to be used
-  externalDatabase:
-    host: ${postgresql_host_name}
-  # the default init container is deactivated, since it conflicts with the n
-  # on-bitnami image.
-  enableDefaultInitContainers: false
 
-  # extra env vars to be set. we require them at the moment, since some of the
-  # chart config mechanisms only work with the bitnami-image
-  extraEnvVars:
-    # indicates ssl is terminated at the edge
-    - name: KC_PROXY
-      value: "edge"
-    # point the transaction store to the (writeable!) empty volume
-    - name: QUARKUS_TRANSACTION_MANAGER_OBJECT_STORE_DIRECTORY
-      value: /qtm-tmp
-    # config for the db connection
-    - name: KC_DB_URL_HOST
-      value: ${postgresql_host_name}
-    - name: KC_DB_URL_DATABASE
-      value: ${postgresql_config.keycloak_db_name}
-    - name: KC_DB_USERNAME
-      value: ${postgresql_config.user}
-    - name: KC_DB_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: ${postgresql_config.secret}
-          key: ${postgresql_secrect_key_adminpass}
-    # password for reading the key store connected to the did
-    - name: STORE_PASS
-      valueFrom:
-        secretKeyRef:
-          name: ${iss_secret}
-          key: store-pass
-    # keycloak admin password
-    - name: KC_ADMIN_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: ${iss_secret}
-          key: ${keycloak_config.pass_key}
+  service:
+    ports:
+      http: 8080
 
   ingress:
     # only to make it available for the test initialization
@@ -67,29 +23,83 @@ keycloak:
     #   - secretName: ${keycloak_secret_tls}
     #     hosts:
     #       - ${keycloak_domain}
+
+  # authentication config for keycloak
+  auth:
+    existingSecret: ${iss_secret}
+    adminUser: ${keycloak_config.user_key}
+    passwordSecretKey: ${keycloak_config.pass_key}
+
+  # should the db be deployed as part of the keycloak chart
+  postgresql:
+    enabled: false
+  # host of the external db to be used
+  externalDatabase:
+    host: ${postgresql_host_name}
+    user: ${postgresql_config.user} #postgres
+    database: ${postgresql_config.keycloak_db_name} #keycloak
+    existingSecret: ${postgresql_config.secret} #database-secret
+    existingSecretPasswordKey: ${postgresql_secrect_key_adminpass} #postgres-admin-password
+
+  # the default init container is deactivated, since it conflicts with the n
+  # on-bitnami image.
+  # enableDefaultInitContainers: false
+
+  extraVolumeMounts:
+    - name: realms
+      mountPath: /opt/bitnami/keycloak/data/import
+    - name: did-material
+      mountPath: /did-material
+    - name: did-material
+      mountPath: "/etc/env"
+      readOnly: true
+
+  extraVolumes:
+    - name: did-material
+      emptyDir: {}
+    - name: realms
+      configMap:
+        name: test-realm-realm
+    - name: consumer-til-registration
+      configMap:
+        name: consumer-til-registration
+        defaultMode: 0755
+
+  command:
+    - /bin/bash
   args:
     - -ec
     - |
       #!/bin/sh
       export $(cat /did-material/did.env)
       export KC_HOSTNAME=${keycloak_domain}
-      env | grep DID
-      /opt/keycloak/bin/kc.sh start --features oid4vc-vci --import-realm
-  initContainers:
-    - name: read-only-workaround
-      image: quay.io/wi_stefan/keycloak:25.0.0-PRE
-      command:
-        - /bin/bash
-      args:
-        - -ec
-        - |
-          #!/bin/bash
-          cp -r /opt/keycloak/lib/quarkus/* /quarkus
-      volumeMounts:
-        - name: empty-dir
-          mountPath: /quarkus
-          subPath: app-quarkus-dir
+      /opt/bitnami/scripts/keycloak/entrypoint.sh
+      /opt/bitnami/scripts/keycloak/run.sh
 
+    # extra env vars to be set. we require them at the moment, since some of the
+  # chart config mechanisms only work with the bitnami-image
+  extraEnvVars:
+    - name: KEYCLOAK_EXTRA_ARGS
+      value: "--import-realm"
+    - name: KC_FEATURES
+      value: "oid4vc-vci"
+    # indicates ssl is terminated at the edge
+    - name: KC_PROXY
+      value: "edge"
+    # password for reading the key store connected to the did
+    - name: STORE_PASS
+      valueFrom:
+        secretKeyRef:
+          name: ${iss_secret}
+          key: store-pass
+    # keycloak admin password
+    - name: KC_ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: ${iss_secret}
+          key: ${keycloak_config.pass_key}
+
+  initContainers:
     - name: get-did
       image: ubuntu
       command:
@@ -146,35 +156,10 @@ keycloak:
         - name: did-material
           mountPath: /did-material
 
-  extraVolumeMounts:
-    - name: empty-dir
-      mountPath: /opt/keycloak/lib/quarkus
-      subPath: app-quarkus-dir
-    - name: qtm-temp
-      mountPath: /qtm-tmp
-    - name: did-material
-      mountPath: /did-material
-    - name: did-material
-      mountPath: "/etc/env"
-      readOnly: true
-    - name: realms
-      mountPath: /opt/keycloak/data/import
-  extraVolumes:
-    - name: did-material
-      emptyDir: {}
-    - name: qtm-temp
-      emptyDir: {}
-    - name: realms
-      configMap:
-        name: test-realm-realm
-    - name: consumer-til-registration
-      configMap:
-        name: consumer-til-registration
-        defaultMode: 0755
   realm:
-    frontendUrl: http://${keycloak_domain} #:8080
     import: true
     name: test-realm
+    frontendUrl: http://${keycloak_domain} #:8080
     clientRoles: |
       "$${CLIENT_DID}": [
         {
@@ -188,7 +173,6 @@ keycloak:
           "clientRole": true
         }
       ]
-
     users: |
       {
         "username": "test-user",
