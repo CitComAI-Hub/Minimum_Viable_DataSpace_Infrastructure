@@ -14,7 +14,7 @@ resource "helm_release" "ds_connector" {
       ingress_enabled  = var.enable_ingress,
       services_enabled = var.enable_services,
       #
-      til_operator_domain = "trusted-issuers-list.ds-operator.svc.cluster.local",
+      til_operator_domain = "trusted-issuers-list.${var.operator_namespace}.svc.cluster.local",
       # Data Space Config
       ds_config = var.dataspace_config,
       ##########################################################################

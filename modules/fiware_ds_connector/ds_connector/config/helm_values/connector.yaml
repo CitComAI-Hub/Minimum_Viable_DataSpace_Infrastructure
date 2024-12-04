@@ -1,7 +1,6 @@
 # Source code:
 # https://github.com/FIWARE/data-space-connector/blob/main/charts/data-space-connector/values.yaml
 
-
 ## Only for consumer role
 
 keycloak:
@@ -26,12 +25,11 @@ dataSpaceConfig:
   authenticationProtocols:
     - oid4vp
 
-
 ################################################################################
 # CREDENTIALS/VERIFIERS (Services)                                             #
 ################################################################################
 
-# Configuration to be shared between the authentication components 
+# Configuration to be shared between the authentication components
 # (mysql databases).
 authentication:
   # should a password for the database connection of authentication components
@@ -41,7 +39,7 @@ authentication:
     # name of the secret to put the generated password into
     secretName: ${mysql_config.secret}
 
-# Configuration for the mysql to be deployed as part of the connector, 
+# Configuration for the mysql to be deployed as part of the connector,
 # see https://github.com/bitnami/charts/tree/main/bitnami/mysql for all options.
 mysql:
   enabled: ${services_enabled.mysql}
@@ -53,7 +51,7 @@ mysql:
       mysql: ${mysql_config.port}
     service:
       type: ClusterIP
-      ports: 
+      ports:
         mysql: ${mysql_config.port}
     persistence:
       enabled: false
@@ -62,7 +60,7 @@ mysql:
       mysql: ${mysql_config.port}
     service:
       type: ClusterIP
-      ports: 
+      ports:
         mysql: ${mysql_config.port}
     persistence:
       enabled: false
@@ -88,12 +86,12 @@ credentials-config-service:
     host: ${mysql_host_name}
     username: ${mysql_config.username_root}
     name: ${mysql_config.db_name_ccs}
-    existingSecret: 
+    existingSecret:
       enabled: ${services_enabled.generate_passwords}
       name: ${mysql_config.secret}
       key: ${mysql_config.secret_key}
 
-# Configuration for the trusted-issuers-list to be deployed as part of the 
+# Configuration for the trusted-issuers-list to be deployed as part of the
 # connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/trusted-issuers-list
 # for all options.
 trusted-issuers-list:
@@ -102,30 +100,30 @@ trusted-issuers-list:
   service:
     type: ClusterIP
     port: ${til_config.port}
-  #! INGRESS: only open for clean up in the tests
-  ingress:
-    til:
-      enabled: ${ingress_enabled.til}
-      annotations:
-        kubernetes.io/ingress.class: ${ingress_class} 
-        # forcing everything to use ssl
-        ingress.kubernetes.io/ssl-redirect: "true"
-        # example annotations, allowing cert-manager to automatically create tls-certs
-        kubernetes.io/tls-acme: "true"
-      hosts:
-        - host: ${til_domain}
-          paths:
-            - /
-      # tls:
-      #   - secretName: ${til_secret_tls}
-      #     hosts:
-      #       - ${til_domain}
+  # #! INGRESS: only open for clean up in the tests
+  # ingress:
+  #   til:
+  #     enabled: ${ingress_enabled.til}
+  #     annotations:
+  #       kubernetes.io/ingress.class: ${ingress_class}
+  #       # forcing everything to use ssl
+  #       ingress.kubernetes.io/ssl-redirect: "true"
+  #       # example annotations, allowing cert-manager to automatically create tls-certs
+  #       kubernetes.io/tls-acme: "true"
+  #     hosts:
+  #       - host: ${til_domain}
+  #         paths:
+  #           - /
+  #     # tls:
+  #     #   - secretName: ${til_secret_tls}
+  #     #     hosts:
+  #     #       - ${til_domain}
   database:
     persistence: true
     host: ${mysql_host_name}
     username: ${mysql_config.username_root}
     name: ${mysql_config.db_name_til}
-    existingSecret: 
+    existingSecret:
       enabled: ${services_enabled.generate_passwords}
       name: ${mysql_config.secret}
       key: ${mysql_config.secret_key}
@@ -136,7 +134,7 @@ issuance:
     enabled: ${services_enabled.generate_passwords}
     secretName: ${iss_secret}
 
-# Configuration for the did-helper, should only be used for demonstrational 
+# Configuration for the did-helper, should only be used for demonstrational
 # deployments, see https://github.com/wistefan/did-helper.
 did:
   enabled: ${services_enabled.did}
@@ -148,7 +146,7 @@ did:
     enabled: ${ingress_enabled.did}
     host: ${did_domain}
     annotations:
-      kubernetes.io/ingress.class: ${ingress_class} 
+      kubernetes.io/ingress.class: ${ingress_class}
       # forcing everything to use ssl
       ingress.kubernetes.io/ssl-redirect: "true"
       # example annotations, allowing cert-manager to automatically create tls-certs
@@ -164,7 +162,7 @@ did:
     organization: ${did_config.organization}
     commonName: ${did_config.common_name}
 
-# Configuration for the vcverifier to be deployed as part of the connector, 
+# Configuration for the vcverifier to be deployed as part of the connector,
 # see https://github.com/FIWARE/helm-charts/tree/main/charts/vcverifier for all options.
 vcverifier:
   enabled: ${services_enabled.vcv}
@@ -172,7 +170,7 @@ vcverifier:
   ingress:
     enabled: ${ingress_enabled.vcv}
     annotations:
-      kubernetes.io/ingress.class: ${ingress_class} 
+      kubernetes.io/ingress.class: ${ingress_class}
       # forcing everything to use ssl
       ingress.kubernetes.io/ssl-redirect: "true"
       # example annotations, allowing cert-manager to automatically create tls-certs
@@ -242,7 +240,6 @@ vcverifier:
           - name: did-material
             mountPath: /did-material
 
-
 ################################################################################
 # PROXY                                                                        #
 ################################################################################
@@ -251,7 +248,7 @@ postgresql:
   generatePasswords:
     enabled: ${services_enabled.generate_passwords}
     secretName: ${postgresql_config.secret}
-  
+
   enabled: ${services_enabled.postgresql}
   fullnameOverride: ${postgresql_host_name}
   # configure authentication to mysql
@@ -285,7 +282,7 @@ postgresql:
     persistence:
       enabled: false
 
-# Configuration for the odrl-pap to be deployed as part of the connector, 
+# Configuration for the odrl-pap to be deployed as part of the connector,
 # see https://github.com/FIWARE/helm-charts/tree/main/charts/odrl-pap for all options.
 odrl-pap:
   enabled: ${services_enabled.pap}
@@ -296,7 +293,7 @@ odrl-pap:
   ingress:
     enabled: ${ingress_enabled.pap}
     annotations:
-      kubernetes.io/ingress.class: ${ingress_class} 
+      kubernetes.io/ingress.class: ${ingress_class}
       # forcing everything to use ssl
       ingress.kubernetes.io/ssl-redirect: "true"
       # example annotations, allowing cert-manager to automatically create tls-certs
@@ -367,7 +364,7 @@ opa:
     minDelay: 1
     maxDelay: 15
 
-# Configuration for apisix to be deployed as part of the connector, 
+# Configuration for apisix to be deployed as part of the connector,
 # see https://github.com/bitnami/charts/tree/main/bitnami/apisix for all options.
 apisix:
   enabled: ${services_enabled.apisix_service}
@@ -395,7 +392,7 @@ apisix:
     ingress:
       enabled: ${ingress_enabled.apisix}
       annotations:
-        kubernetes.io/ingress.class: ${ingress_class} 
+        kubernetes.io/ingress.class: ${ingress_class}
         # forcing everything to use ssl
         ingress.kubernetes.io/ssl-redirect: "true"
         # example annotations, allowing cert-manager to automatically create tls-certs
@@ -487,7 +484,7 @@ dataplane:
     enabled: ${services_enabled.generate_passwords}
     secretName: ${postgis_config.secret}
 
-# Configuration for the postgresql to be deployed as part of the connector, see 
+# Configuration for the postgresql to be deployed as part of the connector, see
 # https://github.com/bitnami/charts/tree/main/bitnami/postgresql for all options.
 postgis:
   enabled: ${services_enabled.postgis}
@@ -526,11 +523,11 @@ scorpio:
   service:
     type: ClusterIP # NodePort default
     port: ${scorpio_config.port}
+  #! INGRESS: only open for clean up in the tests
   ingress:
-    #! INGRESS: only open for clean up in the tests
     enabled: ${ingress_enabled.scorpio}
     annotations:
-      kubernetes.io/ingress.class: ${ingress_class} 
+      kubernetes.io/ingress.class: ${ingress_class}
       # forcing everything to use ssl
       ingress.kubernetes.io/ssl-redirect: "true"
       # example annotations, allowing cert-manager to automatically create tls-certs
@@ -576,7 +573,7 @@ scorpio:
 # MARKETPLACE                                                                  #
 ################################################################################
 
-# Configuration of the tm-forum-api - see 
+# Configuration of the tm-forum-api - see
 # https://github.com/FIWARE/helm-charts/tree/main/charts/tm-forum-api for details.
 tm-forum-api:
   enabled: ${services_enabled.tmf_api}
@@ -591,13 +588,13 @@ tm-forum-api:
   ingress:
     enabled: ${ingress_enabled.tmf_api}
     annotations:
-      kubernetes.io/ingress.class: ${ingress_class} 
+      kubernetes.io/ingress.class: ${ingress_class}
       # forcing everything to use ssl
       ingress.kubernetes.io/ssl-redirect: "true"
       # example annotations, allowing cert-manager to automatically create tls-certs
       kubernetes.io/tls-acme: "true"
     hosts:
-      - host: ${tmf_api_domain} # tm-forum-api.127.0.0.1.nip.io
+      - host: ${tmf_api_domain}
         paths:
           - /
     # tls:
@@ -610,7 +607,7 @@ tm-forum-api:
     service:
       # name to be used for the proxy service.
       nameOverride: ${tmf_api_host_name}-proxy
-  
+
   # List of apis to be deployed:
   # - every api needs to define a name and image. Basepath is required when routes
   #   or ingress will be enabled. Beside that, they can overwrite the default-config
@@ -661,7 +658,7 @@ tm-forum-api:
   # redis caching
   redis:
     enabled: false
-  
+
   registration:
     enabled: true
     # name to be used for the registration jobs
@@ -677,11 +674,10 @@ tm-forum-api:
         name: default
         # name of the default credential to be configured
         credentialType: UserCredential
-        #! needs to be updated for the concrete dataspace
         trustedParticipantsLists: http://${til_operator_domain}:8080
         trustedIssuersLists: http://${til_host_name}:${til_config.port}
 
-# Configuration of the tm-forum-api - see 
+# Configuration of the tm-forum-api - see
 # https://github.com/FIWARE/helm-charts/tree/main/charts/contract-management for details.
 contract-management:
   enabled: ${services_enabled.cm}
@@ -693,8 +689,8 @@ contract-management:
     til:
       url: http://${til_host_name}:${til_config.port}
     product:
-      url: http://${tmf_api_host_name}:${tmf_api_config.port}
+      url: http://${tmf_api_host_name}-proxy:${tmf_api_config.port}
     party:
-      url: http:/${tmf_api_host_name}:${tmf_api_config.port}
+      url: http://${tmf_api_host_name}-proxy:${tmf_api_config.port}
   til:
     credentialType: OperatorCredential

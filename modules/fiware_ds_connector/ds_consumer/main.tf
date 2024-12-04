@@ -13,8 +13,8 @@ resource "helm_release" "ds_consumer" {
       ingress_enabled  = var.enable_ingress,
       services_enabled = var.enable_services,
       #
-      til_operator_domain = "trusted-issuers-list.${var.operator_namespace}.svc.cluster.local",
-      til_provider_domain = "trusted-issuers-list.${var.provider_namespace}.svc.cluster.local",
+      til_operator_domain = "${var.trusted_issuers_list_names.operator}.${var.operator_namespace}.svc.cluster.local",
+      til_provider_domain = "${var.trusted_issuers_list_names.operator}.${var.provider_namespace}.svc.cluster.local",
       did_provider_domain = "did-helper.${var.provider_namespace}.svc.cluster.local",
       # Generate a password for the database connection of trust-anchor.
       iss_secret = "issuance-secret",
