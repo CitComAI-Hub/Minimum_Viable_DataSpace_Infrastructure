@@ -594,7 +594,7 @@ tm-forum-api:
       # example annotations, allowing cert-manager to automatically create tls-certs
       kubernetes.io/tls-acme: "true"
     hosts:
-      - host: ${tmf_api_domain} # tm-forum-api.127.0.0.1.nip.io
+      - host: ${tmf_api_domain}
         paths:
           - /
     # tls:
@@ -689,8 +689,8 @@ contract-management:
     til:
       url: http://${til_host_name}:${til_config.port}
     product:
-      url: http://${tmf_api_host_name}:${tmf_api_config.port}
+      url: http://${tmf_api_host_name}-proxy:${tmf_api_config.port}
     party:
-      url: http:/${tmf_api_host_name}:${tmf_api_config.port}
+      url: http://${tmf_api_host_name}-proxy:${tmf_api_config.port}
   til:
     credentialType: OperatorCredential
