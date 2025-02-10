@@ -577,6 +577,7 @@ dataplane:
 # https://github.com/bitnami/charts/tree/main/bitnami/postgresql for all options.
 postgis:
   enabled: ${services_enabled.postgis}
+  # image < default
   fullnameOverride: ${postgis_host_name}
   nameOverride: ${postgis_host_name}
   auth:
