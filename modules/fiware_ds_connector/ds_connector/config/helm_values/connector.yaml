@@ -9,6 +9,18 @@ keycloak:
 registration:
   enabled: false
 
+dss:
+  enabled: false
+
+tpp:
+  enabled: false
+
+elsi:
+  enabled: false
+
+rainbow:
+  enabled: false
+
 ## General configuration
 
 dataSpaceConfig:
@@ -26,7 +38,9 @@ dataSpaceConfig:
     - oid4vp
 
 ################################################################################
-# CREDENTIALS/VERIFIERS (Services)                                             #
+#                                                                              #
+#                   CREDENTIALS/VERIFIERS (Services)                           #
+#                                                                              #
 ################################################################################
 
 # Configuration to be shared between the authentication components
@@ -241,7 +255,9 @@ vcverifier:
             mountPath: /did-material
 
 ################################################################################
-# PROXY                                                                        #
+#                                                                              #
+#                                 PROXY                                        #
+#                                                                              #
 ################################################################################
 
 postgresql:
@@ -380,15 +396,18 @@ apisix:
   #   maxReplicas: 5
   #   targetCPUUtilizationPercentage: 80
   #   targetMemoryUtilizationPercentage: 80
-  dashboard:
-    enabled: false
-    resourcesPreset: ${apisix_config.resource_preset}
   controlPlane:
     enabled: true
     resourcesPreset: ${apisix_config.resource_preset}
+  # ingressController > default
+  # etcd > default
   dataPlane:
     enabled: true
     resourcesPreset: ${apisix_config.resource_preset}
+    # extraConfig > default
+    # extraVolumes > default
+    # extraVolumeMounts > default
+    # sidecars > default
     ingress:
       enabled: ${ingress_enabled.apisix}
       annotations:
@@ -405,6 +424,14 @@ apisix:
       extraHosts:
         - name: ${apisix_api_domain}
           path: /
+        #TODO: Change to the correct domain!
+        - name: tpp-data-service.127.0.0.1.nip.io
+          path: /
+        - name: tpp-service.127.0.0.1.nip.io
+          path: /
+  dashboard:
+    enabled: false
+    resourcesPreset: ${apisix_config.resource_preset}
   catchAllRoute:
     enabled: false
   routes: |-
@@ -417,6 +444,16 @@ apisix:
       plugins:
         proxy-rewrite:
           uri: /services/data-service/.well-known/openid-configuration
+    #TODO: Change to the correct domain!
+    - uri: /.well-known/openid-configuration
+      host: tpp-service.127.0.0.1.nip.io
+      upstream:
+        nodes:
+          ${vcv_host_name}:3000: 1
+        type: roundrobin
+      plugins:
+        proxy-rewrite:
+          uri: /services/tpp-service/.well-known/openid-configuration
     - uri: /.well-known/data-space-configuration
       upstream:
         nodes:
@@ -429,6 +466,24 @@ apisix:
           headers:
             set:
               content-type: application/json
+    #TODO: Change to the correct domain!
+    - uri: /*
+      host: tpp-data-service.127.0.0.1.nip.io
+      upstream:
+        nodes:
+          ${scorpio_host_name}:${scorpio_config.port}: 1
+        type: roundrobin
+      plugins:
+        openid-connect:
+          bearer_only: true
+          use_jwks: true
+          client_id: ${cm_host_name}
+          client_secret: unused
+          ssl_verify: false
+          discovery: http://${vcv_host_name}:3000/services/tmf-api/.well-known/openid-configuration
+        opa:
+          host: "http://localhost:8181"
+          policy: tpp
     - uri: /*
       host: ${apisix_domain}
       upstream:
@@ -456,6 +511,30 @@ apisix:
       plugins:
         proxy-rewrite:
           uri: /services/tmf-api/.well-known/openid-configuration
+    #TODO: Change to the correct domain!
+    - uri: /api/v1/catalogs
+      host: tpp-catalog-service.127.0.0.1.nip.io
+      upstream:
+        nodes:
+          rainbow:8080: 1
+    #TODO: Change to the correct domain!
+    - uri: /*
+      host: tpp-service.127.0.0.1.nip.io
+      upstream:
+        nodes:
+          rainbow:8080: 1
+      plugins:
+        openid-connect:
+          bearer_only: true
+          use_jwks: true
+          client_id: data-service
+          client_secret: unused
+          ssl_verify: false
+          discovery: http://${vcv_host_name}:3000/services/data-service/.well-known/openid-configuration
+        opa:
+          host: "http://localhost:8181"
+          policy: policy/main
+          with_body: true
     - uri: /*
       host: ${apisix_api_domain}
       upstream:
@@ -476,7 +555,9 @@ apisix:
           with_body: true
 
 ################################################################################
-# BROKER                                                                       #
+#                                                                              #
+#                                 BROKER                                       #
+#                                                                              #
 ################################################################################
 
 dataplane:
@@ -570,7 +651,9 @@ scorpio:
             - http://${til_host_name}:${til_config.port}
 
 ################################################################################
-# MARKETPLACE                                                                  #
+#                                                                              #
+#                             MARKETPLACE                                      #
+#                                                                              #
 ################################################################################
 
 # Configuration of the tm-forum-api - see
