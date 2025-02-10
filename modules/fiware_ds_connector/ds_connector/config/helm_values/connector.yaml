@@ -269,12 +269,12 @@ vcverifier:
 ################################################################################
 
 postgresql:
+  enabled: ${services_enabled.postgresql}
+  fullnameOverride: ${postgresql_host_name}
+  # image < default
   generatePasswords:
     enabled: ${services_enabled.generate_passwords}
     secretName: ${postgresql_config.secret}
-
-  enabled: ${services_enabled.postgresql}
-  fullnameOverride: ${postgresql_host_name}
   # configure authentication to mysql
   auth:
     # name of the secret to take the passowrds from
@@ -298,6 +298,8 @@ postgresql:
       scripts:
         create.sh: |
           psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE ${postgresql_config.db_name};"
+          psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE rainbow;"
+        # psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE keycloak;"
   readReplicas:
     service:
       type: ClusterIP
