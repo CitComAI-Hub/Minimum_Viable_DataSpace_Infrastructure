@@ -53,7 +53,7 @@ variable "connector" {
   type        = map(string)
   description = "Fiware Data Space Connector"
   default = {
-    version    = "7.17.0"
+    version    = "7.29.0"
     chart_name = "data-space-connector"
     repository = "https://fiware.github.io/data-space-connector/"
   }
