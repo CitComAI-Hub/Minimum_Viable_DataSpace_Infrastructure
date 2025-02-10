@@ -188,6 +188,7 @@ did:
 vcverifier:
   enabled: ${services_enabled.vcv}
   fullnameOverride: ${vcv_host_name}
+  # m2m > default
   ingress:
     enabled: ${ingress_enabled.vcv}
     annotations:
@@ -207,11 +208,11 @@ vcverifier:
   deployment:
     logging:
       level: DEBUG
-    server:
-      host: http://${vcv_domain} #:8080
     verifier:
-      tirAddress: http://${til_host_name} #tir.ds-operator.local #:8080/ # tir data space operator
+      tirAddress: http://${til_host_name}:8080
       did: $${DID}
+    server:
+      host: http://${vcv_domain}:8080
     configRepo:
       configEndpoint: http://${ccs_host_name}:${ccs_config.port}
     alternativeConfig: /alternative-conf/server.yaml
