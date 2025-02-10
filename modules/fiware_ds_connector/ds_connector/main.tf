@@ -87,6 +87,11 @@ resource "helm_release" "ds_connector" {
       # Contract Management
       cm_host_name = var.services_names.cm,
       cm_config    = var.contract_management,
+
+      # Rainbow
+      rainbow_host_name  = var.services_names.rainbow,
+      rainbow_domain     = local.dns_dir[local.dns_domains.rainbow],
+      rainbow_secret_tls = local.secrets_tls[local.dns_domains.rainbow]
     })
   ]
 }
