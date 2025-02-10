@@ -95,6 +95,13 @@ credentials-config-service:
   service:
     type: ClusterIP
     port: ${ccs_config.port}
+  #! INGRESS: only enabled for clean up in the tests
+  ingress: 
+    enabled: false
+    hosts:
+      - host: provider-ccs.127.0.0.1.nip.io #TODO: Change to the correct domain!
+        paths:
+          - "/"
   database:
     persistence: true
     host: ${mysql_host_name}
