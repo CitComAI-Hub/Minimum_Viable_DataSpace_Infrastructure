@@ -70,6 +70,7 @@ variable "enable_ingress" {
     apisix  = true
     scorpio = true # True only in test environment
     tmf_api = true
+    rainbow = true
   }
 }
 
@@ -93,6 +94,7 @@ variable "enable_services" {
     scorpio            = true
     tmf_api            = true
     cm                 = true
+    rainbow            = true
   }
 }
 
@@ -114,6 +116,7 @@ variable "services_names" {
     scorpio        = "scorpio-broker"
     tmf_api        = "tm-forum-api"
     cm             = "contract-management"
+    rainbow        = "rainbow"
   }
 }
 

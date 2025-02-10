@@ -53,6 +53,12 @@ locals {
       spec_secret_name = "${var.services_names.tmf_api}-tls-secret"
       dns_name         = "${local.dns_domains.tmf_api}.${var.service_domain}"
     },
+    { # rainbow
+      id               = local.dns_domains.rainbow
+      metadata_name    = "${var.services_names.rainbow}-certificate"
+      spec_secret_name = "${var.services_names.rainbow}-tls-secret"
+      dns_name         = "${local.dns_domains.rainbow}.${var.service_domain}"
+    },
   ]
 
   #!############################################################################
