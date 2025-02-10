@@ -612,6 +612,9 @@ postgis:
 scorpio:
   enabled: ${services_enabled.scorpio}
   fullnameOverride: ${scorpio_host_name}
+  # image < default
+  # readinessProbe < default
+  # livenessProbe < default
   service:
     type: ClusterIP # NodePort default
     port: ${scorpio_config.port}
@@ -640,6 +643,8 @@ scorpio:
       enabled: ${services_enabled.generate_passwords}
       name: ${postgis_config.secret}
       key: ${postgis_secrect_key_adminpass}
+  # initContainers < default
+  # additionalVolumes < default
   # configuration to register the dataplane at the credentials-config-service
   ccs:
     endpoint: http://${ccs_host_name}:${ccs_config.port}
@@ -660,6 +665,7 @@ scorpio:
             - http://${til_operator_domain}:8080
           trustedIssuersLists:
             - http://${til_host_name}:${til_config.port}
+    
 
 ################################################################################
 #                                                                              #
