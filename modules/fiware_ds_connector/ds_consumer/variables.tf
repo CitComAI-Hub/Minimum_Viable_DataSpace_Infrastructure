@@ -79,6 +79,7 @@ variable "enable_services" {
     generate_passwords = true
     did                = true
     postgresql         = true
+    rainbow            = true
   }
 }
 
