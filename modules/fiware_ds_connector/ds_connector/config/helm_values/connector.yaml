@@ -535,13 +535,13 @@ apisix:
       host: tpp-catalog-service.127.0.0.1.nip.io
       upstream:
         nodes:
-          rainbow:8080: 1
+          ${rainbow_host_name}:${rainbow.port}: 1
     #TODO: Change to the correct domain!
     - uri: /*
       host: tpp-service.127.0.0.1.nip.io
       upstream:
         nodes:
-          rainbow:8080: 1
+          ${rainbow_host_name}:${rainbow.port}: 1
       plugins:
         openid-connect:
           bearer_only: true
