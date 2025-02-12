@@ -174,6 +174,16 @@ variable "did" {
   }
 }
 
+variable "vcverifier" {
+  type = object({
+    port = number
+  })
+  description = "VCVerifier configuration"
+  default = {
+    port = 3000
+  }
+}
+
 variable "postgresql" {
   type = object({
     port      = number

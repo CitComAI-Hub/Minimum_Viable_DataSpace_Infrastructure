@@ -41,6 +41,7 @@ resource "helm_release" "ds_connector" {
       did_secret_tls = local.secrets_tls[local.dns_domains.did],
       # VCVerifier
       vcv_host_name  = var.services_names.vcv,
+      vcv_config     = var.vcverifier,
       vcv_domain     = local.dns_dir[local.dns_domains.vcv],
       vcv_secret_tls = local.secrets_tls[local.dns_domains.vcv],
       ##########################################################################
