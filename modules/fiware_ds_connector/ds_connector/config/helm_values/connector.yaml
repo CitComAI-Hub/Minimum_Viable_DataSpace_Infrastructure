@@ -12,54 +12,8 @@ registration:
 dss:
   enabled: false
 
-tpp:
-  enabled: false
-
 elsi:
   enabled: false
-
-rainbow:
-  enabled: ${services_enabled.rainbow}
-  fullnameOverride: ${rainbow_host_name}
-  service:
-    serviceType: ClusterIP
-    port: 8080
-  db:
-    url: ${postgresql_host_name}
-    user: ${postgresql_config.user_name}
-    existingSecret: ${postgresql_config.secret}
-    passwordKey: ${postgresql_secrect_key_adminpass}
-  #! INGRESS: only open for clean up in the tests
-  ingress:
-    enabled: ${ingress_enabled.rainbow}
-    annotations:
-      kubernetes.io/ingress.class: ${ingress_class}
-      # forcing everything to use ssl
-      ingress.kubernetes.io/ssl-redirect: "true"
-      # example annotations, allowing cert-manager to automatically create tls-certs
-      kubernetes.io/tls-acme: "true"
-    hosts:
-      - host: ${rainbow_domain}
-        paths:
-          - /
-    # tls:
-    #   - secretName: ${rainbow_secret_tls}
-    #     hosts:
-    #       - ${rainbow_domain}
-  ccs:
-    enabled: true
-    endpoint: http://${ccs_host_name}:${ccs_config.port}
-    configMap: rainbow-registration
-    id: tpp-service #TODO: Revise if is possible to change by a variable
-    defaultOidcScope:
-      name: default
-    oidcScopes:
-      default:
-        - type: OperatorCredential
-          trustedParticipantsLists:
-            - http://${til_operator_domain}:8080
-          trustedIssuersLists:
-            - http://${til_host_name}:${til_config.port}
 
 ## General configuration
 
@@ -835,3 +789,60 @@ contract-management:
       url: http://${tmf_api_host_name}-proxy:${tmf_api_config.port}
   til:
     credentialType: OperatorCredential
+
+
+################################################################################
+#                                                                              #
+#                        DATA SPACE TRANSFER PROTOCOL                          #
+#                                                                              #
+################################################################################
+
+tpp:
+  enabled: true
+  transfers:
+    host: http://${rainbow_host_name}:${rainbow.port}
+    path: transfers
+
+rainbow:
+  enabled: ${services_enabled.rainbow}
+  fullnameOverride: ${rainbow_host_name}
+  service:
+    serviceType: ClusterIP
+    port: ${rainbow.port}
+  db:
+    url: ${postgresql_host_name}
+    user: ${postgresql_config.user_name}
+    existingSecret: ${postgresql_config.secret}
+    passwordKey: ${postgresql_secrect_key_adminpass}
+  #! INGRESS: only open for clean up in the tests
+  ingress:
+    enabled: ${ingress_enabled.rainbow}
+    annotations:
+      kubernetes.io/ingress.class: ${ingress_class}
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: ${rainbow_domain}
+        paths:
+          - /
+    # tls:
+    #   - secretName: ${rainbow_secret_tls}
+    #     hosts:
+    #       - ${rainbow_domain}
+  ccs:
+    enabled: true
+    endpoint: http://${ccs_host_name}:${ccs_config.port}
+    configMap: rainbow-registration
+    id: tpp-service #TODO: Revise if is possible to change by a variable
+    defaultOidcScope:
+      name: default
+    oidcScopes:
+      default:
+        - type: OperatorCredential
+          trustedParticipantsLists:
+            - http://${til_operator_domain}:8080
+          trustedIssuersLists:
+            - http://${til_host_name}:${til_config.port}
+

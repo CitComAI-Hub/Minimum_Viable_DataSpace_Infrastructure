@@ -273,3 +273,13 @@ variable "apisix" {
     resource_preset = "small"
   }
 }
+
+variable "rainbow" {
+  type = object({
+    port = number
+  })
+  description = "Rainbow (Data Space Protocol) configuration"
+  default = {
+    port = 8080
+  }
+}
