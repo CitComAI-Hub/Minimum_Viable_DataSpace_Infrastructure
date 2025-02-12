@@ -451,7 +451,7 @@ apisix:
     resourcesPreset: ${apisix_config.resource_preset}
   catchAllRoute:
     enabled: false
-  routes:
+  routes: |-
     # (any endpoint) -> DSConfig
     - uri: /.well-known/data-space-configuration
       # no specific host, so it will match all
