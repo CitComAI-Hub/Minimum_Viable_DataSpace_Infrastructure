@@ -17,6 +17,12 @@ locals {
       spec_secret_name = "${var.services_names.keycloak}-tls-secret"
       dns_name         = "${local.dns_domains.keycloak}.${var.service_domain}"
     },
+    { # rainbow
+      id               = local.dns_domains.rainbow
+      metadata_name    = "${var.services_names.rainbow}-certificate"
+      spec_secret_name = "${var.services_names.rainbow}-tls-secret"
+      dns_name         = "${local.dns_domains.rainbow}.${var.service_domain}"
+    },
   ]
 
   #!############################################################################

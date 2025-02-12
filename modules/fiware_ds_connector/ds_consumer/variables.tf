@@ -53,7 +53,7 @@ variable "connector" {
   type        = map(string)
   description = "Fiware Data Space Connector"
   default = {
-    version    = "7.17.0"
+    version    = "7.29.0"
     chart_name = "data-space-connector"
     repository = "https://fiware.github.io/data-space-connector/"
   }
@@ -65,6 +65,7 @@ variable "enable_ingress" {
   default = {
     did      = true
     keycloak = true
+    rainbow  = true
   }
 }
 
@@ -74,7 +75,7 @@ variable "enable_services" {
   default = {
     keycloak           = true
     registration       = true
-    dsconfig           = true
+    dsconfig           = false
     generate_passwords = true
     did                = true
     postgresql         = true
@@ -89,6 +90,7 @@ variable "services_names" {
     keycloak   = "keycloak"
     did        = "did-helper" # default name, not editable
     postgresql = "postgresql"
+    rainbow    = "rainbow"
   }
 }
 
@@ -140,5 +142,15 @@ variable "postgresql" {
     user             = "postgres"
     keycloak_db_name = "keycloak"
     secret           = "postgresql-database-secret"
+  }
+}
+
+variable "rainbow" {
+  type = object({
+    port = number
+  })
+  description = "Rainbow (Data Space Protocol) configuration"
+  default = {
+    port = 8080
   }
 }
