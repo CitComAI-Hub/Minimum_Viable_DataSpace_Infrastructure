@@ -137,10 +137,16 @@ variable "did" {
 }
 
 variable "postgresql" {
-  type        = map(string)
-  description = "Keycloak service configuration"
+  type = object({
+    port             = number
+    user_name        = string
+    keycloak_db_name = string
+    secret           = string
+  })
+  description = "PostgreSQL configuration"
   default = {
-    user             = "postgres"
+    port             = 5432
+    user_name        = "postgres"
     keycloak_db_name = "keycloak"
     secret           = "postgresql-database-secret"
   }
