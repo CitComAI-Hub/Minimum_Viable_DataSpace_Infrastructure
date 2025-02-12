@@ -780,15 +780,27 @@ contract-management:
   service:
     type: ClusterIP
     port: ${cm_config.port}
+  til:
+    credentialType: OperatorCredential
   services:
-    til:
+    trusted-issuers-list:
       url: http://${til_host_name}:${til_config.port}
-    product:
+    product-order:
       url: http://${tmf_api_host_name}-proxy:${tmf_api_config.port}
     party:
       url: http://${tmf_api_host_name}-proxy:${tmf_api_config.port}
-  til:
-    credentialType: OperatorCredential
+    product-catalog:
+      ## TODO: URL of the TM Forum Service hosting the Product Catalog API
+      url: http://provider-tm-forum-api-product-catalog:8080
+    service-catalog:
+      ## TODO: URL of the TM Forum Service hosting the Service Catalog API
+      url: http://provider-tm-forum-api-service-catalog:8080
+    tmforum-agreement-api:
+      ## TODO: URL of the TM Forum Service hosting the Agreement API
+      url: http://provider-tm-forum-api-agreement:8080
+    rainbow:
+      url: http://${rainbow_host_name}:${rainbow.port}
+
 
 
 ################################################################################
@@ -845,4 +857,3 @@ rainbow:
             - http://${til_operator_domain}:8080
           trustedIssuersLists:
             - http://${til_host_name}:${til_config.port}
-
