@@ -60,12 +60,16 @@ resource "helm_release" "ds_connector" {
       # Opa
       opa_port = 8181,
       # APISIX
-      apisix_host_name      = var.services_names.apisix_service,
-      apisix_config         = var.apisix,
-      apisix_domain         = local.dns_dir[local.dns_domains.apisix_service],
-      apisix_secret_tls     = local.secrets_tls[local.dns_domains.apisix_service],
-      apisix_api_domain     = local.dns_dir[local.dns_domains.apisix_api],
-      apisix_api_secret_tls = local.secrets_tls[local.dns_domains.apisix_api],
+      apisix_host_name               = var.services_names.apisix_service,
+      apisix_config                  = var.apisix,
+      apisix_domain                  = local.dns_dir[local.dns_domains.apisix_service],
+      apisix_secret_tls              = local.secrets_tls[local.dns_domains.apisix_service],
+      apisix_api_domain              = local.dns_dir[local.dns_domains.apisix_api],
+      apisix_api_secret_tls          = local.secrets_tls[local.dns_domains.apisix_api],
+      tpp_rainbow_data_domain        = local.dns_dir[local.dns_domains.tpp_data],
+      tpp_rainbow_data_secret_tls    = local.secrets_tls[local.dns_domains.tpp_data],
+      tpp_rainbow_service_domain     = local.dns_dir[local.dns_domains.tpp_service],
+      tpp_rainbow_service_secret_tls = local.secrets_tls[local.dns_domains.tpp_service],
       ##########################################################################
       ## BROKER                                                               ##
       ##########################################################################

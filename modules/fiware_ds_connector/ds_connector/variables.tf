@@ -63,15 +63,15 @@ variable "enable_ingress" {
   type        = map(bool)
   description = "Enable ingress for the DS Connector"
   default = {
-    ccs     = false
-    til     = true # True only in test environment
+    ccs     = false # True only in test environment
+    til     = true  # True only in test environment
     did     = true
     vcv     = true
     pap     = true
     apisix  = true
     scorpio = true # True only in test environment
     tmf_api = true
-    rainbow = true
+    rainbow = false # True only in test environment
   }
 }
 
@@ -118,6 +118,8 @@ variable "services_names" {
     tmf_api        = "tm-forum-api"
     cm             = "contract-management"
     rainbow        = "rainbow"
+    tpp_data       = "tpp-rainbow-data"
+    tpp_service    = "tpp-rainbow-service"
   }
 }
 
