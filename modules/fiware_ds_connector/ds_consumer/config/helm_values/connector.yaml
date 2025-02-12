@@ -89,7 +89,7 @@ keycloak:
   # host of the external db to be used
   externalDatabase:
     host: ${postgresql_host_name}
-    user: ${postgresql_config.user} #postgres
+    user: ${postgresql_config.user_name} #postgres
     database: ${postgresql_config.keycloak_db_name} #keycloak
     existingSecret: ${postgresql_config.secret} #database-secret
     existingSecretPasswordKey: ${postgresql_secrect_key_adminpass} #postgres-admin-password
@@ -415,14 +415,18 @@ postgresql:
       userPasswordKey: ${postgresql_secrect_key_userpass}
   # configuration for the primary of the db
   primary:
+    service:
+        type: ClusterIP
+        ports:
+          postgresql: ${postgresql_config.port}
     persistence:
       enabled: false
     # scripts to be run on intialization
     initdb:
       scripts:
         create.sh: |
-          psql postgresql://${postgresql_config.user}:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE ${postgresql_config.keycloak_db_name};"
-          psql postgresql://${postgresql_config.user}:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE rainbow;"
+          psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE ${postgresql_config.keycloak_db_name};"
+          psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE rainbow;"
   readReplicas:
     persistence:
       enabled: false
