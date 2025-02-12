@@ -5,6 +5,12 @@ locals {
   })
 
   cert_properties = [
+    { # ccs
+      id               = local.dns_domains.ccs
+      metadata_name    = "${var.services_names.ccs}-certificate"
+      spec_secret_name = "${var.services_names.ccs}-tls-secret"
+      dns_name         = "${local.dns_domains.ccs}.${var.service_domain}"
+    },
     { # til
       id               = local.dns_domains.til
       metadata_name    = "${var.services_names.til}-certificate"

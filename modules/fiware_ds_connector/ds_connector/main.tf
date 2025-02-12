@@ -25,8 +25,10 @@ resource "helm_release" "ds_connector" {
       mysql_host_name = var.services_names.mysql,
       mysql_config    = var.mysql,
       # Credentials Configuration Service
-      ccs_host_name = var.services_names.ccs,
-      ccs_config    = var.credentials_config_service,
+      ccs_host_name  = var.services_names.ccs,
+      ccs_config     = var.credentials_config_service,
+      ccs_domain     = local.dns_dir[local.dns_domains.ccs],
+      ccs_secret_tls = local.secrets_tls[local.dns_domains.ccs],
       # Trusted Issuers List
       til_host_name  = var.services_names.til,
       til_config     = var.trusted_issuers_list,

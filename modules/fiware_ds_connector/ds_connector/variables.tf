@@ -63,6 +63,7 @@ variable "enable_ingress" {
   type        = map(bool)
   description = "Enable ingress for the DS Connector"
   default = {
+    ccs     = false
     til     = true # True only in test environment
     did     = true
     vcv     = true
