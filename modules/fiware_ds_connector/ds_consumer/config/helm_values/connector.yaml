@@ -1,14 +1,67 @@
 # Source code:
 # https://github.com/FIWARE/data-space-connector/blob/main/charts/data-space-connector/values.yaml
 
+## Only for provider role
+
+authentication:
+  generatePasswords:
+    enabled: false
+
+mysql:
+  enabled: false
+
+credentials-config-service:
+  enabled: false
+
+trusted-issuers-list:
+  enabled: false
+
+vcverifier:
+  enabled: false
+
+odrl-pap:
+  enabled: false
+
+opa:
+  enabled: false
+
+apisix:
+  enabled: false
+
+dataplane:
+  generatePasswords:
+    enabled: false
+
+postgis:
+  enabled: false
+
+scorpio:
+  enabled: false
+
+tm-forum-api:
+  enabled: false
+
+contract-management:
+  enabled: false
+
+tpp:
+  enabled: false
+
+dss:
+  enabled: false
+
+elsi:
+  enabled: false
+
+################################################################################
+################################################################################
+
 keycloak:
   enabled: ${services_enabled.keycloak}
   fullnameOverride: ${keycloak_host_name}
-
   service:
     ports:
       http: 8080
-
   ingress:
     # only to make it available for the test initialization
     enabled: ${ingress_enabled.keycloak}
@@ -296,6 +349,7 @@ registration:
   did: $${DID}
   credentialsType: UserCredential
 
+# TODO: Remove this section if the dataSpaceConfig is not needed
 dataSpaceConfig:
   # host name: dsconfig
   enabled: ${services_enabled.dsconfig}
@@ -368,52 +422,36 @@ postgresql:
       scripts:
         create.sh: |
           psql postgresql://${postgresql_config.user}:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE ${postgresql_config.keycloak_db_name};"
+          psql postgresql://${postgresql_config.user}:$${POSTGRES_PASSWORD}@localhost:5432 -c "CREATE DATABASE rainbow;"
   readReplicas:
     persistence:
       enabled: false
 
-################################################################################
-################################################################################
-
-## Only for provider role
-
-authentication:
-  generatePasswords:
-    enabled: false
-
-mysql:
-  enabled: false
-
-credentials-config-service:
-  enabled: false
-
-trusted-issuers-list:
-  enabled: false
-
-vcverifier:
-  enabled: false
-
-odrl-pap:
-  enabled: false
-
-opa:
-  enabled: false
-
-apisix:
-  enabled: false
-
-dataplane:
-  generatePasswords:
-    enabled: false
-
-postgis:
-  enabled: false
-
-scorpio:
-  enabled: false
-
-tm-forum-api:
-  enabled: false
-
-contract-management:
-  enabled: false
+rainbow:
+  enabled: ${services_enabled.rainbow}
+  fullnameOverride: ${rainbow_host_name}
+  service:
+    serviceType: ClusterIP
+    port: ${rainbow.port}
+  db:
+    url: ${postgresql_host_name}
+    user: ${postgresql_config.user_name}
+    existingSecret: ${postgresql_config.secret}
+    passwordKey: ${postgresql_secrect_key_adminpass}
+  #! INGRESS: only open for clean up in the tests
+  ingress:
+    enabled: ${ingress_enabled.rainbow}
+    annotations:
+      kubernetes.io/ingress.class: ${ingress_class}
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: ${rainbow_domain}
+        paths:
+          - /
+    # tls:
+    #   - secretName: ${rainbow_secret_tls}
+    #     hosts:
+    #       - ${rainbow_domain}
