@@ -308,7 +308,6 @@ postgresql:
         create.sh: |
           psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE ${postgresql_config.db_name};"
           psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE rainbow;"
-        # psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE keycloak;"
   readReplicas:
     service:
       type: ClusterIP
@@ -533,7 +532,7 @@ apisix:
       host: ${tpp_rainbow_service_domain}
       upstream:
         nodes:
-          ${rainbow_host_name}:${rainbow.port}: 1
+          ${rainbow_host_name}:${rainbow_config.port}: 1
       plugins:
         # Authentication with OpenID
         openid-connect:
@@ -569,7 +568,7 @@ apisix:
         openid-connect:
           bearer_only: true
           use_jwks: true
-          client_id: ${cm_host_name}
+          client_id: contract-management
           client_secret: unused
           ssl_verify: false
           discovery: http://${vcv_host_name}:${vcv_config.port}/services/tmf-api/.well-known/openid-configuration
@@ -581,7 +580,7 @@ apisix:
       host: tpp-catalog-service.127.0.0.1.nip.io
       upstream:
         nodes:
-          ${rainbow_host_name}:${rainbow.port}: 1
+          ${rainbow_host_name}:${rainbow_config.port}: 1
 
 
 ################################################################################
@@ -825,7 +824,7 @@ contract-management:
       ## TODO: URL of the TM Forum Service hosting the Agreement API
       url: http://provider-tm-forum-api-agreement:8080
     rainbow:
-      url: http://${rainbow_host_name}:${rainbow.port}
+      url: http://${rainbow_host_name}:${rainbow_config.port}
 
 
 
@@ -838,7 +837,7 @@ contract-management:
 tpp:
   enabled: true
   transfers:
-    host: http://${rainbow_host_name}:${rainbow.port}
+    host: http://${rainbow_host_name}:${rainbow_config.port}
     path: transfers
 
 rainbow:
@@ -846,7 +845,7 @@ rainbow:
   fullnameOverride: ${rainbow_host_name}
   service:
     serviceType: ClusterIP
-    port: ${rainbow.port}
+    port: ${rainbow_config.port}
   db:
     url: ${postgresql_host_name}
     user: ${postgresql_config.user_name}
