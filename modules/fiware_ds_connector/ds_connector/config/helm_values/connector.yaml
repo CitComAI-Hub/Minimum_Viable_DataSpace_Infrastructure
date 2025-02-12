@@ -815,17 +815,13 @@ contract-management:
     party:
       url: http://${tmf_api_host_name}-proxy:${tmf_api_config.port}
     product-catalog:
-      ## TODO: URL of the TM Forum Service hosting the Product Catalog API
-      url: http://provider-tm-forum-api-product-catalog:8080
+      url: http://${tmf_api_host_name}-proxy:${tmf_api_config.port}
     service-catalog:
-      ## TODO: URL of the TM Forum Service hosting the Service Catalog API
-      url: http://provider-tm-forum-api-service-catalog:8080
+      url: http://${tmf_api_host_name}-proxy:${tmf_api_config.port}
     tmforum-agreement-api:
-      ## TODO: URL of the TM Forum Service hosting the Agreement API
-      url: http://provider-tm-forum-api-agreement:8080
+      url: http://${tmf_api_host_name}-proxy:${tmf_api_config.port}
     rainbow:
       url: http://${rainbow_host_name}:${rainbow_config.port}
-
 
 
 ################################################################################
