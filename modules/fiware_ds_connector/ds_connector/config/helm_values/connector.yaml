@@ -89,13 +89,23 @@ credentials-config-service:
   service:
     type: ClusterIP
     port: ${ccs_config.port}
-  #! INGRESS: only enabled for clean up in the tests
-  ingress: 
-    enabled: false
+  #! INGRESS: only open for clean up in the tests
+  ingress:
+    enabled: ${ingress_enabled.ccs}
+    annotations:
+      kubernetes.io/ingress.class: ${ingress_class}
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
     hosts:
-      - host: provider-ccs.127.0.0.1.nip.io #TODO: Change to the correct domain!
+      - host: ${ccs_domain}
         paths:
-          - "/"
+          - /
+    # tls:
+    #   - secretName: ${ccs_secret_tls}
+    #     hosts:
+    #       - ${ccs_domain}
   database:
     persistence: true
     host: ${mysql_host_name}
