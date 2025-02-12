@@ -432,7 +432,7 @@ rainbow:
   fullnameOverride: ${rainbow_host_name}
   service:
     serviceType: ClusterIP
-    port: ${rainbow.port}
+    port: ${rainbow_config.port}
   db:
     url: ${postgresql_host_name}
     user: ${postgresql_config.user_name}
