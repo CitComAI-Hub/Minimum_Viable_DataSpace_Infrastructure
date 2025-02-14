@@ -218,10 +218,10 @@ vcverifier:
     logging:
       level: DEBUG
     verifier:
-      tirAddress: http://${til_host_name}:8080
+      tirAddress: http://${til_host_name} #:8080
       did: $${DID}
     server:
-      host: http://${vcv_domain}:8080
+      host: http://${vcv_domain} #:8080
     configRepo:
       configEndpoint: http://${ccs_host_name}:${ccs_config.port}
     alternativeConfig: /alternative-conf/server.yaml
