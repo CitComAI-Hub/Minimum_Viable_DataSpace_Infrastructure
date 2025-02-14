@@ -1,4 +1,5 @@
 locals {
+  local_domain         = "local" #"local" / "127.0.0.1.nip.io"
   operator_namespace   = "ds-operator"
   provider_a_namespace = "provider-a"
   consumer_a_namespace = "consumer-a"
@@ -25,6 +26,9 @@ locals {
     scorpio        = "scorpio-broker"
     tmf_api        = "tm-forum-api"
     cm             = "contract-management"
+    rainbow        = "rainbow"
+    tpp_data       = "tpp-rainbow-data"
+    tpp_service    = "tpp-rainbow-service"
   }
 }
 
@@ -32,7 +36,7 @@ module "trust_anchor" {
   source = "../../modules/fiware_ds_connector/ds_trustAnchor/"
 
   namespace      = local.operator_namespace
-  service_domain = "${local.operator_namespace}.local"
+  service_domain = "${local.operator_namespace}.${local.local_domain}"
   services_names = local.operator_services_names
 
   providers = {
@@ -46,7 +50,7 @@ module "provider_a" {
   depends_on = [module.trust_anchor]
 
   namespace      = local.provider_a_namespace
-  service_domain = "${local.provider_a_namespace}.local"
+  service_domain = "${local.provider_a_namespace}.${local.local_domain}"
   services_names = local.provider_services_names
 
   providers = {
@@ -72,7 +76,7 @@ module "consumer_a" {
   operator_namespace = local.operator_namespace
   provider_namespace = local.provider_a_namespace
   namespace          = local.consumer_a_namespace
-  service_domain     = "${local.consumer_a_namespace}.local"
+  service_domain     = "${local.consumer_a_namespace}.${local.local_domain}"
   trusted_issuers_list_names = {
     operator = local.operator_services_names.til
     provider = local.provider_services_names.til
