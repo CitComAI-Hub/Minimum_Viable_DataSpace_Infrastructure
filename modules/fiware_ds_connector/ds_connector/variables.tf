@@ -63,15 +63,16 @@ variable "enable_ingress" {
   type        = map(bool)
   description = "Enable ingress for the DS Connector"
   default = {
-    ccs     = false # True only in test environment
-    til     = true  # True only in test environment
-    did     = true
-    vcv     = true
-    pap     = true
     apisix  = true
-    scorpio = true # True only in test environment
-    tmf_api = true
-    rainbow = false # True only in test environment
+    # False by default for the test environment only!
+    ccs     = false
+    til     = false
+    did     = false
+    vcv     = false
+    pap     = false
+    scorpio = false
+    tmf_api = false
+    rainbow = false
   }
 }
 

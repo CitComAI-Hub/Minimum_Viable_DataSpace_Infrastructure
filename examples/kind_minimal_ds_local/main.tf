@@ -11,6 +11,19 @@ locals {
     tir          = "trusted-issuers-registry"
   }
 
+  provider_expose_services = {
+    apisix  = true
+    # Below services are not exposed (ingress) by default (only for testing purposes)
+    ccs     = true
+    til     = true
+    did     = true
+    vcv     = true
+    pap     = true
+    scorpio = true
+    tmf_api = true
+    rainbow = true
+  }
+
   provider_services_names = {
     connector      = "fiware-data-space-connector"
     mysql          = "mysql-db"
@@ -52,6 +65,7 @@ module "provider_a" {
   namespace      = local.provider_a_namespace
   service_domain = "${local.provider_a_namespace}.${local.local_domain}"
   services_names = local.provider_services_names
+  enable_ingress = local.provider_expose_services
 
   providers = {
     kubernetes = kubernetes
