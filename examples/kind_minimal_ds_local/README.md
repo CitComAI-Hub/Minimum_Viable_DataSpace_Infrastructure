@@ -31,7 +31,7 @@ The following diagram shows the main blocks of the architecture of the minimal d
 - **FDS Connector A (Provider)**: Entity that provides and consumes data from the data space.
 - **FDS Connector B (Consumer)**: Entity that only consumes data from the data space.
 
-![minimal_ds](./images/minimum_dataspace_arch.png)
+![minimal_ds](./images/minimum_dataspace_arch.svg)
 
 > [!NOTE]
 >
