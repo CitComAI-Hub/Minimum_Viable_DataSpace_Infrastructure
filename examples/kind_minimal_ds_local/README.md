@@ -2,28 +2,15 @@
 
 This example is based on the [FIWARE's local deployment](https://github.com/FIWARE/data-space-connector/blob/main/doc/deployment-integration/local-deployment/LOCAL.MD). The main difference is that we are using a Kind cluster (with 3 nodes) and Terraform to manage all the resources.
 
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-        <a href="#deployment">Deployment</a>
-        <ul>
-            <li><a href="#cluster-access">Cluster Access</a></li>
-            <li><a href="#deployment-time--monitoring">Deployment Time & Monitoring</a></li>
-            <li><a href="#access-to-the-services">Access to the services</a>
-                <ul>
-                    <li><a href="#ingress-dashboard-traefik">Ingress Dashboard (Traefik)</a></li>
-                    <li><a href="#connector-services">Connector services</a></li>
-                </ul>
-            </li>
-        </ul>
-    </li>
-    <li>
-        <a href="#cheetsheet">Cheetsheet</a>
-    </li>
-  </ol>
-</details>
+**Table of Contents:**
+
+1. [Deployment](#deployment)
+    - [Cluster Access](#cluster-access)
+    - [Check & Monitoring](#check--monitoring)
+    - [Access to the services](#access-to-the-services)
+        - [Ingress Dashboard (Traefik)](#ingress-dashboard-traefik)
+        - [Connector services](#connector-services)
+- [] [Examples](#examples)
 
 The following diagram shows the main blocks of the architecture of the minimal data space. This example is composed of the following blocks:
 
@@ -37,15 +24,19 @@ The following diagram shows the main blocks of the architecture of the minimal d
 >
 > The terraform source code for each component is [here](../../modules/fiware_ds_connector/).
 
-## Deployment
+## 1. Deployment ([_back to top_](#minimal-data-space-local---kind-cluster))
 
-To deploy the minimal data space, you need to execute the following command:
+From `<repo_path>/examples/kind_minimal_ds_local` folder, you need to execute the following commands:
 
 ```bash
 make init_apply
 ```
 
-### Cluster access
+> [!!WARNING]
+>
+> The deployment time is around **10 minutes** (depending on the resources of your machine, this time can vary).
+
+### 1.1. Cluster access ([_back to top_](#minimal-data-space-local---kind-cluster))
 
 The kubeconfig file is generated in the `./cluster-config.yaml` file. To access the cluster, there are two options:
 
@@ -59,11 +50,9 @@ The kubeconfig file is generated in the `./cluster-config.yaml` file. To access 
   kubectl get nodes --kubeconfig ./cluster-config.yaml --all-namespaces
   ```
 
-### Deployment Time & Monitoring
+### 1.2. Check & Monitoring ([_back to top_](#minimal-data-space-local---kind-cluster))
 
-Depending on the resources of your machine, the deployment time can vary. In general, the deployment time is around **10 minutes**. 
-
-This deployment have two phases: 
+To check the deployment status, it is important to know that there are two phases:
 
 1. **Kind** (Kubernetes cluster): The first phase is the creation of the Kind cluster. You can check the cluster using docker:
   ```bash
@@ -147,7 +136,7 @@ This deployment have two phases:
   traefik-ingress      traefik-deployment-7489799fff-d4ffk                         1/1     Running     0              132m
   ```
 
-### Access to the services
+### 1.3. Access to the services ([_back to top_](#minimal-data-space-local---kind-cluster))
 
 With the environment deployed, you can access the services using the following domain names:
 
@@ -250,38 +239,4 @@ If you decode the jwt, you will get the following information (_you can use this
 
 Steps to create a data policy and data creation in the broker for an example.
 
-## Examples
-
-
-
-## Cheetsheet
-
-- Get the pods status:
-```bash
-watch kubectl get pods --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml --all-namespaces
-```
-
-```bash
-watch kubectl get pods --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml -n provider-a
-```
-
-- Get all certificates:
-```bash
-  kubectl get cert --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml --all-namespaces
-```
-
-- Get all secrets:
-```bash
-  kubectl get secrets --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml --all-namespaces
-```
-
-- Get secrect content:
-```bash
-  kubectl get secret --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml -n <namespace_name> <secret_name> -o jsonpath="{.data['tls\.crt']}" | base64 --decode
-
-  kubectl get secret --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml -n ds-operator mysql-database-secret -o json
-
-  kubectl get secret --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml -n ds-operator mysql-database-secret -o jsonpath="{.data}" | jq
-
-  kubectl get secret --context kind-minimal-dataspace-cluster --kubeconfig ./cluster-config.yaml -n ds-operator mysql-database-secret -o json | jq -r '.data | to_entries[] | .key + ": " + (.value | @base64d)'
-```
+## Examples ([_back to top_](#minimal-data-space-local---kind-cluster))
