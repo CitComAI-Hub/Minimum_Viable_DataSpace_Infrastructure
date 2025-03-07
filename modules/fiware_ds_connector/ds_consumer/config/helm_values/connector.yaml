@@ -56,6 +56,39 @@ elsi:
 ################################################################################
 ################################################################################
 
+postgresql:
+  generatePasswords:
+    enabled: ${services_enabled.generate_passwords}
+    secretName: ${postgresql_config.secret}
+
+  enabled: ${services_enabled.postgresql}
+  fullnameOverride: ${postgresql_host_name}
+  # configure authentication to mysql
+  auth:
+    # name of the secret to take the passowrds from
+    existingSecret: ${postgresql_config.secret}
+    # key of the secrets inside the secret
+    secretKeys:
+      adminPasswordKey: ${postgresql_secrect_key_adminpass}
+      userPasswordKey: ${postgresql_secrect_key_userpass}
+  # configuration for the primary of the db
+  primary:
+    service:
+        type: ClusterIP
+        ports:
+          postgresql: ${postgresql_config.port}
+    persistence:
+      enabled: false
+    # scripts to be run on intialization
+    initdb:
+      scripts:
+        create.sh: |
+          psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE ${keycloak_config.postgres_db};"
+          psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE ${rainbow_config.postgres_db};"
+  readReplicas:
+    persistence:
+      enabled: false
+
 keycloak:
   enabled: ${services_enabled.keycloak}
   fullnameOverride: ${keycloak_host_name}
@@ -90,7 +123,7 @@ keycloak:
   externalDatabase:
     host: ${postgresql_host_name}
     user: ${postgresql_config.user_name} #postgres
-    database: ${postgresql_config.keycloak_db_name} #keycloak
+    database: ${keycloak_config.postgres_db} #keycloak
     existingSecret: ${postgresql_config.secret} #database-secret
     existingSecretPasswordKey: ${postgresql_secrect_key_adminpass} #postgres-admin-password
 
@@ -398,39 +431,6 @@ did:
     organization: ${did_config.organization}
     commonName: ${did_config.common_name}
 
-postgresql:
-  generatePasswords:
-    enabled: ${services_enabled.generate_passwords}
-    secretName: ${postgresql_config.secret}
-
-  enabled: ${services_enabled.postgresql}
-  fullnameOverride: ${postgresql_host_name}
-  # configure authentication to mysql
-  auth:
-    # name of the secret to take the passowrds from
-    existingSecret: ${postgresql_config.secret}
-    # key of the secrets inside the secret
-    secretKeys:
-      adminPasswordKey: ${postgresql_secrect_key_adminpass}
-      userPasswordKey: ${postgresql_secrect_key_userpass}
-  # configuration for the primary of the db
-  primary:
-    service:
-        type: ClusterIP
-        ports:
-          postgresql: ${postgresql_config.port}
-    persistence:
-      enabled: false
-    # scripts to be run on intialization
-    initdb:
-      scripts:
-        create.sh: |
-          psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE ${postgresql_config.keycloak_db_name};"
-          psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE rainbow;"
-  readReplicas:
-    persistence:
-      enabled: false
-
 rainbow:
   enabled: ${services_enabled.rainbow}
   fullnameOverride: ${rainbow_host_name}
@@ -442,6 +442,7 @@ rainbow:
     user: ${postgresql_config.user_name}
     existingSecret: ${postgresql_config.secret}
     passwordKey: ${postgresql_secrect_key_adminpass}
+    #TODO: db name as variable
   #! INGRESS: only open for clean up in the tests
   ingress:
     enabled: ${ingress_enabled.rainbow}

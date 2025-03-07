@@ -113,6 +113,7 @@ variable "keycloak" {
   default = {
     user_key = "keycloak-admin"
     pass_key = "keycloak-admin"
+    postgres_db = "keycloak"
   }
 }
 
@@ -140,14 +141,12 @@ variable "postgresql" {
   type = object({
     port             = number
     user_name        = string
-    keycloak_db_name = string
     secret           = string
   })
   description = "PostgreSQL configuration"
   default = {
     port             = 5432
     user_name        = "postgres"
-    keycloak_db_name = "keycloak"
     secret           = "postgresql-database-secret"
   }
 }
@@ -155,9 +154,11 @@ variable "postgresql" {
 variable "rainbow" {
   type = object({
     port = number
+    postgres_db = string
   })
   description = "Rainbow (Data Space Protocol) configuration"
   default = {
     port = 8080
+    postgres_db = "rainbow"
   }
 }
