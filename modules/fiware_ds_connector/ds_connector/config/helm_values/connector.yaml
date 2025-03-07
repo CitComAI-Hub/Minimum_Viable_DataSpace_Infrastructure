@@ -125,24 +125,24 @@ trusted-issuers-list:
   service:
     type: ClusterIP
     port: ${til_config.port}
-  # #! INGRESS: only open for clean up in the tests
-  # ingress:
-  #   til:
-  #     enabled: ${ingress_enabled.til}
-  #     annotations:
-  #       kubernetes.io/ingress.class: ${ingress_class}
-  #       # forcing everything to use ssl
-  #       ingress.kubernetes.io/ssl-redirect: "true"
-  #       # example annotations, allowing cert-manager to automatically create tls-certs
-  #       kubernetes.io/tls-acme: "true"
-  #     hosts:
-  #       - host: ${til_domain}
-  #         paths:
-  #           - /
-  #     # tls:
-  #     #   - secretName: ${til_secret_tls}
-  #     #     hosts:
-  #     #       - ${til_domain}
+  #! INGRESS: only open for clean up in the tests
+  ingress:
+    til:
+      enabled: ${ingress_enabled.til}
+      annotations:
+        kubernetes.io/ingress.class: ${ingress_class}
+        # forcing everything to use ssl
+        ingress.kubernetes.io/ssl-redirect: "true"
+        # example annotations, allowing cert-manager to automatically create tls-certs
+        kubernetes.io/tls-acme: "true"
+      hosts:
+        - host: ${til_domain}
+          paths:
+            - /
+      # tls:
+      #   - secretName: ${til_secret_tls}
+      #     hosts:
+      #       - ${til_domain}
   database:
     persistence: true
     host: ${mysql_host_name}
@@ -169,13 +169,13 @@ did:
   port: ${did_config.port}
   ingress:
     enabled: ${ingress_enabled.did}
-    host: ${did_domain}
     annotations:
       kubernetes.io/ingress.class: ${ingress_class}
       # forcing everything to use ssl
       ingress.kubernetes.io/ssl-redirect: "true"
       # example annotations, allowing cert-manager to automatically create tls-certs
       kubernetes.io/tls-acme: "true"
+    host: ${did_domain}
     # tls:
     #   - secretName: ${did_secret_tls}
     #     hosts:
