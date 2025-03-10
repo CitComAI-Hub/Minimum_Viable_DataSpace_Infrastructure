@@ -180,6 +180,8 @@ With the environment deployed, you can access the services using the following d
 
 To access the Traefik dashboard, you need to use the following URL: `http://172.19.255.201:8080/dashboard#`
 
+![ingress_dashboard](./images/ingress_dashboard.png)
+
 You can check the services and the routes created by the Ingress Controller:
 
 ```bash
