@@ -3,6 +3,9 @@
 
 ## Only for provider role
 
+dataSpaceConfig:
+  enabled: false
+
 authentication:
   generatePasswords:
     enabled: false
@@ -53,8 +56,55 @@ dss:
 elsi:
   enabled: false
 
-################################################################################
-################################################################################
+
+#! should only be used for demonstrational deployments:
+
+# Register the consumer at the til. Only possible if it runs in the same
+# environment and recommendable for demo deployments.
+# -> Creates init.sh used in the keycloak initContainer (register-at-til), mount: consumer-til-registration
+registration:
+  enabled: ${services_enabled.registration}
+  configMap: consumer-til-registration
+  til: http://${til_provider_domain}:8080
+  did: $${DID}
+  credentialsType: UserCredential
+
+# Configuration to be shared between the issuance components.
+issuance:
+  generatePasswords:
+    enabled: ${services_enabled.generate_passwords}
+    secretName: ${iss_secret}
+
+# Configuration for the did-helper, should only be used for demonstrational
+# deployments, see https://github.com/wistefan/did-helper
+did:
+  enabled: ${services_enabled.did}
+  # fullnameOverride: ${did_host_name} NOT AVAILABLE, default name: did-helper
+  secret: ${iss_secret}
+  serviceType: ClusterIP
+  port: ${did_config.port}
+  ingress:
+    enabled: ${ingress_enabled.did}
+    host: ${did_domain}
+    annotations:
+      kubernetes.io/ingress.class: ${ingress_class}
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+    # tls:
+    #   - secretName: ${did_secret_tls}
+    #     hosts:
+    #       - ${did_domain}
+  cert:
+    country: ${did_config.country}
+    state: ${did_config.state}
+    locality: ${did_config.locality}
+    organization: ${did_config.organization}
+    commonName: ${did_config.common_name}
+
+
+# Main configuration for the consumer
 
 postgresql:
   generatePasswords:
@@ -372,65 +422,7 @@ keycloak:
         "optionalClientScopes": []
       }
 
-# Register the consumer at the til. Only possible if it runs in the same
-# environment and recommendable for demo deployments.
-# -> Creates init.sh used in the keycloak initContainer (register-at-til), mount: consumer-til-registration
-registration:
-  enabled: ${services_enabled.registration}
-  configMap: consumer-til-registration
-  til: http://${til_provider_domain}:8080
-  did: $${DID}
-  credentialsType: UserCredential
-
-# TODO: Remove this section if the dataSpaceConfig is not needed
-dataSpaceConfig:
-  # host name: dsconfig
-  enabled: ${services_enabled.dsconfig}
-  serviceType: ClusterIP
-  port: 3002
-  supportedModels:
-    - "https://raw.githubusercontent.com/smart-data-models/dataModel.Consumption/master/ConsumptionPoint/schema.json"
-    - "https://raw.githubusercontent.com/smart-data-models/dataModel.Consumption/master/ConsumptionCost/schema.json"
-  supportedProtocols:
-    - http
-    - https
-  authenticationProtocols:
-    - oid4vp
-
-# Configuration to be shared between the issuance components.
-issuance:
-  generatePasswords:
-    enabled: ${services_enabled.generate_passwords}
-    secretName: ${iss_secret}
-
-# Configuration for the did-helper, should only be used for demonstrational
-# deployments, see https://github.com/wistefan/did-helper
-did:
-  enabled: ${services_enabled.did}
-  # fullnameOverride: ${did_host_name} NOT AVAILABLE, default name: did-helper
-  secret: ${iss_secret}
-  serviceType: ClusterIP
-  port: ${did_config.port}
-  ingress:
-    enabled: ${ingress_enabled.did}
-    host: ${did_domain}
-    annotations:
-      kubernetes.io/ingress.class: ${ingress_class}
-      # forcing everything to use ssl
-      ingress.kubernetes.io/ssl-redirect: "true"
-      # example annotations, allowing cert-manager to automatically create tls-certs
-      kubernetes.io/tls-acme: "true"
-    # tls:
-    #   - secretName: ${did_secret_tls}
-    #     hosts:
-    #       - ${did_domain}
-  cert:
-    country: ${did_config.country}
-    state: ${did_config.state}
-    locality: ${did_config.locality}
-    organization: ${did_config.organization}
-    commonName: ${did_config.common_name}
-
+# INGRESS: only open for clean up in the tests
 rainbow:
   enabled: ${services_enabled.rainbow}
   fullnameOverride: ${rainbow_host_name}
@@ -442,21 +434,18 @@ rainbow:
     user: ${postgresql_config.user_name}
     existingSecret: ${postgresql_config.secret}
     passwordKey: ${postgresql_secrect_key_adminpass}
-    #TODO: db name as variable
-  #! INGRESS: only open for clean up in the tests
+    #TODO: To add DB name and port as a variable
+    # by default: rainbow and 5432
+    # https://github.com/FIWARE/data-space-connector/blob/84caaf72dc0a04c0435c88b967793e7911cfd2b0/charts/data-space-connector/templates/rainbow-deployment.yaml#L49
+    # https://github.com/FIWARE/data-space-connector/blob/84caaf72dc0a04c0435c88b967793e7911cfd2b0/charts/data-space-connector/templates/rainbow-deployment.yaml#L70
+  
   ingress:
     enabled: ${ingress_enabled.rainbow}
+    host: ${rainbow_domain}
+    # no TLS option available.
     annotations:
       kubernetes.io/ingress.class: ${ingress_class}
       # forcing everything to use ssl
       ingress.kubernetes.io/ssl-redirect: "true"
       # example annotations, allowing cert-manager to automatically create tls-certs
       kubernetes.io/tls-acme: "true"
-    hosts:
-      - host: ${rainbow_domain}
-        paths:
-          - /
-    # tls:
-    #   - secretName: ${rainbow_secret_tls}
-    #     hosts:
-    #       - ${rainbow_domain}
