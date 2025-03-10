@@ -61,9 +61,10 @@ The provider/consumer connector is an entity that provides and consumes data fro
 2. **Authentication**: VCVerifier, CredentialsConfigService, TrustedIssuersList.
 3. **Authorization**: Gateway (APISIX), Open Policy Agent, ODRL-PAP.
 4. **Value Creation**: TMForum API, Contract Management.
+5. **IDSA-Data Space Protocol**: TPP, Rainbow.
 
 More [info](https://github.com/FIWARE/data-space-connector/blob/main/doc/deployment-integration/local-deployment/LOCAL.MD#the-data-provider).
 
 The following diagram shows the main blocks of the architecture of the provider/consumer connector:
 
-![arch_provider](./images/provider_arch.png)
+![arch_provider](./images/provider_arch.svg)
