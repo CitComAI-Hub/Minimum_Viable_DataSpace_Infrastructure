@@ -11,7 +11,7 @@ This example is based on the [FIWARE's local deployment](https://github.com/FIWA
         - [Ingress Dashboard (Traefik)](#ingress-dashboard-traefik-back-to-top)
         - [Consumer](#consumer-back-to-top)
         - [Provider](#provider-back-to-top)
-- [] [Examples](#examples-back-to-top)
+- [ ] [Examples](#examples-back-to-top)
 
 The following diagram shows the main blocks of the architecture of the minimal data space. This example is composed of the following blocks:
 
@@ -27,10 +27,14 @@ The following diagram shows the main blocks of the architecture of the minimal d
 
 ## 1. Deployment ([_back to top_](#minimal-data-space-local---kind-cluster))
 
-<!-- TODO: PERMISOS CARPETAS DE SCRIPTS:
-
-  sudo chmod +x ../../modules/kind/metal_lb/scripts/get_ips.sh
-  sudo chmod +x ../../modules/ca_configuration/scripts/generate_ca_certificates.sh -->
+> [!NOTE]
+>
+> Check the permissions of the scripts:
+>
+> ```bash
+> sudo chmod +x ../../modules/kind/metal_lb/scripts/get_ips.sh
+> sudo chmod +x ../../modules/ca_configuration/scripts/generate_ca_certificates.sh
+> ```
 
 From `<repo_path>/examples/kind_minimal_ds_local` folder, you need to execute the following commands:
 
@@ -42,7 +46,7 @@ make init_apply
 
 > [!!WARNING]
 >
-> The deployment time is around **10 minutes** (depending on the resources of your machine, this time can vary).
+> The deployment time is around **14 minutes** (depending on the resources of your machine, this time can vary).
 
 ### 1.1. Cluster access ([_back to top_](#minimal-data-space-local---kind-cluster))
 
