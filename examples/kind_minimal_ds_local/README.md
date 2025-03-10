@@ -8,7 +8,7 @@ This example is based on the [FIWARE's local deployment](https://github.com/FIWA
     - [Cluster Access](#11-cluster-access-back-to-top)
     - [Check & Monitoring](#12-check--monitoring-back-to-top)
     - [Access to the services](#13-access-to-the-services-back-to-top)
-        - [Ingress Dashboard (Traefik)](#ingress-dashboard-traefik)
+        - [Ingress Dashboard (Traefik)](#ingress-dashboard-traefik-back-to-top)
         - [Consumer](#consumer-back-to-top)
         - [Provider](#provider-back-to-top)
 - [] [Examples](#examples-back-to-top)
