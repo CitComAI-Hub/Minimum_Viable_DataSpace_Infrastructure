@@ -4,13 +4,14 @@ This example is based on the [FIWARE's local deployment](https://github.com/FIWA
 
 **Table of Contents:**
 
-1. [Deployment](#deployment)
-    - [Cluster Access](#cluster-access)
-    - [Check & Monitoring](#check--monitoring)
-    - [Access to the services](#access-to-the-services)
+1. [Deployment](#1-deployment-back-to-top)
+    - [Cluster Access](#11-cluster-access-back-to-top)
+    - [Check & Monitoring](#12-check--monitoring-back-to-top)
+    - [Access to the services](#13-access-to-the-services-back-to-top)
         - [Ingress Dashboard (Traefik)](#ingress-dashboard-traefik)
-        - [Connector services](#connector-services)
-- [] [Examples](#examples)
+        - [Consumer](#consumer-back-to-top)
+        - [Provider](#provider-back-to-top)
+- [] [Examples](#examples-back-to-top)
 
 The following diagram shows the main blocks of the architecture of the minimal data space. This example is composed of the following blocks:
 
@@ -151,17 +152,6 @@ With the environment deployed, you can access the services using the following d
 >
 > **Temporary Solution** Also to access to the different services, you need to add all domain names to your `/etc/hosts` file.
 >
-> 1. Check the Traefik IP address: 
->
-> ```bash
-> kubectl get services -n traefik-ingress --kubeconfig ./cluster-config.yaml
-> NAME                        TYPE           CLUSTER-IP    EXTERNAL-IP      PORT(S)          AGE
-> traefik-dashboard-service   LoadBalancer   10.96.97.1    172.18.255.201   8080:30137/TCP   10m
->traefik-web-service         LoadBalancer   10.96.72.80   172.18.255.200   80:31910/TCP     10m
-> ```
->
-> 2. Add the domain names to your `/etc/hosts` file:
->
 > ```bash
 > 172.19.255.200     did-helper.consumer-a.local
 > 172.19.255.200     keycloak.consumer-a.local
@@ -186,8 +176,20 @@ With the environment deployed, you can access the services using the following d
 | Keycloak | `http://keycloak.consumer-a.local/realms/test-realm/account/oid4vci` | User console | Consumer |
 | Gateway | `http://apisix-proxy.provider-a.local`  | APISIX proxy | Provider |
 
+#### Ingress Dashboard (Traefik) ([_back to top_](#minimal-data-space-local---kind-cluster))
 
-#### Consumer
+To access the Traefik dashboard, you need to use the following URL: `http://172.19.255.201:8080/dashboard#`
+
+You can check the services and the routes created by the Ingress Controller:
+
+```bash
+kubectl get services -n traefik-ingress --kubeconfig ./cluster-config.yaml
+NAME                        TYPE           CLUSTER-IP    EXTERNAL-IP      PORT(S)          AGE
+traefik-dashboard-service   LoadBalancer   10.96.97.1    172.18.255.201   8080:30137/TCP   10m
+traefik-web-service         LoadBalancer   10.96.72.80   172.18.255.200   80:31910/TCP     10m
+```
+
+#### Consumer ([_back to top_](#minimal-data-space-local---kind-cluster))
 
 **Keycloak:**
 
@@ -242,8 +244,8 @@ If you decode the jwt, you will get the following information (_you can use this
 {(signature content)}
 ```
 
-#### Provider
+#### Provider ([_back to top_](#minimal-data-space-local---kind-cluster))
 
-Steps to create a data policy and data creation in the broker for an example.
+- [ ] Steps to create a data policy and data creation in the broker for an example.
 
 ## Examples ([_back to top_](#minimal-data-space-local---kind-cluster))
