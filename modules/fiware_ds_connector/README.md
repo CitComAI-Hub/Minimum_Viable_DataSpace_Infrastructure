@@ -33,7 +33,7 @@ FIWARE has developed a Trust Anchor Operator as a Helm chart, that manages issue
 | ------------ | ------- | ---------- | ----------- |
 | trust-anchor | 0.2.0   | `https://fiware.github.io/data-space-connector/` | [GitHub](https://github.com/FIWARE/data-space-connector/tree/main/charts/trust-anchor) |
 
-![arch_trust_anchor](./images/trust_anchor_arch.png)
+![arch_trust_anchor](./images/trust_anchor_arch.svg)
 
 ## FDS Connector
 
