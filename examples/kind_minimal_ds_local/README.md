@@ -44,7 +44,7 @@ To deploy the minimal data space, you need to execute the following command:
 make init_apply
 ```
 
-> [!!WARNING]
+> [!WARNING]
 >
 > The deployment time is around **14 minutes** (depending on the resources of your machine, this time can vary).
 
