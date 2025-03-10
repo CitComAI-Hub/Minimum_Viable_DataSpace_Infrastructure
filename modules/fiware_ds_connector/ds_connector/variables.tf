@@ -96,6 +96,7 @@ variable "enable_services" {
     scorpio            = true
     tmf_api            = true
     cm                 = true
+    tpp                = true
     rainbow            = true
   }
 }
