@@ -61,6 +61,12 @@ locals {
       spec_secret_name = "${var.services_names.tpp_service}-tls-secret"
       dns_name         = "${local.dns_domains.tpp_service}.${var.service_domain}"
     },
+    { # - tpp_catalog
+      id               = local.dns_domains.tpp_catalog
+      metadata_name    = "${var.services_names.tpp_catalog}-certificate"
+      spec_secret_name = "${var.services_names.tpp_catalog}-tls-secret"
+      dns_name         = "${local.dns_domains.tpp_catalog}.${var.service_domain}"
+    },
     ############################################################################
     { # scorpio
       id               = local.dns_domains.scorpio

@@ -458,6 +458,8 @@ apisix:
           path: /
         - name: ${tpp_rainbow_service_domain}
           path: /
+        - name: ${tpp_rainbow_catalog_domain} #BUG: This is not configured in the original repo
+          path: /
   dashboard:
     enabled: false
     resourcesPreset: ${apisix_config.resource_preset}
@@ -592,9 +594,9 @@ apisix:
           host: "http://localhost:8181"
           policy: tpp
     
-    #TODO: To change to the correct domain!
+    # TPP (catalog) -> rainbow
     - uri: /api/v1/catalogs
-      host: tpp-catalog-service.127.0.0.1.nip.io
+      host: ${tpp_rainbow_catalog_domain}
       upstream:
         nodes:
           ${rainbow_host_name}:${rainbow_config.port}: 1
@@ -864,7 +866,7 @@ rainbow:
     user: ${postgresql_config.user_name}
     existingSecret: ${postgresql_config.secret}
     passwordKey: ${postgresql_secrect_key_adminpass}
-    #TODO: To add DB name and port as a variable
+    #FIXME: To add DB name and port as a variable
     # by default: rainbow and 5432
     # https://github.com/FIWARE/data-space-connector/blob/84caaf72dc0a04c0435c88b967793e7911cfd2b0/charts/data-space-connector/templates/rainbow-deployment.yaml#L49
     # https://github.com/FIWARE/data-space-connector/blob/84caaf72dc0a04c0435c88b967793e7911cfd2b0/charts/data-space-connector/templates/rainbow-deployment.yaml#L70

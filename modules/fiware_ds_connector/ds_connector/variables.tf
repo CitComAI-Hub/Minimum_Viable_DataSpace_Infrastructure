@@ -122,6 +122,7 @@ variable "services_names" {
     rainbow        = "rainbow"
     tpp_data       = "tpp-rainbow-data"
     tpp_service    = "tpp-rainbow-service"
+    tpp_catalog    = "tpp-rainbow-catalog"
   }
 }
 

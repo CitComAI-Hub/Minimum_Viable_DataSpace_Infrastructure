@@ -70,6 +70,8 @@ resource "helm_release" "ds_connector" {
       tpp_rainbow_data_secret_tls    = local.secrets_tls[local.dns_domains.tpp_data],
       tpp_rainbow_service_domain     = local.dns_dir[local.dns_domains.tpp_service],
       tpp_rainbow_service_secret_tls = local.secrets_tls[local.dns_domains.tpp_service],
+      tpp_rainbow_catalog_domain     = local.dns_dir[local.dns_domains.tpp_catalog],
+      tpp_rainbow_catalog_secret_tls = local.secrets_tls[local.dns_domains.tpp_catalog],
       ##########################################################################
       ## BROKER                                                               ##
       ##########################################################################
