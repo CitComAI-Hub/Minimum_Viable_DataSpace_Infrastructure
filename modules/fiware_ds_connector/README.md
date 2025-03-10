@@ -51,7 +51,7 @@ More [info](https://github.com/FIWARE/data-space-connector/blob/main/doc/deploym
 
 The following diagram shows the main blocks of the architecture of the consumer connector:
 
-![arch_consumer](./images/consumer_arch.png)
+![arch_consumer](./images/consumer_arch.svg)
 
 ### Provider/Consumer
 
