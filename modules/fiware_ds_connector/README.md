@@ -43,6 +43,10 @@ The FIWARE Data Space (FDS) Connector is a Helm chart that allows the deployment
 | -------------------- | ------- | ---------- | ---------- |
 | data-space-connector | 7.29.0  | `https://fiware.github.io/data-space-connector/` | [GitHub](https://github.com/FIWARE/data-space-connector/tree/main/charts/data-space-connector) |
 
+|  Component | Version | Repository |
+| ---------- | ------- | ---------- |
+| DSS Validation Service | 0.0.14 | `https://fiware.github.io/helm-charts` |
+
 ### Consumer
 
 The consumer connector is an entity that only consumes data from the data space.
@@ -52,6 +56,11 @@ More [info](https://github.com/FIWARE/data-space-connector/blob/main/doc/deploym
 The following diagram shows the main blocks of the architecture of the consumer connector:
 
 ![arch_consumer](./images/consumer_arch.svg)
+
+|  Component | Version | Repository |
+| ---------- | ------- | ---------- |
+| Keycloak | 24.0.1 | `https://charts.bitnami.com/bitnami` |
+| Postgresql | 13.1.5 | `oci://registry-1.docker.io/bitnamicharts` |
 
 ### Provider/Consumer
 
@@ -68,3 +77,16 @@ More [info](https://github.com/FIWARE/data-space-connector/blob/main/doc/deploym
 The following diagram shows the main blocks of the architecture of the provider/consumer connector:
 
 ![arch_provider](./images/provider_arch.svg)
+
+|  Component | Version | Repository |
+| ---------- | ------- | ---------- |
+| APISIX | 3.5.1 | `oci://registry-1.docker.io/bitnamicharts` |
+| ODRL-PAP | 0.2.2 | `https://fiware.github.io/helm-charts` |
+| VCverifier | 2.11.3  | `https://fiware.github.io/helm-charts` |
+| Postgresql | 13.1.5 | `oci://registry-1.docker.io/bitnamicharts` |
+| MySQL | 9.4.4 | `https://charts.bitnami.com/bitnami` |
+| Trusted Issuers List | 0.7.0 | `https://fiware.github.io/helm-charts` |
+| Credentials Config Service | 0.1.6 | `https://fiware.github.io/helm-charts` |
+| Contract Management | 1.0.2 | `https://fiware.github.io/helm-charts` |
+| TM Forum API | 0.10.0 | `https://fiware.github.io/helm-charts` |
+| Scorpio Broker | 0.4.7 | `https://fiware.github.io/helm-charts` |
