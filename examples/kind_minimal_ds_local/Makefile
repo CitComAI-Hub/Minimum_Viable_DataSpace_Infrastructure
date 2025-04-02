@@ -21,4 +21,4 @@ destroy:
 
 ## Test local data space functionality.
 test:
-	cd ../scripts/ && bash ./get_credentials.sh
+	@cd ../scripts/ && bash ./get_credentials.sh
