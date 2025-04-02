@@ -5,7 +5,7 @@ source ./common/text_formater.sh
 # Consumer: Orange
 # Provider: Green
 
-certs_path="../../my_certs"
+certs_path="../kind_minimal_ds_local/my_certs"
 
 CLUSTER_LOCAL_IP="172.18.255.200"
 
@@ -37,6 +37,12 @@ TM_FORUM_API_PROVIDER_DNS="tm-forum-api.provider-a.local"
 #vc.verifier
 VC_VERIFIER_PROVIDER_DNS="vc-verifier.provider-a.local"
 
+unset ACCESS_TOKEN;             unset OFFER_URI;              unset PRE_AUTHORIZED_CODE
+unset CREDENTIAL_ACCESS_TOKEN;  unset VERIFIABLE_CREDENTIAL;  unset HOLDER_DID
+unset VERIFIABLE_PRESENTATION;  unset JWT_HEADER;             unset PAYLOAD
+unset SIGNATURE;                unset JWT;                    unset VP_TOKEN
+unset DATA_SERVICE_ACCESS_TOKEN
+
 
 ################################################################################
 # TRUST ANCHOR                                                                 #
@@ -57,17 +63,13 @@ echo -e "$(blod_blue_format "[Trust Anchor] - List of issuers: ") \
 
 read -p "Press enter to continue"
 
+
+
 ################################################################################
 # CONSUMER                                                                     #
 ################################################################################
 echo -e "$(blod_orange_format "############\n# CONSUMER #\n############")\n"
 source ./fiware_components/consumer.sh
-
-unset ACCESS_TOKEN;             unset OFFER_URI;              unset PRE_AUTHORIZED_CODE
-unset CREDENTIAL_ACCESS_TOKEN;  unset VERIFIABLE_CREDENTIAL;  unset HOLDER_DID
-unset VERIFIABLE_PRESENTATION;  unset JWT_HEADER;             unset PAYLOAD
-unset SIGNATURE;                unset JWT;                    unset VP_TOKEN
-unset DATA_SERVICE_ACCESS_TOKEN
 
 # Get the access token for the user:
 KEYCLOAK_USER_NAME="test-user"
@@ -116,137 +118,155 @@ echo -e "$(blod_orange_format "** Verifiable Credential codified in jwt for by u
 
 read -p "Press enter to continue"
 
+
+
+################################################################################
+# PERSONAL USER CREDENTIALS                                                    #
+################################################################################
+echo -e "$(blod_orange_format "#############################\n# PERSONAL USER CREDENTIALS #\n#############################")\n"
+
+# Authentication flow:
+# -------------------
+# First, the credential needs to be encoded into a vp_token. If you want to do
+# that manually, first a did and the corresponding key-material is required.
+if [ ! -d "$certs_path/" ]; then
+    echo -e "$(blod_green_format "[MANUAL CREDENTIAL ENCODING] - Creating certs ...")"
+    mkdir -p $certs_path/
+    docker run -v $(pwd)/$certs_path/:/cert quay.io/wi_stefan/did-helper:0.1.1
+    sudo chmod -R o+r $certs_path/private-key.pem #https://www.youtube.com/watch?v=3fLisTubkF0 | 42:35 MIN
+    echo -e "$(blod_green_format "[MANUAL CREDENTIAL ENCODING] - Certs created.")"
+else
+    echo -e "$(blod_orange_format "[MANUAL CREDENTIAL ENCODING] - Certs already created.")"
+fi
+
+# - Get the did from the created key-material:
+export HOLDER_DID=$(cat $certs_path/did.json | jq '.id' -r)
+echo -e "$(blod_orange_format " >> DID is:") $HOLDER_DID"
+
+export VERIFIABLE_PRESENTATION="{
+    \"@context\": [\"https://www.w3.org/2018/credentials/v1\"],
+    \"type\": [\"VerifiablePresentation\"],
+    \"verifiableCredential\": [
+        \"${VERIFIABLE_CREDENTIAL}\"
+    ],
+    \"holder\": \"${HOLDER_DID}\"
+}"
+echo -e "$(blod_orange_format " >> [USER] VERIFIABLE PRESENTATION:") \n$VERIFIABLE_PRESENTATION\n"
+
+# - Embedded into a signed JWT
+export JWT_HEADER=$(echo -n "{\"alg\":\"ES256\", \"typ\":\"JWT\", \"kid\":\"${HOLDER_DID}\"}"| base64 -w0 | sed s/\+/-/g | sed 's/\//_/g' | sed -E s/=+$//)
+echo -e "$(blod_orange_format "[USER]  >> Header:") $JWT_HEADER\n"
+export PAYLOAD=$(echo -n "{\"iss\": \"${HOLDER_DID}\", \"sub\": \"${HOLDER_DID}\", \"vp\": ${VERIFIABLE_PRESENTATION}}" | base64 -w0 | sed s/\+/-/g |sed 's/\//_/g' |  sed -E s/=+$//)
+echo -e "$(blod_orange_format "[USER] >> Payload:") $PAYLOAD\n"
+export SIGNATURE=$(echo -n "${JWT_HEADER}.${PAYLOAD}" | openssl dgst -sha256 -binary -sign $certs_path/private-key.pem | base64 -w0 | sed s/\+/-/g | sed 's/\//_/g' | sed -E s/=+$//)
+echo -e "$(blod_orange_format "[USER]  >> Signature:") $SIGNATURE\n"
+export JWT="${JWT_HEADER}.${PAYLOAD}.${SIGNATURE}"
+echo -e "$(blod_orange_format "[USER]  >> jwt token:") $JWT"
+# - Encode the JWT IN BASE64
+export VP_TOKEN=$(echo -n ${JWT} | base64 -w0 | sed s/\+/-/g | sed 's/\//_/g' | sed -E s/=+$//)
+echo -e "$(blod_orange_format "[USER]  >> VP TOKEN:") $VP_TOKEN\n"
+
+read -p "Press enter to continue"
+
+
+
 ################################################################################
 # PROVIDER                                                                     #
 ################################################################################
+echo -e "$(blod_green_format "############\n# PROVIDER #\n############")\n"
+source ./fiware_components/provider.sh
 
+# POLICIY CREATION
+# The policy can be created at the PAP via:
+curl -X 'POST' http://${CLUSTER_LOCAL_IP}/policy \
+    -H "Host: ${PAP_PROVIDER_DNS}" \
+    -H 'Content-Type: application/json' \
+    -d  '{
+            "@context": {
+                "dc": "http://purl.org/dc/elements/1.1/",
+                "dct": "http://purl.org/dc/terms/",
+                "owl": "http://www.w3.org/2002/07/owl#",
+                "odrl": "http://www.w3.org/ns/odrl/2/",
+                "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+                "skos": "http://www.w3.org/2004/02/skos/core#"
+            },
+            "@id": "https://mp-operation.org/policy/common/type",
+            "@type": "odrl:Policy",
+            "odrl:permission": {
+                "odrl:assigner": {
+                "@id": "https://www.mp-operation.org/"
+                },
+                "odrl:target": {
+                "@type": "odrl:AssetCollection",
+                "odrl:source": "urn:asset",
+                "odrl:refinement": [
+                    {
+                    "@type": "odrl:Constraint",
+                    "odrl:leftOperand": "ngsi-ld:entityType",
+                    "odrl:operator": {
+                        "@id": "odrl:eq"
+                    },
+                    "odrl:rightOperand": "EnergyReport"
+                    }
+                ]
+                },
+                "odrl:assignee": {
+                "@id": "vc:any"
+                },
+                "odrl:action": {
+                "@id": "odrl:read"
+                }
+            }
+            }'
+echo -e "\n"
 
-# ## POLICIY CREATION
-# ##
-# ## The policy can be created at the PAP via:
-# curl -X 'POST' http://${CLUSTER_LOCAL_IP}/policy \
-#     -H "Host: ${PAP_PROVIDER_DNS}" \
-#     -H 'Content-Type: application/json' \
-#     -d  '{
-#             "@context": {
-#                 "dc": "http://purl.org/dc/elements/1.1/",
-#                 "dct": "http://purl.org/dc/terms/",
-#                 "owl": "http://www.w3.org/2002/07/owl#",
-#                 "odrl": "http://www.w3.org/ns/odrl/2/",
-#                 "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-#                 "skos": "http://www.w3.org/2004/02/skos/core#"
-#             },
-#             "@id": "https://mp-operation.org/policy/common/type",
-#             "@type": "odrl:Policy",
-#             "odrl:permission": {
-#                 "odrl:assigner": {
-#                 "@id": "https://www.mp-operation.org/"
-#                 },
-#                 "odrl:target": {
-#                 "@type": "odrl:AssetCollection",
-#                 "odrl:source": "urn:asset",
-#                 "odrl:refinement": [
-#                     {
-#                     "@type": "odrl:Constraint",
-#                     "odrl:leftOperand": "ngsi-ld:entityType",
-#                     "odrl:operator": {
-#                         "@id": "odrl:eq"
-#                     },
-#                     "odrl:rightOperand": "EnergyReport"
-#                     }
-#                 ]
-#                 },
-#                 "odrl:assignee": {
-#                 "@id": "vc:any"
-#                 },
-#                 "odrl:action": {
-#                 "@id": "odrl:read"
-#                 }
-#             }
-#             }'
-# echo -e "\n"
-# ## DATA ADDITION
-# ##
-# curl -X POST http://${CLUSTER_LOCAL_IP}/ngsi-ld/v1/entities \
-#     --header "Host: ${SCORPIO_PROVIDER_DNS}" \
-#     -H 'Accept: application/json' \
-#     -H 'Content-Type: application/json' \
-#     -d '{
-#       "id": "urn:ngsi-ld:EnergyReport:fms-1",
-#       "type": "EnergyReport",
-#       "name": {
-#         "type": "Property",
-#         "value": "Standard Server"
-#       },
-#       "consumption": {
-#         "type": "Property",
-#         "value": "94"
-#       }
-#     }'
-# echo -e "\n"
+# DATA ADDITION
+curl -X POST http://${CLUSTER_LOCAL_IP}/ngsi-ld/v1/entities \
+    --header "Host: ${SCORPIO_PROVIDER_DNS}" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -d '{
+      "id": "urn:ngsi-ld:EnergyReport:fms-1",
+      "type": "EnergyReport",
+      "name": {
+        "type": "Property",
+        "value": "Standard Server"
+      },
+      "consumption": {
+        "type": "Property",
+        "value": "94"
+      }
+    }'
+echo -e "\n"
 
+# Data access interactions (401 -> correct)
+# ------------------------
+export DATA_REQUEST=$(curl -s -X GET "http://${CLUSTER_LOCAL_IP}/ngsi-ld/v1/entities/urn:ngsi-ld:EnergyReport:fms-1" \
+    --header "Host: ${GATEWAY_DNS}" \
+    --header "Accept: application/json")
+echo -e "$(blod_green_format "[PROVIDER] - Data request access without authorization (401 Authorization Required): ") \n${DATA_REQUEST} \n"
 
-# ################################################################################
-# # Data access interactions                                                     #
-# ################################################################################
+# Request the oidc-information at the well-known endpoint:
+export TOKEN=$(GET_token_endpoint ${CLUSTER_LOCAL_IP} ${GATEWAY_DNS})
+echo -e "$(blod_green_format "[PROVIDER] - Request information OpenID to well-known endopoint token:") \n${TOKEN}"
+export TOKEN_ENDPOINT=$(echo $TOKEN | jq -r '.token_endpoint')
+echo -e "$(blod_green_format " >> Token Endpoint:") ${TOKEN_ENDPOINT}\n"
 
-# # Request the oidc-information at the well-known endpoint:
-# export TOKEN_ENDPOINT=$(curl -s -X GET "http://${CLUSTER_LOCAL_IP}/.well-known/openid-configuration" -H "Host: ${GATEWAY_DNS}" | jq -r '.token_endpoint');
-# echo -e "$(blod_blue_format "[PROVIDER] -  Token Endpoint:") ${TOKEN_ENDPOINT}"
-# curl -s -X GET "http://${CLUSTER_LOCAL_IP}/.well-known/openid-configuration" -H "Host: ${GATEWAY_DNS}" | jq && echo -e "\n"
+# The vp_token can then be exchanged for the access-token
+export DATA_SERVICE_ACCESS_TOKEN=$(curl -s -X POST ${TOKEN_ENDPOINT} \
+    --resolve "${VC_VERIFIER_PROVIDER_DNS}:80:${CLUSTER_LOCAL_IP}" \
+    --header 'Accept: */*' \
+    --header 'Content-Type: application/x-www-form-urlencoded' \
+    --data grant_type=vp_token \
+    --data vp_token=${VP_TOKEN} \
+    --data scope=default | jq '.access_token' -r )
+echo -e "$(blod_blue_format "[DATA ACCESS] - Data Service Access Token:") $DATA_SERVICE_ACCESS_TOKEN\n"
 
-# # First, the credential needs to be encoded into a vp_token. If you want to do
-# # that manually, first a did and the corresponding key-material is required.
-# if [ ! -d "$certs_path/" ]; then
-#     echo -e "$(blod_blue_format "[MANUAL CREDENTIAL ENCODING] - Creating certs ...")"
-#     mkdir -p $certs_path/
-#     docker run -v $(pwd)/$certs_path/:/cert quay.io/wi_stefan/did-helper:0.1.1
-#     sudo chmod -R o+r $certs_path/private-key.pem #https://www.youtube.com/watch?v=3fLisTubkF0 | 42:35 MIN
-#     echo -e "$(blod_blue_format "[MANUAL CREDENTIAL ENCODING] - Certs created.")"
-# else
-#     echo -e "$(blod_blue_format "[MANUAL CREDENTIAL ENCODING] - Certs already created.")"
-# fi
-# # - Get the did from the created key-material:
-# export HOLDER_DID=$(cat $certs_path/did.json | jq '.id' -r)
-# echo -e "$(blod_blue_format "[MANUAL CREDENTIAL ENCODING] - DID is:") $HOLDER_DID"
-# export VERIFIABLE_PRESENTATION="{
-#     \"@context\": [\"https://www.w3.org/2018/credentials/v1\"],
-#     \"type\": [\"VerifiablePresentation\"],
-#     \"verifiableCredential\": [
-#         \"${VERIFIABLE_CREDENTIAL}\"
-#     ],
-#     \"holder\": \"${HOLDER_DID}\"
-# }"
-# echo -e "$(blod_blue_format "[MANUAL CREDENTIAL ENCODING] - >> Verifiable Presentation:") $VERIFIABLE_PRESENTATION\n"
-# # - Embedded into a signed JWT
-# export JWT_HEADER=$(echo -n "{\"alg\":\"ES256\", \"typ\":\"JWT\", \"kid\":\"${HOLDER_DID}\"}"| base64 -w0 | sed s/\+/-/g | sed 's/\//_/g' | sed -E s/=+$//)
-# echo -e "$(blod_blue_format "[MANUAL CREDENTIAL ENCODING] - >> Header:") $JWT_HEADER\n"
-# export PAYLOAD=$(echo -n "{\"iss\": \"${HOLDER_DID}\", \"sub\": \"${HOLDER_DID}\", \"vp\": ${VERIFIABLE_PRESENTATION}}" | base64 -w0 | sed s/\+/-/g |sed 's/\//_/g' |  sed -E s/=+$//)
-# echo -e "$(blod_blue_format "[MANUAL CREDENTIAL ENCODING] - >> Payload:") $PAYLOAD\n"
-# export SIGNATURE=$(echo -n "${JWT_HEADER}.${PAYLOAD}" | openssl dgst -sha256 -binary -sign $certs_path/private-key.pem | base64 -w0 | sed s/\+/-/g | sed 's/\//_/g' | sed -E s/=+$//)
-# echo -e "$(blod_blue_format "[MANUAL CREDENTIAL ENCODING] - >> Signature:") $SIGNATURE\n"
-# export JWT="${JWT_HEADER}.${PAYLOAD}.${SIGNATURE}"
-# echo -e "$(blod_blue_format "[MANUAL CREDENTIAL ENCODING] - jwt token:") $JWT"
-
-# export VP_TOKEN=$(echo -n ${JWT} | base64 -w0 | sed s/\+/-/g | sed 's/\//_/g' | sed -E s/=+$//)
-# echo -e "$(blod_blue_format "[MANUAL CREDENTIAL ENCODING] - VP TOKEN:") $VP_TOKEN\n"
-
-
-# # The vp_token can then be exchanged for the access-token
-# export DATA_SERVICE_ACCESS_TOKEN=$(curl -s -X POST ${TOKEN_ENDPOINT} \
-#     --resolve "${VC_VERIFIER_PROVIDER_DNS}:80:${CLUSTER_LOCAL_IP}" \
-#     --header 'Accept: */*' \
-#     --header 'Content-Type: application/x-www-form-urlencoded' \
-#     --data grant_type=vp_token \
-#     --data vp_token=${VP_TOKEN} \
-#     --data scope=default | jq '.access_token' -r )
-# echo -e "$(blod_blue_format "[DATA ACCESS] - Data Service Access Token:") $DATA_SERVICE_ACCESS_TOKEN\n"
-
-# # Try data access
-# curl -X GET "http://${CLUSTER_LOCAL_IP}/ngsi-ld/v1/entities/urn:ngsi-ld:EnergyReport:fms-1" \
-#     --header "Host: ${GATEWAY_DNS}" \
-#     --header 'Accept: application/json' \
-#     --header "Authorization: Bearer ${DATA_SERVICE_ACCESS_TOKEN}"
+# Try data access
+curl -X GET "http://${CLUSTER_LOCAL_IP}/ngsi-ld/v1/entities/urn:ngsi-ld:EnergyReport:fms-1" \
+    --header "Host: ${GATEWAY_DNS}" \
+    --header 'Accept: application/json' \
+    --header "Authorization: Bearer ${DATA_SERVICE_ACCESS_TOKEN}"
 
 # read -p "Press enter to continue"
 
