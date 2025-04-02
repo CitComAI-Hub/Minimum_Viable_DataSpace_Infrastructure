@@ -7,10 +7,10 @@
     <img src="images/logo.png" alt="Logo" width="100" height="100">
   </a>
 
-  <h3 align="center">Minimum Viable Data Space Infrastructure (MVDS-IaaS)</h3>
+  <h3 align="center">Minimum Viable Data Space Infrastructure (MVDS-DSaaS)</h3>
 
   <p align="center">
-    Infrastructure as a Service for a Minimum Viable Data Space (MVDS) using FIWARE components.
+    Data Space Connector as a Service for a Minimum Viable Data Space (MVDS) using FIWARE components.
     <br />
     <a href="https://citcom-vrain.github.io/documentation/data_space/fiware_ecosystem/"><strong>Explore the docs »</strong></a>
     <br />
@@ -76,7 +76,7 @@ This includes the configuration of the infrastructure (Kind cluster), the instal
 
 This project was developed and tested on:
 
-* Ubuntu 22.04.3 LTS
+* Ubuntu 22.04.3 LTS, Ubuntu 24.04.1 LTS
 
 These are the necessary requirements to be able to execute the project:
 
@@ -92,7 +92,20 @@ These are the necessary requirements to be able to execute the project:
 ### Cheatsheet
 
 The following commands can be used to install some of the necessary software:
+* kubectl (Install using native package management - _Debian-based_)
+  ```bash
+  sudo apt-get update
+  sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
 
+  curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  sudo chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+  echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+  sudo chmod 644 /etc/apt/sources.list.d/kubernetes.list
+
+  sudo apt-get update && sudo apt-get install -y kubectl
+  ```
 * Kind
   ```bash
   # For AMD64 / x86_64
@@ -108,14 +121,18 @@ The following commands can be used to install some of the necessary software:
   ```bash
   curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
   sudo apt-get install apt-transport-https --yes
+
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+
   sudo apt-get update
   sudo apt-get install helm
   ```
 * Terraform
   ```bash
   wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
   echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+
   sudo apt update && sudo apt install terraform
   ```
 * Make
