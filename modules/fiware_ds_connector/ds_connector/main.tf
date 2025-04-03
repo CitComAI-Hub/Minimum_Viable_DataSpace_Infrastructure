@@ -14,7 +14,7 @@ resource "helm_release" "ds_connector" {
       ingress_enabled  = var.enable_ingress,
       services_enabled = var.enable_services,
       #
-      til_operator_domain = "trusted-issuers-list.ds-operator.svc.cluster.local",
+      til_operator_domain = "trusted-issuers-list.${var.operator_namespace}.svc.cluster.local",
       # Data Space Config
       ds_config = var.dataspace_config,
       ##########################################################################
@@ -25,8 +25,10 @@ resource "helm_release" "ds_connector" {
       mysql_host_name = var.services_names.mysql,
       mysql_config    = var.mysql,
       # Credentials Configuration Service
-      ccs_host_name = var.services_names.ccs,
-      ccs_config    = var.credentials_config_service,
+      ccs_host_name  = var.services_names.ccs,
+      ccs_config     = var.credentials_config_service,
+      ccs_domain     = local.dns_dir[local.dns_domains.ccs],
+      ccs_secret_tls = local.secrets_tls[local.dns_domains.ccs],
       # Trusted Issuers List
       til_host_name  = var.services_names.til,
       til_config     = var.trusted_issuers_list,
@@ -39,6 +41,7 @@ resource "helm_release" "ds_connector" {
       did_secret_tls = local.secrets_tls[local.dns_domains.did],
       # VCVerifier
       vcv_host_name  = var.services_names.vcv,
+      vcv_config     = var.vcverifier,
       vcv_domain     = local.dns_dir[local.dns_domains.vcv],
       vcv_secret_tls = local.secrets_tls[local.dns_domains.vcv],
       ##########################################################################
@@ -57,12 +60,18 @@ resource "helm_release" "ds_connector" {
       # Opa
       opa_port = 8181,
       # APISIX
-      apisix_host_name      = var.services_names.apisix_service,
-      apisix_config         = var.apisix,
-      apisix_domain         = local.dns_dir[local.dns_domains.apisix_service],
-      apisix_secret_tls     = local.secrets_tls[local.dns_domains.apisix_service],
-      apisix_api_domain     = local.dns_dir[local.dns_domains.apisix_api],
-      apisix_api_secret_tls = local.secrets_tls[local.dns_domains.apisix_api],
+      apisix_host_name               = var.services_names.apisix_service,
+      apisix_config                  = var.apisix,
+      apisix_domain                  = local.dns_dir[local.dns_domains.apisix_service],
+      apisix_secret_tls              = local.secrets_tls[local.dns_domains.apisix_service],
+      apisix_api_domain              = local.dns_dir[local.dns_domains.apisix_api],
+      apisix_api_secret_tls          = local.secrets_tls[local.dns_domains.apisix_api],
+      tpp_rainbow_data_domain        = local.dns_dir[local.dns_domains.tpp_data],
+      tpp_rainbow_data_secret_tls    = local.secrets_tls[local.dns_domains.tpp_data],
+      tpp_rainbow_service_domain     = local.dns_dir[local.dns_domains.tpp_service],
+      tpp_rainbow_service_secret_tls = local.secrets_tls[local.dns_domains.tpp_service],
+      tpp_rainbow_catalog_domain     = local.dns_dir[local.dns_domains.tpp_catalog],
+      tpp_rainbow_catalog_secret_tls = local.secrets_tls[local.dns_domains.tpp_catalog],
       ##########################################################################
       ## BROKER                                                               ##
       ##########################################################################
@@ -87,6 +96,12 @@ resource "helm_release" "ds_connector" {
       # Contract Management
       cm_host_name = var.services_names.cm,
       cm_config    = var.contract_management,
+
+      # Rainbow
+      rainbow_host_name  = var.services_names.rainbow,
+      rainbow_config     = var.rainbow,
+      rainbow_domain     = local.dns_dir[local.dns_domains.rainbow],
+      rainbow_secret_tls = local.secrets_tls[local.dns_domains.rainbow]
     })
   ]
 }
