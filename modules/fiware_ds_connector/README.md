@@ -6,7 +6,7 @@ In the minimal version of the data space, we have the following components:
 
 - **FIWARE Data Space Trust Anchor**: The trust anchor is the entity that manages the issuers and credentials for all participants in the data space.
 
-- **FIWARE Data Space Connector (Provider/Consumer)**: The connector is the entity that provides and consumes data from the data space. The connector can be a provider, a consumer, or both. In this deployment, we use the latest version (2.x) of the [FIWARE Data Space Connector](https://github.com/FIWARE/data-space-connector).
+- **FIWARE Data Space Connector (Provider)**: The connector is the entity that provides data from the data space. In this deployment, we use the latest version (2.x) of the [FIWARE Data Space Connector](https://github.com/FIWARE/data-space-connector).
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -62,9 +62,9 @@ The following diagram shows the main blocks of the architecture of the consumer 
 | Keycloak | 24.0.1 | `https://charts.bitnami.com/bitnami` |
 | Postgresql | 13.1.5 | `oci://registry-1.docker.io/bitnamicharts` |
 
-### Provider/Consumer
+### Provider
 
-The provider/consumer connector is an entity that provides and consumes data from the data space. This component is composed of four main blocks:
+The provider connector is an entity that provides data from the data space. This component is composed of four main blocks:
 
 1. **Data Services**: In this example we use Scorpio Broker (NGSI-LD Context Broker).
 2. **Authentication**: VCVerifier, CredentialsConfigService, TrustedIssuersList.
@@ -74,7 +74,7 @@ The provider/consumer connector is an entity that provides and consumes data fro
 
 More [info](https://github.com/FIWARE/data-space-connector/blob/main/doc/deployment-integration/local-deployment/LOCAL.MD#the-data-provider).
 
-The following diagram shows the main blocks of the architecture of the provider/consumer connector:
+The following diagram shows the main blocks of the architecture of the provider connector:
 
 ![arch_provider](./images/provider_arch.svg)
 
