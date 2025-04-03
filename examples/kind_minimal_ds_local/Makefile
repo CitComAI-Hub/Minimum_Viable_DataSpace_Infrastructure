@@ -18,7 +18,3 @@ destroy:
 	$(remove_tmp_tf)
 
 	$(call down_kind,../kind_cluster/,../../kind_minimal_ds_local/config/cluster_vars.tfvars)
-
-## Test local data space functionality.
-test:
-	@cd ../scripts/ && bash ./get_credentials.sh
