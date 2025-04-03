@@ -7,7 +7,7 @@
     <img src="images/logo.png" alt="Logo" width="100" height="100">
   </a>
 
-  <h3 align="center">Minimum Viable Data Space Infrastructure (MVDS-DSaaS)</h3>
+  <h3 align="center">Minimum Viable Data Space Examples (MVDS-DSaaS)</h3>
 
   <p align="center">
     Data Space Connector as a Service for a Minimum Viable Data Space (MVDS) using FIWARE components.
