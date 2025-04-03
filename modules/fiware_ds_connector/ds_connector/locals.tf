@@ -5,6 +5,12 @@ locals {
   })
 
   cert_properties = [
+    { # ccs
+      id               = local.dns_domains.ccs
+      metadata_name    = "${var.services_names.ccs}-certificate"
+      spec_secret_name = "${var.services_names.ccs}-tls-secret"
+      dns_name         = "${local.dns_domains.ccs}.${var.service_domain}"
+    },
     { # til
       id               = local.dns_domains.til
       metadata_name    = "${var.services_names.til}-certificate"
@@ -29,18 +35,39 @@ locals {
       spec_secret_name = "${var.services_names.pap}-tls-secret"
       dns_name         = "${local.dns_domains.pap}.${var.service_domain}"
     },
-    { # apisix-service
+    ############################################################################
+    # APISIX
+    { # - apisix-service
       id               = local.dns_domains.apisix_service
       metadata_name    = "${var.services_names.apisix_service}-certificate"
       spec_secret_name = "${var.services_names.apisix_service}-tls-secret"
       dns_name         = "${local.dns_domains.apisix_service}.${var.service_domain}"
     },
-    { # apisix-api
+    { # - apisix-api
       id               = local.dns_domains.apisix_api
       metadata_name    = "${var.services_names.apisix_api}-certificate"
       spec_secret_name = "${var.services_names.apisix_api}-tls-secret"
       dns_name         = "${local.dns_domains.apisix_api}.${var.service_domain}"
     },
+    { # - tpp_data_service
+      id               = local.dns_domains.tpp_data
+      metadata_name    = "${var.services_names.tpp_data}-certificate"
+      spec_secret_name = "${var.services_names.tpp_data}-tls-secret"
+      dns_name         = "${local.dns_domains.tpp_data}.${var.service_domain}"
+    },
+    { # - tpp_service
+      id               = local.dns_domains.tpp_service
+      metadata_name    = "${var.services_names.tpp_service}-certificate"
+      spec_secret_name = "${var.services_names.tpp_service}-tls-secret"
+      dns_name         = "${local.dns_domains.tpp_service}.${var.service_domain}"
+    },
+    { # - tpp_catalog
+      id               = local.dns_domains.tpp_catalog
+      metadata_name    = "${var.services_names.tpp_catalog}-certificate"
+      spec_secret_name = "${var.services_names.tpp_catalog}-tls-secret"
+      dns_name         = "${local.dns_domains.tpp_catalog}.${var.service_domain}"
+    },
+    ############################################################################
     { # scorpio
       id               = local.dns_domains.scorpio
       metadata_name    = "${var.services_names.scorpio}-certificate"
@@ -52,6 +79,12 @@ locals {
       metadata_name    = "${var.services_names.tmf_api}-certificate"
       spec_secret_name = "${var.services_names.tmf_api}-tls-secret"
       dns_name         = "${local.dns_domains.tmf_api}.${var.service_domain}"
+    },
+    { # rainbow
+      id               = local.dns_domains.rainbow
+      metadata_name    = "${var.services_names.rainbow}-certificate"
+      spec_secret_name = "${var.services_names.rainbow}-tls-secret"
+      dns_name         = "${local.dns_domains.rainbow}.${var.service_domain}"
     },
   ]
 

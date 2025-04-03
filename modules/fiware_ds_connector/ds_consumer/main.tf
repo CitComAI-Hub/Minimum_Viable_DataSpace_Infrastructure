@@ -33,6 +33,11 @@ resource "helm_release" "ds_consumer" {
       postgresql_config                = var.postgresql,
       postgresql_secrect_key_adminpass = "postgres-admin-password", # not editable
       postgresql_secrect_key_userpass  = "postgres-user-password",  # not editable
+      # Rainbow configuration
+      rainbow_host_name  = var.services_names.rainbow,
+      rainbow_config     = var.rainbow,
+      rainbow_domain     = local.dns_dir[local.dns_domains.rainbow],
+      rainbow_secret_tls = local.secrets_tls[local.dns_domains.rainbow]
     })
   ]
 }

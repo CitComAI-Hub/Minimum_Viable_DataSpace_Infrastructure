@@ -6,7 +6,7 @@ In the minimal version of the data space, we have the following components:
 
 - **FIWARE Data Space Trust Anchor**: The trust anchor is the entity that manages the issuers and credentials for all participants in the data space.
 
-- **FIWARE Data Space Connector (Provider/Consumer)**: The connector is the entity that provides and consumes data from the data space. The connector can be a provider, a consumer, or both. In this deployment, we use the latest version (2.x) of the [FIWARE Data Space Connector](https://github.com/FIWARE/data-space-connector).
+- **FIWARE Data Space Connector (Provider)**: The connector is the entity that provides data from the data space. In this deployment, we use the latest version (2.x) of the [FIWARE Data Space Connector](https://github.com/FIWARE/data-space-connector).
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -33,7 +33,7 @@ FIWARE has developed a Trust Anchor Operator as a Helm chart, that manages issue
 | ------------ | ------- | ---------- | ----------- |
 | trust-anchor | 0.2.0   | `https://fiware.github.io/data-space-connector/` | [GitHub](https://github.com/FIWARE/data-space-connector/tree/main/charts/trust-anchor) |
 
-![arch_trust_anchor](./images/trust_anchor_arch.png)
+![arch_trust_anchor](./images/trust_anchor_arch.svg)
 
 ## FDS Connector
 
@@ -41,7 +41,11 @@ The FIWARE Data Space (FDS) Connector is a Helm chart that allows the deployment
 
 | Module               | Version | Repository | Chart code |
 | -------------------- | ------- | ---------- | ---------- |
-| data-space-connector | 7.17.0  | `https://fiware.github.io/data-space-connector/` | [GitHub](https://github.com/FIWARE/data-space-connector/tree/main/charts/data-space-connector) |
+| data-space-connector | 7.29.0  | `https://fiware.github.io/data-space-connector/` | [GitHub](https://github.com/FIWARE/data-space-connector/tree/main/charts/data-space-connector) |
+
+|  Component | Version | Repository |
+| ---------- | ------- | ---------- |
+| DSS Validation Service | 0.0.14 | `https://fiware.github.io/helm-charts` |
 
 ### Consumer
 
@@ -51,19 +55,38 @@ More [info](https://github.com/FIWARE/data-space-connector/blob/main/doc/deploym
 
 The following diagram shows the main blocks of the architecture of the consumer connector:
 
-![arch_consumer](./images/consumer_arch.png)
+![arch_consumer](./images/consumer_arch.svg)
 
-### Provider/Consumer
+|  Component | Version | Repository |
+| ---------- | ------- | ---------- |
+| Keycloak | 24.0.1 | `https://charts.bitnami.com/bitnami` |
+| Postgresql | 13.1.5 | `oci://registry-1.docker.io/bitnamicharts` |
 
-The provider/consumer connector is an entity that provides and consumes data from the data space. This component is composed of four main blocks:
+### Provider
+
+The provider connector is an entity that provides data from the data space. This component is composed of four main blocks:
 
 1. **Data Services**: In this example we use Scorpio Broker (NGSI-LD Context Broker).
 2. **Authentication**: VCVerifier, CredentialsConfigService, TrustedIssuersList.
 3. **Authorization**: Gateway (APISIX), Open Policy Agent, ODRL-PAP.
 4. **Value Creation**: TMForum API, Contract Management.
+5. **IDSA-Data Space Protocol**: TPP, Rainbow.
 
 More [info](https://github.com/FIWARE/data-space-connector/blob/main/doc/deployment-integration/local-deployment/LOCAL.MD#the-data-provider).
 
-The following diagram shows the main blocks of the architecture of the provider/consumer connector:
+The following diagram shows the main blocks of the architecture of the provider connector:
 
-![arch_provider](./images/provider_arch.png)
+![arch_provider](./images/provider_arch.svg)
+
+|  Component | Version | Repository |
+| ---------- | ------- | ---------- |
+| APISIX | 3.5.1 | `oci://registry-1.docker.io/bitnamicharts` |
+| ODRL-PAP | 0.2.2 | `https://fiware.github.io/helm-charts` |
+| VCverifier | 2.11.3  | `https://fiware.github.io/helm-charts` |
+| Postgresql | 13.1.5 | `oci://registry-1.docker.io/bitnamicharts` |
+| MySQL | 9.4.4 | `https://charts.bitnami.com/bitnami` |
+| Trusted Issuers List | 0.7.0 | `https://fiware.github.io/helm-charts` |
+| Credentials Config Service | 0.1.6 | `https://fiware.github.io/helm-charts` |
+| Contract Management | 1.0.2 | `https://fiware.github.io/helm-charts` |
+| TM Forum API | 0.10.0 | `https://fiware.github.io/helm-charts` |
+| Scorpio Broker | 0.4.7 | `https://fiware.github.io/helm-charts` |

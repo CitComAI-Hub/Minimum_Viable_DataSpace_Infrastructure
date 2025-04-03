@@ -53,7 +53,7 @@ variable "connector" {
   type        = map(string)
   description = "Fiware Data Space Connector"
   default = {
-    version    = "7.17.0"
+    version    = "7.29.0"
     chart_name = "data-space-connector"
     repository = "https://fiware.github.io/data-space-connector/"
   }
@@ -63,13 +63,16 @@ variable "enable_ingress" {
   type        = map(bool)
   description = "Enable ingress for the DS Connector"
   default = {
-    til     = true # True only in test environment
-    did     = true
-    vcv     = true
-    pap     = true
     apisix  = true
-    scorpio = true # True only in test environment
-    tmf_api = true
+    # False by default for the test environment only!
+    ccs     = false
+    til     = false
+    did     = false
+    vcv     = false
+    pap     = false
+    scorpio = false
+    tmf_api = false
+    rainbow = false
   }
 }
 
@@ -93,6 +96,8 @@ variable "enable_services" {
     scorpio            = true
     tmf_api            = true
     cm                 = true
+    tpp                = true
+    rainbow            = true
   }
 }
 
@@ -114,6 +119,10 @@ variable "services_names" {
     scorpio        = "scorpio-broker"
     tmf_api        = "tm-forum-api"
     cm             = "contract-management"
+    rainbow        = "rainbow"
+    tpp_data       = "tpp-rainbow-data"
+    tpp_service    = "tpp-rainbow-service"
+    tpp_catalog    = "tpp-rainbow-catalog"
   }
 }
 
@@ -167,6 +176,16 @@ variable "did" {
     locality     = "Dresden"
     organization = "M&P Operations Inc."
     common_name  = "www.mp-operation.org"
+  }
+}
+
+variable "vcverifier" {
+  type = object({
+    port = number
+  })
+  description = "VCVerifier configuration"
+  default = {
+    port = 3000
   }
 }
 
@@ -268,5 +287,15 @@ variable "apisix" {
   default = {
     # Issue solved: https://github.com/FIWARE/data-space-connector/issues/18
     resource_preset = "small"
+  }
+}
+
+variable "rainbow" {
+  type = object({
+    port = number
+  })
+  description = "Rainbow (Data Space Protocol) configuration"
+  default = {
+    port = 8080
   }
 }
