@@ -1,0 +1,5 @@
+# Configuration to be shared between the issuance components.
+issuance:
+  generatePasswords:
+    enabled: ${services_enabled.generate_passwords}
+    secretName: ${iss_secret}

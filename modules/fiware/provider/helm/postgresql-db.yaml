@@ -1,0 +1,32 @@
+postgresql:
+  enabled: ${services_enabled.postgresql}
+  fullnameOverride: ${postgresql_host_name}
+  # image := default
+  generatePasswords:
+    enabled: ${services_enabled.generate_passwords}
+    secretName: ${postgresql_config.secret}
+  # configure authentication to mysql
+  auth:
+    # name of the secret to take the passowrds from
+    existingSecret: ${postgresql_config.secret}
+    # key of the secrets inside the secret
+    secretKeys:
+      adminPasswordKey: ${postgresql_secrect_key_adminpass}
+      userPasswordKey: ${postgresql_secrect_key_userpass}
+  # configuration for the primary of the db
+  primary:
+    service:
+      type: ClusterIP
+      ports:
+        postgresql: ${postgresql_config.port}
+    persistence:
+      enabled: false
+    # # scripts to be run on intialization
+    # initdb:
+    #   scripts:
+    #     create.sh: |
+    #       psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE ${keycloak_config.postgres_db};"
+    #       psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE ${rainbow_config.postgres_db};"
+  readReplicas:
+    persistence:
+      enabled: false

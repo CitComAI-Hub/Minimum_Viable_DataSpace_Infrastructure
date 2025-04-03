@@ -59,34 +59,34 @@ module "trust_anchor" {
   }
 }
 
-# module "consumer_a" {
-#   source     = "../../modules/fiware_ds_connector/ds_consumer/"
-#   depends_on = [module.trust_anchor, module.provider_a]
+module "consumer_a" {
+  source     = "../../modules/fiware/consumer/"
+  depends_on = [module.trust_anchor] #, module.provider_a]
 
-#   operator_namespace = local.operator_namespace
-#   provider_namespace = local.provider_a_namespace
-#   namespace          = local.consumer_a_namespace
-#   service_domain     = "${local.consumer_a_namespace}.${local.local_domain}"
-#   trusted_issuers_list_names = {
-#     operator = local.operator_services_names.til
-#     provider = local.provider_services_names.til
-#   }
+  operator_namespace = local.operator_namespace
+  provider_namespace = local.provider_a_namespace
+  namespace          = local.consumer_a_namespace
+  service_domain     = "${local.consumer_a_namespace}.${local.local_domain}"
+  trusted_issuers_list_names = {
+    operator = local.operator_services_names.til
+    provider = local.provider_services_names.til
+  }
 
-#   providers = {
-#     kubernetes = kubernetes
-#     helm       = helm
-#   }
+  providers = {
+    kubernetes = kubernetes
+    helm       = helm
+  }
 
-#   # Services Configuration
-#   did = {
-#     port         = 3001,
-#     country      = "BE"
-#     state        = "BRUSSELS"
-#     locality     = "Brussels"
-#     organization = "Fancy Marketplace Co."
-#     common_name  = "www.fancy-marketplace.biz"
-#   }
-# }
+  # Services Configuration
+  did = {
+    port         = 3001,
+    country      = "BE"
+    state        = "BRUSSELS"
+    locality     = "Brussels"
+    organization = "Fancy Marketplace Co."
+    common_name  = "www.fancy-marketplace.biz"
+  }
+}
 
 # module "provider_a" {
 #   source     = "../../modules/fiware_ds_connector/ds_connector/"
