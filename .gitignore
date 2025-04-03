@@ -48,3 +48,6 @@ terraform.rc
 
 # Ignore kind kubeconfig
 **/cluster-config.yaml
+
+# Ignore any folder called user_certs
+**/user_certs
