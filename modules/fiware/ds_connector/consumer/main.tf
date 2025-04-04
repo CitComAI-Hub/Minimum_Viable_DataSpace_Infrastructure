@@ -38,7 +38,7 @@ resource "helm_release" "ds_consumer" {
       registration               = { enabled = var.enable_services.registration },
     }),
     #* Issuance configuration (generate password for keycloak admin)
-    templatefile("${local.helm_yaml_path}/issuance.yaml", {
+    templatefile("${local.helm_yaml_path_provider}/issuance.yaml", {
       services_enabled = var.enable_services,
       iss_secret       = var.secrets_names.issuance,
     }),
