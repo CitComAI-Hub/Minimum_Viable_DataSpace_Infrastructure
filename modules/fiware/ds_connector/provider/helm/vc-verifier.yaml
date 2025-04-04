@@ -28,11 +28,11 @@ vcverifier:
   deployment:
     logging:
       level: DEBUG
+    server:
+      host: http://${vcv_domain} #:8080
     verifier:
       tirAddress: http://${til_host_name} #:8080
       did: $${DID}
-    server:
-      host: http://${vcv_domain} #:8080
     configRepo:
       configEndpoint: http://${ccs_host_name}:${ccs_config.port}
     alternativeConfig: /alternative-conf/server.yaml
@@ -66,18 +66,3 @@ vcverifier:
             mountPath: /original-conf
           - name: alternative-conf
             mountPath: /alternative-conf
-
-      - name: register-at-tir
-        image: ubuntu
-        command:
-          - /bin/bash
-        args:
-          - -ec
-          - |
-            #!/bin/bash
-            source /did-material/did.env
-            apt-get -y update; apt-get -y install curl
-            curl -X 'POST' 'http://${til_operator_domain}:8080/issuer' -H 'Content-Type: application/json' -d "{\"did\": \"$${DID}\", \"credentials\": []}"
-        volumeMounts:
-          - name: did-material
-            mountPath: /did-material
