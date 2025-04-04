@@ -1,4 +1,4 @@
-# Raw Fiware Data Source Example
+# Raw Fiware Data Space
 
 In this example, a Trust Anchor and a Data Space Consumer (Keycloak) are deployed on a Kubernetes (Kind) cluster. Both components (Trust Anchor and Keycloak) are deployed without any default configuration, which means:
 
