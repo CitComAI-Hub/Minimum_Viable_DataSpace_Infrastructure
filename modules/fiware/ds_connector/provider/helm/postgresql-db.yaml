@@ -25,8 +25,17 @@ postgresql:
     # initdb:
     #   scripts:
     #     create.sh: |
-    #       psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE ${keycloak_config.postgres_db};"
-    #       psql postgresql://${postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:${postgresql_config.port} -c "CREATE DATABASE ${rainbow_config.postgres_db};"
+    #       #> provider database
+    #       psql postgresql://$/{postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:$/{postgresql_config.port} -c "CREATE DATABASE $/{postgresql_config.db_name};"
+    #       psql postgresql://$/{postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:$/{postgresql_config.port} -c "CREATE DATABASE rainbow;"
+    #       #> consumer database
+    #       psql postgresql://$/{postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:$/{postgresql_config.port} -c "CREATE DATABASE $/{keycloak_config.postgres_db};"
+    #       psql postgresql://$/{postgresql_config.user_name}:$${POSTGRES_PASSWORD}@localhost:$/{postgresql_config.port} -c "CREATE DATABASE $/{rainbow_config.postgres_db};"
   readReplicas:
     persistence:
       enabled: false
+    #> provider
+    # service:
+    #   type: ClusterIP
+    #   ports:
+    #     postgresql: ${postgresql_config.port}

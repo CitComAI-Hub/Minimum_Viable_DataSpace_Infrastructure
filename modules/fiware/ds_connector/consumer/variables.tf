@@ -13,12 +13,6 @@ variable "operator_namespace" {
   default     = "ds-operator"
 }
 
-variable "provider_namespace" {
-  type        = string
-  description = "Namespace for the DS provider deployment"
-  default     = "ds-provider"
-}
-
 variable "namespace" {
   type        = string
   description = "Namespace for the DS operator deployment"
@@ -73,13 +67,28 @@ variable "enable_services" {
   type        = map(bool)
   description = "Enable services for the DS Connector"
   default = {
-    keycloak           = true
-    registration       = true
-    dsconfig           = false
-    generate_passwords = true
+    registration       = false # only for the test environment
     did                = true
     postgresql         = true
+    keycloak           = true
     rainbow            = true
+    generate_passwords = true # used by issuance service
+    # > Provider only (not editable)
+    dsconfig = false
+    mysql    = false
+    ccs      = false
+    til      = false
+    vcv      = false
+    pap      = false
+    opa      = false
+    apisix   = false
+    postgis  = false
+    scorpio  = false
+    tmf_api  = false
+    cm       = false
+    tpp      = false
+    dss      = false
+    elsi     = false
   }
 }
 
@@ -95,28 +104,18 @@ variable "services_names" {
   }
 }
 
+variable "secrets_names" {
+  type        = map(string)
+  description = "Secrets names for the DS Connector"
+  default = {
+    issuance = "issuance-secret"
+  }
+
+}
+
 ################################################################################
 # Services Configuration                                                       #
 ################################################################################
-variable "trusted_issuers_list_names" {
-  type        = map(string)
-  description = "Trusted Issuers List service name in the Operator and Provider namespaces"
-  default = {
-    operator = "trusted-issuers-list"
-    provider = "trusted-issuers-list"
-  }
-}
-
-variable "keycloak" {
-  type        = map(string)
-  description = "Keycloak service configuration"
-  default = {
-    user_key = "keycloak-admin"
-    pass_key = "keycloak-admin"
-    postgres_db = "keycloak"
-  }
-}
-
 variable "did" {
   type = object({
     port         = number
@@ -139,26 +138,45 @@ variable "did" {
 
 variable "postgresql" {
   type = object({
-    port             = number
-    user_name        = string
-    secret           = string
+    port      = number
+    user_name = string
+    secret    = string
   })
   description = "PostgreSQL configuration"
   default = {
-    port             = 5432
-    user_name        = "postgres"
-    secret           = "postgresql-database-secret"
+    port      = 5432
+    user_name = "postgres"
+    secret    = "postgresql-database-secret"
+  }
+}
+
+variable "postgresql_secrets_noedit" {
+  type        = map(string)
+  description = "PostgreSQL configuration (not editable)"
+  default = {
+    key_adminpass = "postgres-admin-password"
+    key_userpass  = "postgres-user-password"
+  }
+}
+
+variable "keycloak" {
+  type        = map(string)
+  description = "Keycloak service configuration"
+  default = {
+    user_key    = "keycloak-admin"
+    pass_key    = "keycloak-admin"
+    postgres_db = "keycloak"
   }
 }
 
 variable "rainbow" {
   type = object({
-    port = number
+    port        = number
     postgres_db = string
   })
   description = "Rainbow (Data Space Protocol) configuration"
   default = {
-    port = 8080
+    port        = 8080
     postgres_db = "rainbow"
   }
 }
