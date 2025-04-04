@@ -18,6 +18,7 @@
 | Example | Link | Description | 
 | ------- | ---- | ----------- |
 | Minimal DS Local | [kind_minimal_ds_local](kind_minimal_ds_local/) | Minimal Data Space (FIWARE) deployment in a local Kind cluster. |
+| Raw Consumer | [raw_fiware_consumer](raw_fiware_consumer/) | Raw Fiware consumer deployment (also with Trust Anchor). |
 | Kind Cluster | [kind_cluster](kind_cluster/) | Kind cluster deployment. |
 | K3s Cluster | [k3s_cluster](k3s_cluster/) | K3s cluster deployment. |
 
