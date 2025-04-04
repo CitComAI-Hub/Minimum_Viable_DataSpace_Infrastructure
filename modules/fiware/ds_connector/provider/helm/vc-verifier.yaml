@@ -1,0 +1,83 @@
+# Configuration for the vcverifier to be deployed as part of the connector,
+# see https://github.com/FIWARE/helm-charts/tree/main/charts/vcverifier for all options.
+#! INGRESS: only open for clean up in the tests.
+vcverifier:
+  enabled: ${services_enabled.vcv}
+  fullnameOverride: ${vcv_host_name}
+  service:
+    type: ClusterIP
+    annotations: {}
+    port: ${vcv_config.port}
+  # m2m > default
+  ingress:
+    enabled: ${ingress_enabled.vcv}
+    annotations:
+      kubernetes.io/ingress.class: ${ingress_class}
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: ${vcv_domain}
+        paths:
+          - /
+    # tls:
+    #   - secretName: ${vcv_secret_tls}
+    #     hosts:
+    #       - ${vcv_domain}
+  deployment:
+    logging:
+      level: DEBUG
+    verifier:
+      tirAddress: http://${til_host_name} #:8080
+      did: $${DID}
+    server:
+      host: http://${vcv_domain} #:8080
+    configRepo:
+      configEndpoint: http://${ccs_host_name}:${ccs_config.port}
+    alternativeConfig: /alternative-conf/server.yaml
+    additionalVolumes:
+      - name: did-material
+        emptyDir: {}
+      - name: alternative-conf
+        emptyDir: {}
+    additionalVolumeMounts:
+      - name: alternative-conf
+        mountPath: /alternative-conf
+    initContainers:
+      - name: get-did
+        image: ubuntu
+        command:
+          - /bin/bash
+        args:
+          - -ec
+          - |
+            #!/bin/bash
+            apt-get -y update; apt-get -y install wget; apt-get -y install gettext-base
+            cd /did-material
+            wget http://${did_host_name}:${did_config.port}/did-material/did.env
+            export $(cat /did-material/did.env)
+            cp /original-conf/server.yaml /alternative-conf/server.yaml
+            envsubst < /alternative-conf/server.yaml
+        volumeMounts:
+          - name: did-material
+            mountPath: /did-material
+          - name: config-volume
+            mountPath: /original-conf
+          - name: alternative-conf
+            mountPath: /alternative-conf
+
+      - name: register-at-tir
+        image: ubuntu
+        command:
+          - /bin/bash
+        args:
+          - -ec
+          - |
+            #!/bin/bash
+            source /did-material/did.env
+            apt-get -y update; apt-get -y install curl
+            curl -X 'POST' 'http://${til_operator_domain}:8080/issuer' -H 'Content-Type: application/json' -d "{\"did\": \"$${DID}\", \"credentials\": []}"
+        volumeMounts:
+          - name: did-material
+            mountPath: /did-material
