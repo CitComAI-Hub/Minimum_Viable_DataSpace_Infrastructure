@@ -60,6 +60,15 @@ variable "enable_ingress" {
   }
 }
 
+variable "enable_ingress_tls" {
+  type        = map(bool)
+  description = "Enable ingress TLS for the DS operator (trust anchor)"
+  default = {
+    til = false
+    tir = false
+  }
+}
+
 variable "enable_services" {
   type        = map(bool)
   description = "Enable services for the DS Trust Anchor"
@@ -84,11 +93,21 @@ variable "services_names" {
 ################################################################################
 # Services Configuration                                                       #
 ################################################################################
+variable "trusted_issuers_list" {
+  type = object({
+    port = number
+  })
+  description = "Trusted Issuers List configuration"
+  default = {
+    port = 8080
+  }
+}
+
 variable "mysql" {
   type        = map(string)
   description = "MySQL configuration"
   default = {
-    db_name_tir   = "tirdb"
+    db_name_til   = "tirdb"
     username_root = "root"
     secret        = "mysql-database-secret"
     secret_key    = "mysql-root-password"

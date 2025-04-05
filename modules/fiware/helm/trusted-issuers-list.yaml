@@ -1,8 +1,14 @@
-# https://github.com/FIWARE-Ops/data-space-connector/blob/data-space-connector-3.0.1/charts/trust-anchor/values.yaml
-
+# Configuration for the trusted-issuers-list to be deployed as part of the
+# connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/trusted-issuers-list
+# for all options.
+#! INGRESS: only open for clean up in the tests (in provider).
 trusted-issuers-list:
   enabled: ${services_enabled.til}
   fullnameOverride: ${til_host_name}
+  service:
+    type: ClusterIP
+    port: ${til_config.port}
+
   ingress:
     til:
       enabled: ${ingress_enabled.til}
@@ -15,12 +21,16 @@ trusted-issuers-list:
       hosts:
         - host: ${til_domain}
           paths:
-            - path: /
-              pathType: Prefix
-      # tls:
-      #   - secretName: ${til_secret_tls}
-      #     hosts:
-      #       - ${til_domain}
+            - /
+      %{ if tls_enabled.til }
+      tls:
+        - secretName: ${til_secret_tls}
+          hosts:
+            - ${til_domain}
+      %{ endif }
+    
+    # Only for Trust Anchor
+    %{ if ingress_enabled.tir }
     tir:
       enabled: ${ingress_enabled.tir}
       annotations:
@@ -33,16 +43,20 @@ trusted-issuers-list:
         - host: ${tir_domain}
           paths:
             - /
-      # tls:
-      #   - secretName: ${tir_secret_tls}
-      #     hosts:
-      #       - ${tir_domain}
+      %{ if tls_enabled.tir }
+      tls:
+        - secretName: ${tir_secret_tls}
+          hosts:
+            - ${tir_domain}
+      %{ endif }
+    %{ endif }
+
   database:
     persistence: true
     host: ${mysql_host_name}
     username: ${mysql_config.username_root}
-    name: ${mysql_config.db_name_tir}
+    name: ${mysql_config.db_name_til}
     existingSecret:
-      enabled: true
+      enabled: ${services_enabled.generate_passwords}
       name: ${mysql_config.secret}
       key: ${mysql_config.secret_key}

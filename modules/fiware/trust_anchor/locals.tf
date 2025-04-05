@@ -23,7 +23,8 @@ locals {
   #! Do not edit below this line                                               #
   #!############################################################################
 
-  helm_yaml_path = "${path.module}/helm"
+  helm_yaml_path  = "${path.module}/helm"
+  helm_fiware_pth = "${path.module}/../helm"
 
   # services endpoints
   dns_dir = { for prop in local.cert_properties : prop.id => prop.dns_name if contains(values(local.dns_domains), prop.id) }
