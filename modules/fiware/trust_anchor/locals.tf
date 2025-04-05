@@ -23,7 +23,6 @@ locals {
   #! Do not edit below this line                                               #
   #!############################################################################
 
-  helm_yaml_path  = "${path.module}/helm"
   helm_fiware_pth = "${path.module}/../helm"
 
   # services endpoints

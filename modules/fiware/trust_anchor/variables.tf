@@ -104,12 +104,19 @@ variable "trusted_issuers_list" {
 }
 
 variable "mysql" {
-  type        = map(string)
+  type = object({
+    port          = number
+    secret        = string
+    db_name_til   = string
+    username_root = string
+    secret_key    = string
+  })
   description = "MySQL configuration"
   default = {
-    db_name_til   = "tirdb"
-    username_root = "root"
+    port          = 3306
     secret        = "mysql-database-secret"
+    db_name_til   = "tildb"
+    username_root = "root"
     secret_key    = "mysql-root-password"
   }
 }
