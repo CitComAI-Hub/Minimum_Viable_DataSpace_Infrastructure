@@ -8,12 +8,15 @@ resource "helm_release" "trust_anchor" {
   wait             = true
 
   values = [
-    #* Authentication (MySQL secret creation)
+    ############################################################################
+    # MySQL                                                                    #
+    ############################################################################
+    #* Secrets creation
     templatefile("${local.helm_fiware_pth}/authentication.yaml", {
       services_enabled = var.enable_services,
       mysql_config     = var.mysql,
     }),
-    #* MySQL configuration
+    #* Configuration
     templatefile("${local.helm_fiware_pth}/mysql-db.yaml", {
       services_enabled = var.enable_services,
       mysql_host_name  = var.services_names.mysql,
@@ -22,7 +25,10 @@ resource "helm_release" "trust_anchor" {
       CREATE DATABASE ${var.mysql.db_name_til};
       EOT
     }),
-    #* Trusted Issuers List
+
+    ############################################################################
+    # Trusted Issuers List                                                     #
+    ############################################################################
     templatefile("${local.helm_fiware_pth}/trusted-issuers-list.yaml", {
       services_enabled = var.enable_services,
       # Ingress configuration

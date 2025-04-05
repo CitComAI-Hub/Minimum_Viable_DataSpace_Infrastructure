@@ -37,13 +37,19 @@ resource "helm_release" "ds_consumer" {
       elsi                       = { enabled = var.enable_services.elsi },
       registration               = { enabled = var.enable_services.registration },
     }),
-    #* Issuance configuration (generate password for keycloak admin)
-    templatefile("${local.helm_yaml_path_provider}/issuance.yaml", {
+
+    ############################################################################
+    # Issuance configuration (generate password for keycloak admin)            #
+    ############################################################################
+    templatefile("${local.helm_fiware_pth}/issuance.yaml", {
       services_enabled = var.enable_services,
       iss_secret       = var.secrets_names.issuance,
     }),
-    #* DID Helper configuration
-    templatefile("${local.helm_yaml_path_provider}/did-helper.yaml", {
+
+    ############################################################################
+    # DID Helper configuration                                                 #
+    ############################################################################
+    templatefile("${local.helm_fiware_pth}/did-helper.yaml", {
       services_enabled = var.enable_services,
       ingress_enabled  = var.enable_ingress,
       ingress_class    = var.ingress_class,
@@ -55,7 +61,10 @@ resource "helm_release" "ds_consumer" {
       did_domain     = local.dns_dir[local.dns_domains.did],
       did_secret_tls = local.secrets_tls[local.dns_domains.did],
     }),
-    #* PostgreSQL configuration
+
+    ############################################################################
+    # PostgreSQL configuration                                                 #
+    ############################################################################
     templatefile("${local.helm_yaml_path_provider}/postgresql-db.yaml", {
       services_enabled = var.enable_services,
       # > PostgreSQL configuration

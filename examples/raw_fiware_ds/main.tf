@@ -17,6 +17,7 @@ locals {
     # Below services are not exposed (ingress) by default (only for testing purposes)
     ccs     = true
     til     = true
+    tir     = false
     did     = true
     vcv     = true
     pap     = true
