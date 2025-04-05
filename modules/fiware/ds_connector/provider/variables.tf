@@ -37,14 +37,6 @@ variable "ingress_class" {
   default     = "traefik"
 }
 
-variable "enable_ingress_tls" {
-  type        = map(bool)
-  description = "Enable ingress TLS for the DS Connector (provider)"
-  default = {
-    ccs = false
-  }
-}
-
 ################################################################################
 # Certs Configuration Module                                                   #
 ################################################################################
@@ -75,12 +67,23 @@ variable "enable_ingress" {
     # False by default for the test environment only!
     ccs     = false
     til     = false
+    tir     = false
     did     = false
     vcv     = false
     pap     = false
     scorpio = false
     tmf_api = false
     rainbow = false
+  }
+}
+
+variable "enable_ingress_tls" {
+  type        = map(bool)
+  description = "Enable ingress TLS for the DS Connector (provider)"
+  default = {
+    ccs = false
+    til = false
+    tir = false
   }
 }
 
