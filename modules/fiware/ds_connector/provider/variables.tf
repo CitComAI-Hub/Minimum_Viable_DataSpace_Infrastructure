@@ -33,8 +33,16 @@ variable "timeout" {
 
 variable "ingress_class" {
   type        = string
-  description = "Ingress class for the DS operator deployment (nginx or traefik)"
+  description = "Ingress class for the DS connector deployment (nginx or traefik)"
   default     = "traefik"
+}
+
+variable "enable_ingress_tls" {
+  type        = map(bool)
+  description = "Enable ingress TLS for the DS Connector (provider)"
+  default = {
+    ccs = false
+  }
 }
 
 ################################################################################
