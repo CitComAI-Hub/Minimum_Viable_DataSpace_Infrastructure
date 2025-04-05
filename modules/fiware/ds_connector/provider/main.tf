@@ -55,28 +55,29 @@ resource "helm_release" "ds_connector" {
       services_enabled = var.enable_services,
       ds_config        = var.dataspace_config,
     }),
-    #* Authentication
-    templatefile("${local.helm_yaml_path}/authentication.yaml", {
+
+    ############################################################################
+    # MySQL                                                                    #
+    ############################################################################
+    #* Secrets creation
+    templatefile("${local.helm_fiware_pth}/authentication.yaml", {
       services_enabled = var.enable_services,
       mysql_config     = var.mysql,
     }),
-    #* MySQL configuration
-    templatefile("${local.helm_yaml_path}/mysql-db.yaml", {
+    #* Configuration
+    templatefile("${local.helm_fiware_pth}/mysql-db.yaml", {
       services_enabled = var.enable_services,
       mysql_host_name  = var.services_names.mysql,
       mysql_config     = var.mysql,
+      initdb_scripts   = <<EOT
+      CREATE DATABASE ${var.mysql.db_name_til};
+      CREATE DATABASE ${var.mysql.db_name_ccs};
+      EOT
     }),
-    yamlencode({ # - specific databases for provider
-      mysql = {
-        initdbScripts = {
-          "create.sql" = <<-EOF
-          CREATE DATABASE ${var.mysql.db_name_til};
-          CREATE DATABASE ${var.mysql.db_name_ccs};
-          EOF
-        }
-      }
-    }),
-    #* Credentials Configuration Service
+
+    ############################################################################
+    # Credentials Configuration Service                                       #
+    ############################################################################
     templatefile("${local.helm_yaml_path}/credentials-config.yaml", {
       services_enabled = var.enable_services,
       ingress_enabled  = var.enable_ingress,
