@@ -80,9 +80,10 @@ resource "helm_release" "ds_consumer" {
     }),
     #* Keycloak configuration
     templatefile("${local.helm_yaml_path}/keycloak.yaml", {
-      services_enabled = var.enable_services,
-      ingress_class    = var.ingress_class,
-      ingress_enabled  = var.enable_ingress,
+      services_enabled    = var.enable_services,
+      ingress_enabled     = var.enable_ingress,
+      ingress_tls_enabled = var.enable_ingress_tls,
+      ingress_class       = var.ingress_class,
       # > Issuance secret
       iss_secret = var.secrets_names.issuance,
       # > DID service

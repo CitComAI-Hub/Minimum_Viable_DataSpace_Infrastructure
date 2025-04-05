@@ -6,17 +6,18 @@ keycloak:
       http: 8080
   ingress:
     enabled: ${ingress_enabled.keycloak}
+    ingressClassName: ${ingress_class}
+    hostname: ${keycloak_domain}
     annotations:
-      kubernetes.io/ingress.class: ${ingress_class}
       # forcing everything to use ssl
       ingress.kubernetes.io/ssl-redirect: "true"
       # example annotations, allowing cert-manager to automatically create tls-certs
       kubernetes.io/tls-acme: "true"
-    hostname: ${keycloak_domain}
-    # tls:
-    #   - secretName: ${keycloak_secret_tls}
-    #     hosts:
-    #       - ${keycloak_domain}
+    tls: ${ingress_tls_enabled.keycloak}
+    extraTls:
+      - hosts:
+          - ${keycloak_domain}
+        secretName: ${keycloak_secret_tls}
 
   # authentication config for keycloak
   auth:

@@ -63,6 +63,14 @@ variable "enable_ingress" {
   }
 }
 
+variable "enable_ingress_tls" {
+  type        = map(bool)
+  description = "Enable ingress TLS for the DS Connector (consumer)"
+  default = {
+    keycloak = false
+  }
+}
+
 variable "enable_services" {
   type        = map(bool)
   description = "Enable services for the DS Connector"
