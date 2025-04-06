@@ -63,31 +63,24 @@ resource "helm_release" "ds_consumer" {
     }),
 
     ############################################################################
-    # PostgreSQL configuration                                                 #
+    # PostgreSQL                                                               #
     ############################################################################
-    templatefile("${local.helm_yaml_path_provider}/postgresql-db.yaml", {
+    templatefile("${local.helm_fiware_pth}/postgresql-db.yaml", {
       services_enabled = var.enable_services,
       # > PostgreSQL configuration
       postgresql_host_name             = var.services_names.postgresql,
       postgresql_config                = var.postgresql,
       postgresql_secrect_key_adminpass = "postgres-admin-password", # not editable
       postgresql_secrect_key_userpass  = "postgres-user-password",  # not editable
+      initdb_scripts                   = <<EOT
+      psql postgresql://${var.postgresql.user_name}:$${POSTGRES_PASSWORD}@localhost:${var.postgresql.port} -c "CREATE DATABASE ${var.keycloak.postgres_db};"
+                psql postgresql://${var.postgresql.user_name}:$${POSTGRES_PASSWORD}@localhost:${var.postgresql.port} -c "CREATE DATABASE ${var.rainbow.postgres_db};"
+      EOT
     }),
-    yamlencode({ # - specific databases for consumer
-      postgresql = {
-        primary = {
-          initdb = {
-            scripts = {
-              "create.sh" = <<-EOF
-              psql postgresql://${var.postgresql.user_name}:$${POSTGRES_PASSWORD}@localhost:${var.postgresql.port} -c "CREATE DATABASE ${var.keycloak.postgres_db};"
-              psql postgresql://${var.postgresql.user_name}:$${POSTGRES_PASSWORD}@localhost:${var.postgresql.port} -c "CREATE DATABASE ${var.rainbow.postgres_db};"
-              EOF
-            }
-          }
-        }
-      }
-    }),
-    #* Keycloak configuration
+
+    ############################################################################
+    # Keycloak configuration                                                   #
+    ############################################################################
     templatefile("${local.helm_yaml_path}/keycloak.yaml", {
       services_enabled    = var.enable_services,
       ingress_enabled     = var.enable_ingress,
@@ -107,6 +100,7 @@ resource "helm_release" "ds_consumer" {
       keycloak_domain     = local.dns_dir[local.dns_domains.keycloak],
       keycloak_secret_tls = local.secrets_tls[local.dns_domains.keycloak],
     }),
+
     #* Rainbow configuration
     templatefile("${local.helm_yaml_path_provider}/rainbow.yaml", {
       services_enabled = var.enable_services,
