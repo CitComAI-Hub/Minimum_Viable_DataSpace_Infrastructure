@@ -1,9 +1,11 @@
-# Raw Fiware Data Space
+# Raw Fiware Data Space Consumer
 
 In this example, a Trust Anchor and a Data Space Consumer (Keycloak) are deployed on a Kubernetes (Kind) cluster. Both components (Trust Anchor and Keycloak) are deployed without any default configuration, which means:
 
 - **Trust Anchor:** has no DID registered.
 - **Keycloak:** has no client configured.
+
+![arch](./images/example_arch.svg)
 
 ## Trust Anchor
 
