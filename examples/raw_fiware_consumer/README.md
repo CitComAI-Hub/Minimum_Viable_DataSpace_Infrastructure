@@ -1,13 +1,41 @@
 # Raw Fiware Data Space Consumer
 
-In this example, a Trust Anchor and a Data Space Consumer (Keycloak) are deployed on a Kubernetes (Kind) cluster. Both components (Trust Anchor and Keycloak) are deployed without any default configuration, which means:
+This is a minimal example, without any predefined configurations for a data space that only includes a **Trust Anchor** and a Fiware connector with the **consumer** role.
 
-- **Trust Anchor:** has no DID registered.
-- **Keycloak:** has no client configured.
+**Table of Contents:**
+
+- [How run the example?](#how-run-the-example-back-to-top)
+- [Data Space Operator](#data-space-operator-trust-anchor-back-to-top)
+- [Fiware Connector Consumer (Keycloak)](#fiware-connector-consumer-keycloak-back-to-top)
+
 
 ![arch](./images/example_arch.svg)
 
-## Trust Anchor
+Having no predefined configurations means that there is no DID registered at the Trust Anchor and the Fiware consumer does not have any client set up.
+
+- **Fiware Trust Anchor:** Data space operator, without any DID registered.
+- **Fiware Consumer:** Data space consumer, without any client set up.
+
+
+## How run the example? ([_back to top_](#raw-fiware-data-space-consumer))
+
+The main processes to run the example are predefined in the Makefile. To run the example, you should execute the following command:
+
+| Command | Description |
+| ------- | ----------- |
+| `make init_cluster` | Kind cluster and Fiware components deployment. |
+| `make init_apply` | ONLY Fiware components deployment (kubernetes cluster no changed). |
+| | |
+| `make destroy` | Remove ONLY Fiware components. |
+| `make destroy_cluster` | Remove Fiware components and the kind cluster. |
+
+> [!WARNING]
+>
+> The deployment time is around **14 minutes** (depending on the resources of your machine, this time can vary).
+
+## Data Space Operator (Trust Anchor) ([_back to top_](#raw-fiware-data-space-consumer))
+
+Data Space Operator is the entity that manages the Data Space. It is responsible for maintaining a registry of the participants' issuer DIDs. In this case, the Data Space Operator is the **Trust Anchor**.
 
 List did registries:
 
@@ -20,7 +48,7 @@ List did registries:
 }
 ```
 
-## Consumer (Keycloak)
+## Fiware Connector Consumer (Keycloak) ([_back to top_](#raw-fiware-data-space-consumer))
 
 Get issuer did:
 
