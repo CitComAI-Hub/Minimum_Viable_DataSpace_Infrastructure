@@ -36,11 +36,11 @@ make init_apply
 
 Components deployed by the consumer:
 
-- DID-Helper: Generates a did:key.
-- Issuance: Generates keys for Keycloak.
-- Postgresql: Database for Keycloak.
-- Keycloak: Only the did from the did-helper is imported; no realm is created.
-- Rainbow: Data Space Protocol.
+- **DID-Helper**: Generates a did:key.
+- **Issuance**: Generates keys for Keycloak.
+- **Postgresql**: Database for Keycloak.
+- **Keycloak**: Identity and Access Management (IAM) open-source tool. Only the did from the did-helper is imported; no realm is created.
+- **Rainbow**: Data Space Protocol.
 
 #### Keycloak
 
@@ -76,6 +76,8 @@ Returns a password in this format (the password excludes the `%`):
 vSnzIa3jAc9hFS3RMNlNYtkbjFvyYb%
 ```
 
+![Keycloak Login](./images/keycloak_config/1_login.png)
+
 > [!NOTE]
 >
 > The `keycloak-admin` user is the only user who can access the Keycloak administration console. If you want to create a new user, you must create a new realm and a new client.
@@ -89,3 +91,61 @@ The Keycloak administration console is available at: http://keycloak.consumer-ra
 > ```bash
 > sudo echo "172.18.255.200 keycloak.consumer-raw.local" >> /etc/hosts
 > ```
+
+##### New Realm
+
+To create a new realm, you can use the Keycloak administration console. The `keycloak-admin` user has the necessary permissions to create a new realm.
+
+A realm is a isolated logical grouping of users, roles, and clients. 
+
+Within a realm:
+
+- Users and their credentials are managed.
+- Clients are configured, which are applications that use Keycloak for authentication.
+- Roles, groups, access policies, etc. are defined.
+- Authentication and login flows can be customized (screens, MFA, etc.).
+- Each realm is completely independent from others.
+
+You can create a new realm by clicking on the "Add Realm" button in the Keycloak administration console.
+
+![new_realm](./images/keycloak_config/2_realm_creation.png)
+
+Enter a name for the realm and click on "Create". The new realm will be created, and you can start configuring it. First, select the new realm from the dropdown menu in the top left corner of the Keycloak administration console.
+
+![selecting_realm](./images/keycloak_config/3_realm_selection.png)
+
+###### Realm Settings - General
+
+Configure the general settings for the realm:
+
+| Realm Name | Display Name | HTML Display Name | Frontend URL | Require SSL | 
+| --- | --- | --- | --- | --- |
+| citcom-ai | Keycloak | `<div class="kc-logo-text"><span>Keycloak</span></div>`| http://keycloak.consumer-raw.local | None |
+
+![realm_config](./images/keycloak_config/4_realm_setting.png)
+
+###### Realm Settings - Keys
+
+![realm_keys](./images/keycloak_config/5_realm_keys.png)
+
+Keystore (/did-material/cert.pfx) password can be retrieved using:
+
+```bash
+kubectl get secret -n consumer-raw -o json issuance-secret | jq '.data."store-pass"' -r | base64 --decode
+```
+
+##### New Client
+
+For each provider that you want to connect to the Data Space, you need to create a new client in Keycloak. A client represents an application that uses Keycloak for authentication.
+
+To create a new client, go to the "Clients" section in the Keycloak administration console and click on the "Create" button.
+
+![create_client](./images/keycloak_config/6_client_provider.png)
+
+The DID of the client is the DID of the provider that you want to connect to the Data Space. Also you need to set the roles for the client. The roles are used to authorize the client to access the Data Space.
+
+##### New Users
+
+To create a new user, go to the "Users" section in the Keycloak administration console and click on the "Add User" button.
+
+The users are the members of your organization that will access the Data Space.
