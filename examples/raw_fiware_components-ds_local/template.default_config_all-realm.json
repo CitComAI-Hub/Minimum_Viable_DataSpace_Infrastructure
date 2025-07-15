@@ -6,7 +6,7 @@
     "enabled": true,
     "attributes": {
         "frontendUrl": "http://keycloak.consumer-raw.local",
-        "issuerDid": "did:key:did:key:zDnaeSwnupmLVfbuU6vwpiUBSwgjDuVon1f7u6i31f6v7VTfE"
+        "issuerDid": "{{ISSUER-DID}}"
     },
     "sslRequired": "none",
     "clients": [
@@ -215,16 +215,16 @@
                         "/did-material/cert.pfx"
                     ],
                     "keystorePassword": [
-                        "Ja03sqi3yl7iT2mZOd3mQG9gVktpbk"
+                        "{{STORE-PASS}}"
                     ],
                     "keyAlias": [
                         "didPrivateKey"
                     ],
                     "keyPassword": [
-                        "Ja03sqi3yl7iT2mZOd3mQG9gVktpbk"
+                        "{{STORE-PASS}}"
                     ],
                     "kid": [
-                        "did:key:zDnaeSwnupmLVfbuU6vwpiUBSwgjDuVon1f7u6i31f6v7VTfE"
+                        "{{ISSUER-DID}}"
                     ],
                     "active": [
                         "true"
@@ -249,13 +249,13 @@
                 "subComponents": {},
                 "config": {
                     "keyId": [
-                        "did:key:zDnaeSwnupmLVfbuU6vwpiUBSwgjDuVon1f7u6i31f6v7VTfE"
+                        "{{ISSUER-DID}}"
                     ],
                     "algorithmType": [
                         "ES256"
                     ],
                     "issuerDid": [
-                        "did:key:zDnaeSwnupmLVfbuU6vwpiUBSwgjDuVon1f7u6i31f6v7VTfE"
+                        "{{ISSUER-DID}}"
                     ],
                     "tokenType": [
                         "JWT"
