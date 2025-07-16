@@ -1,5 +1,7 @@
 #vscode local config
 .vscode
+#jetbrains local config
+.idea
 
 # Local .terraform directories
 **/.terraform/*
@@ -48,3 +50,7 @@ terraform.rc
 
 # Ignore kind kubeconfig
 **/cluster-config.yaml
+
+# keycloak import realm file
+examples/raw_fiware_components-ds_local/default_config_all-realm.json
+examples/raw_fiware_components-ds_local/client_import.json
