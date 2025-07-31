@@ -1,6 +1,7 @@
 keycloak:
   enabled: ${services_enabled.keycloak}
   fullnameOverride: ${keycloak_host_name}
+  resourcesPreset: "medium"
   service:
     ports:
       http: 8080
