@@ -148,6 +148,15 @@ To check the deployment status, it is important to know that there are two phase
   traefik-ingress      traefik-deployment-7489799fff-d4ffk                         1/1     Running     0              132m
   ```
 
+  You can check the services and the routes created by the Ingress Controller:
+
+  ```bash
+  kubectl get services -n traefik-ingress --kubeconfig ./cluster-config.yaml
+  NAME                        TYPE           CLUSTER-IP    EXTERNAL-IP      PORT(S)          AGE
+  traefik-dashboard-service   LoadBalancer   10.96.97.1    172.18.255.201   8080:30137/TCP   10m
+  traefik-web-service         LoadBalancer   10.96.72.80   172.18.255.200   80:31910/TCP     10m
+  ```
+
 ### 1.3. Access to the services ([_back to top_](#minimal-data-space-local---kind-cluster))
 
 With the environment deployed, you can access the services using the following domain names:
@@ -157,23 +166,23 @@ With the environment deployed, you can access the services using the following d
 > **Temporary Solution** Also to access to the different services, you need to add all domain names to your `/etc/hosts` file.
 >
 > ```bash
-> 172.19.255.200     did-helper.consumer-a.local
-> 172.19.255.200     keycloak.consumer-a.local
-> 172.19.255.200     til.ds-operator.local
-> 172.19.255.200     tir.ds-operator.local
-> 172.19.255.200     apisix-proxy.provider-a.local
-> 172.19.255.200     apisix-api.provider-a.local
-> 172.19.255.200     did-helper.provider-a.local
-> 172.19.255.200     pap-odrl.provider-a.local
-> 172.19.255.200     scorpio-broker.provider-a.local
-> 172.19.255.200     tm-forum-api.provider-a.local
-> 172.19.255.200     til.provider-a.local
-> 172.19.255.200     vc-verifier.provider-a.local
+> 172.18.255.200     did-helper.consumer-a.local
+> 172.18.255.200     keycloak.consumer-a.local
+> 172.18.255.200     til.ds-operator.local
+> 172.18.255.200     tir.ds-operator.local
+> 172.18.255.200     apisix-proxy.provider-a.local
+> 172.18.255.200     apisix-api.provider-a.local
+> 172.18.255.200     did-helper.provider-a.local
+> 172.18.255.200     pap-odrl.provider-a.local
+> 172.18.255.200     scorpio-broker.provider-a.local
+> 172.18.255.200     tm-forum-api.provider-a.local
+> 172.18.255.200     til.provider-a.local
+> 172.18.255.200     vc-verifier.provider-a.local
 > ```
 
 | Service |              Domain Name                |    Description    | Data Space Role |
 |---------|-----------------------------------------|-------------------|-----------------|
-| Traefik | `http://172.19.255.201:8080/dashboard#` | Ingress dashboard | - |
+| Traefik | `http://172.18.255.201:8080/dashboard#` | Ingress dashboard | - |
 | Trusted Issuer List | `http://til.ds-operator.local` | Register new issuer | Trust-Anchor |
 | Trusted Issuer List | `http://tir.ds-operator.local` | List issuers | Trust-Anchor |
 | Keycloak | `http://keycloak.consumer-a.local`     | Admin console | Consumer |
@@ -182,18 +191,9 @@ With the environment deployed, you can access the services using the following d
 
 #### Ingress Dashboard (Traefik) ([_back to top_](#minimal-data-space-local---kind-cluster))
 
-To access the Traefik dashboard, you need to use the following URL: `http://172.19.255.201:8080/dashboard#`
+To access the Traefik dashboard, you need to use the following URL: `http://172.18.255.201:8080/dashboard#`
 
 ![ingress_dashboard](./images/ingress_dashboard.png)
-
-You can check the services and the routes created by the Ingress Controller:
-
-```bash
-kubectl get services -n traefik-ingress --kubeconfig ./cluster-config.yaml
-NAME                        TYPE           CLUSTER-IP    EXTERNAL-IP      PORT(S)          AGE
-traefik-dashboard-service   LoadBalancer   10.96.97.1    172.18.255.201   8080:30137/TCP   10m
-traefik-web-service         LoadBalancer   10.96.72.80   172.18.255.200   80:31910/TCP     10m
-```
 
 #### Consumer ([_back to top_](#minimal-data-space-local---kind-cluster))
 
