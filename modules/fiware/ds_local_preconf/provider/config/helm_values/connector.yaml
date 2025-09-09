@@ -67,7 +67,6 @@ dataplane:
     enabled: ${services_enabled.generate_passwords}
     secretName: ${postgis_config.secret}
 
-
 ## General configuration:
 
 dataSpaceConfig:
@@ -83,7 +82,6 @@ dataSpaceConfig:
     - https
   authenticationProtocols:
     - oid4vp
-
 
 ################################################################################
 #                                                                              #
@@ -280,7 +278,6 @@ vcverifier:
         volumeMounts:
           - name: did-material
             mountPath: /did-material
-
 
 ################################################################################
 #                                                                              #
@@ -491,7 +488,7 @@ apisix:
       plugins:
         proxy-rewrite:
           uri: /services/data-service/.well-known/openid-configuration
-    
+
     # APISIX -> SCORPIO
     - uri: /*
       host: ${apisix_domain}
@@ -511,7 +508,7 @@ apisix:
           host: "http://localhost:8181"
           policy: policy/main
           with_body: true
-    
+
     # APISIX API -> TMF-API
     - uri: /*
       host: ${apisix_api_domain}
@@ -531,7 +528,7 @@ apisix:
           host: "http://localhost:8181"
           policy: policy/main
           with_body: true
-    
+
     # APISIX API -> VCVERIFIER
     - uri: /.well-known/openid-configuration
       host: ${apisix_api_domain}
@@ -542,7 +539,7 @@ apisix:
       plugins:
         proxy-rewrite:
           uri: /services/tmf-api/.well-known/openid-configuration
-    
+
     # TPP (service) -> rainbow
     - uri: /*
       host: ${tpp_rainbow_service_domain}
@@ -562,7 +559,7 @@ apisix:
           host: "http://localhost:8181"
           policy: policy/main
           with_body: true
-    
+
     # TPP (service) -> VCVERIFIER
     - uri: /.well-known/openid-configuration
       host: ${tpp_rainbow_service_domain}
@@ -573,7 +570,7 @@ apisix:
       plugins:
         proxy-rewrite:
           uri: /services/tpp-service/.well-known/openid-configuration
-    
+
     # TPP (data) -> SCORPIO
     - uri: /*
       host: ${tpp_rainbow_data_domain}
@@ -593,14 +590,13 @@ apisix:
         opa:
           host: "http://localhost:8181"
           policy: tpp
-    
+
     # TPP (catalog) -> rainbow
     - uri: /api/v1/catalogs
       host: ${tpp_rainbow_catalog_domain}
       upstream:
         nodes:
           ${rainbow_host_name}:${rainbow_config.port}: 1
-
 
 ################################################################################
 #                                                                              #
@@ -701,7 +697,6 @@ scorpio:
             - http://${til_operator_domain}:8080
           trustedIssuersLists:
             - http://${til_host_name}:${til_config.port}
-    
 
 ################################################################################
 #                                                                              #
@@ -722,6 +717,20 @@ tm-forum-api:
     ngsiLd:
       url: http://${scorpio_host_name}:${scorpio_config.port}
     contextUrl: https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld
+    additionalEnvVars:
+      - name: API_EXTENSION_ENABLED
+        value: "true"
+      - name: MICRONAUT_METRICS_ENABLED
+        value: "false"
+      - name: MICRONAUT_METRICS_BINDERS_PROCESSOR_ENABLED
+        value: "false"
+      - name: MICRONAUT_METRICS_BINDERS_JVM_ENABLED
+        value: "false"
+      - name: MICRONAUT_METRICS_BINDERS_SYSTEM_ENABLED
+        value: "false"
+      - name: JAVA_OPTS
+        value: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Dmicronaut.metrics.enabled=false -Djava.security.egd=file:/dev/./urandom"
+
   ingress:
     enabled: ${ingress_enabled.tmf_api}
     annotations:
@@ -840,7 +849,6 @@ contract-management:
       url: http://${tmf_api_host_name}-proxy:${tmf_api_config.port}
     rainbow:
       url: http://${rainbow_host_name}:${rainbow_config.port}
-
 
 ################################################################################
 #                                                                              #

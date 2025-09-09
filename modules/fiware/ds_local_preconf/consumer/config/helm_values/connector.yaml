@@ -56,7 +56,6 @@ dss:
 elsi:
   enabled: false
 
-
 #! should only be used for demonstrational deployments:
 
 # Register the consumer at the til. Only possible if it runs in the same
@@ -103,7 +102,6 @@ did:
     organization: ${did_config.organization}
     commonName: ${did_config.common_name}
 
-
 # Main configuration for the consumer
 
 postgresql:
@@ -124,9 +122,9 @@ postgresql:
   # configuration for the primary of the db
   primary:
     service:
-        type: ClusterIP
-        ports:
-          postgresql: ${postgresql_config.port}
+      type: ClusterIP
+      ports:
+        postgresql: ${postgresql_config.port}
     persistence:
       enabled: false
     # scripts to be run on intialization
@@ -142,6 +140,7 @@ postgresql:
 keycloak:
   enabled: ${services_enabled.keycloak}
   fullnameOverride: ${keycloak_host_name}
+  resourcesPreset: "medium"
   service:
     ports:
       http: 8080
@@ -438,7 +437,7 @@ rainbow:
     # by default: rainbow and 5432
     # https://github.com/FIWARE/data-space-connector/blob/84caaf72dc0a04c0435c88b967793e7911cfd2b0/charts/data-space-connector/templates/rainbow-deployment.yaml#L49
     # https://github.com/FIWARE/data-space-connector/blob/84caaf72dc0a04c0435c88b967793e7911cfd2b0/charts/data-space-connector/templates/rainbow-deployment.yaml#L70
-  
+
   ingress:
     enabled: ${ingress_enabled.rainbow}
     host: ${rainbow_domain}

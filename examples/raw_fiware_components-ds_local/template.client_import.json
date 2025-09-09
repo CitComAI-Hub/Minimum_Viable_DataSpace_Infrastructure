@@ -1,0 +1,93 @@
+{
+  "clientId": "{{PROVIDER-DID}}",
+  "enabled": true,
+  "description": "Client to connect {{PROVIDER-DID}}",
+  "surrogateAuthRequired": false,
+  "alwaysDisplayInConsole": false,
+  "clientAuthenticatorType": "client-secret",
+  "defaultRoles": [],
+  "redirectUris": [],
+  "webOrigins": [],
+  "notBefore": 0,
+  "bearerOnly": false,
+  "consentRequired": false,
+  "standardFlowEnabled": true,
+  "implicitFlowEnabled": false,
+  "directAccessGrantsEnabled": false,
+  "serviceAccountsEnabled": false,
+  "publicClient": false,
+  "frontchannelLogout": false,
+  "protocol": "oid4vc",
+  "attributes": {
+    "realm_client": "false",
+    "vc.verifiable-credential.format": "jwt_vc",
+    "vc.verifiable-credential.scope": "VerifiableCredential"
+  },
+  "authenticationFlowBindingOverrides": {},
+  "fullScopeAllowed": true,
+  "nodeReRegistrationTimeout": -1,
+  "protocolMappers": [
+    {
+      "name": "last-name",
+      "protocol": "oid4vc",
+      "protocolMapper": "oid4vc-user-attribute-mapper",
+      "consentRequired": false,
+      "config": {
+        "subjectProperty": "lastName",
+        "userAttribute": "lastName",
+        "aggregateAttributes": "false"
+      }
+    },
+    {
+      "name": "email",
+      "protocol": "oid4vc",
+      "protocolMapper": "oid4vc-user-attribute-mapper",
+      "consentRequired": false,
+      "config": {
+        "subjectProperty": "email",
+        "supportedCredentialTypes": "VerifiableCredential",
+        "userAttribute": "email",
+        "aggregateAttributes": "false"
+      }
+    },
+    {
+      "name": "first-name",
+      "protocol": "oid4vc",
+      "protocolMapper": "oid4vc-user-attribute-mapper",
+      "consentRequired": false,
+      "config": {
+        "subjectProperty": "firstName",
+        "userAttribute": "firstName",
+        "aggregateAttributes": "false"
+      }
+    },
+    {
+      "name": "target-role-mapper",
+      "protocol": "oid4vc",
+      "protocolMapper": "oid4vc-target-role-mapper",
+      "consentRequired": false,
+      "config": {
+        "subjectProperty": "roles",
+        "clientId": "{{PROVIDER-DID}}",
+	"supportedCredentialTypes": "VerifiableCredential"
+      }
+    },
+    {
+      "name": "context-mapper",
+      "protocol": "oid4vc",
+      "protocolMapper": "oid4vc-context-mapper",
+      "consentRequired": false,
+      "config": {
+        "context": "https://www.w3.org/2018/credentials/v1",
+        "supportedCredentialTypes": "VerifiableCredential"
+      }
+    }
+  ],
+  "defaultClientScopes": [],
+  "optionalClientScopes": [],
+  "access": {
+    "view": true,
+    "configure": true,
+    "manage": true
+  }
+}
