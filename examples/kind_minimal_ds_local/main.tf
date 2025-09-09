@@ -12,7 +12,7 @@ locals {
   }
 
   provider_expose_services = {
-    apisix  = true
+    apisix = true
     # Below services are not exposed (ingress) by default (only for testing purposes)
     ccs     = true
     til     = true
@@ -47,7 +47,7 @@ locals {
 }
 
 module "trust_anchor" {
-  source = "../../modules/fiware_ds_connector/ds_trustAnchor/"
+  source = "../../modules/fiware/trust_anchor/"
 
   namespace      = local.operator_namespace
   service_domain = "${local.operator_namespace}.${local.local_domain}"
@@ -60,7 +60,7 @@ module "trust_anchor" {
 }
 
 module "provider_a" {
-  source     = "../../modules/fiware_ds_connector/ds_connector/"
+  source     = "../../modules/fiware/ds_local_preconf/provider/"
   depends_on = [module.trust_anchor]
 
   namespace      = local.provider_a_namespace
@@ -85,7 +85,7 @@ module "provider_a" {
 }
 
 module "consumer_a" {
-  source     = "../../modules/fiware_ds_connector/ds_consumer/"
+  source     = "../../modules/fiware/ds_local_preconf/consumer/"
   depends_on = [module.trust_anchor, module.provider_a]
 
   operator_namespace = local.operator_namespace
