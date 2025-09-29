@@ -6,6 +6,15 @@ resource "kubernetes_namespace" "namespace" {
   }
 }
 
+resource "kubernetes_ingress_class" "traefik" {
+  metadata {
+    name = "traefik"
+  }
+  spec {
+    controller = "traefik.io/ingress-controller"
+  }
+}
+
 resource "kubernetes_cluster_role" "role" {
   depends_on = [kubernetes_namespace.namespace]
   metadata {

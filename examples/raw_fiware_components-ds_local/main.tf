@@ -1,8 +1,9 @@
 locals {
-  local_domain         = "local" #"local" / "127.0.0.1.nip.io"
-  operator_namespace   = "ds-operator"
-  provider_a_namespace = "provider-a"
-  consumer_a_namespace = "consumer-a"
+  local_domain           = "local" #"local" / "127.0.0.1.nip.io"
+  operator_namespace     = "ds-operator"
+  provider_a_namespace   = "provider-a"
+  consumer_a_namespace   = "consumer-a"
+  consumer_raw_namespace = "consumer-raw"
 
   operator_services_names = {
     trust_anchor = "fiware-minimal-trust-anchor"
@@ -46,6 +47,12 @@ locals {
   }
 }
 
+################################################################################
+#                                                                              #
+#                          RAW COMPONENTS                                      #
+#                                                                              #
+################################################################################
+
 module "trust_anchor" {
   source = "../../modules/fiware/trust_anchor/"
 
@@ -58,6 +65,34 @@ module "trust_anchor" {
     helm       = helm
   }
 }
+
+module "consumer_raw" {
+  source = "../../modules/fiware/ds_connector/consumer/"
+
+  operator_namespace = local.operator_namespace
+  namespace          = local.consumer_raw_namespace
+  service_domain     = "${local.consumer_raw_namespace}.${local.local_domain}"
+
+  providers = {
+    kubernetes = kubernetes
+    helm       = helm
+  }
+
+  did = {
+    port         = 3001,
+    country      = "ES"
+    state        = "SPAIN"
+    locality     = "Valencia"
+    organization = "upv-vrain"
+    common_name  = "www.upv.es"
+  }
+}
+
+################################################################################
+#                                                                              #
+#                     PRECONFIGURED COMPONENTS                                 #
+#                                                                              #
+################################################################################
 
 module "provider_a" {
   source     = "../../modules/fiware/ds_local_preconf/provider/"

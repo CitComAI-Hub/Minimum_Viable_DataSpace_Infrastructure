@@ -1,8 +1,9 @@
 locals {
-  local_domain         = "local" #"local" / "127.0.0.1.nip.io"
-  operator_namespace   = "ds-operator"
-  provider_a_namespace = "provider-a"
-  consumer_a_namespace = "consumer-a"
+  local_domain       = "local"
+  operator_namespace = "ds-operator"
+  consumer_namespace = "consumer-a"
+  provider_namespace = "provider-a"
+
 
   operator_services_names = {
     trust_anchor = "fiware-minimal-trust-anchor"
@@ -16,6 +17,7 @@ locals {
     # Below services are not exposed (ingress) by default (only for testing purposes)
     ccs     = true
     til     = true
+    tir     = false
     did     = true
     vcv     = true
     pap     = true
@@ -44,6 +46,7 @@ locals {
     tpp_service    = "tpp-rainbow-service"
     tpp_catalog    = "tpp-rainbow-catalog"
   }
+
 }
 
 module "trust_anchor" {
@@ -59,12 +62,33 @@ module "trust_anchor" {
   }
 }
 
-module "provider_a" {
-  source     = "../../modules/fiware/ds_local_preconf/provider/"
-  depends_on = [module.trust_anchor]
+module "consumer" {
+  source = "../../modules/fiware/ds_connector/consumer/"
 
-  namespace      = local.provider_a_namespace
-  service_domain = "${local.provider_a_namespace}.${local.local_domain}"
+  operator_namespace = local.operator_namespace
+  namespace          = local.consumer_namespace
+  service_domain     = "${local.consumer_namespace}.${local.local_domain}"
+
+  providers = {
+    kubernetes = kubernetes
+    helm       = helm
+  }
+
+  did = {
+    port         = 3001,
+    country      = "BE"
+    state        = "BRUSSELS"
+    locality     = "Brussels"
+    organization = "Fancy Marketplace Co."
+    common_name  = "www.fancy-marketplace.biz"
+  }
+}
+
+module "provider" {
+  source = "../../modules/fiware/ds_connector/provider/"
+
+  namespace      = local.provider_namespace
+  service_domain = "${local.provider_namespace}.${local.local_domain}"
   services_names = local.provider_services_names
   enable_ingress = local.provider_expose_services
 
@@ -81,34 +105,5 @@ module "provider_a" {
     locality     = "Dresden"
     organization = "M&P Operations Inc."
     common_name  = "www.mp-operation.org"
-  }
-}
-
-module "consumer_a" {
-  source     = "../../modules/fiware/ds_local_preconf/consumer/"
-  depends_on = [module.trust_anchor, module.provider_a]
-
-  operator_namespace = local.operator_namespace
-  provider_namespace = local.provider_a_namespace
-  namespace          = local.consumer_a_namespace
-  service_domain     = "${local.consumer_a_namespace}.${local.local_domain}"
-  trusted_issuers_list_names = {
-    operator = local.operator_services_names.til
-    provider = local.provider_services_names.til
-  }
-
-  providers = {
-    kubernetes = kubernetes
-    helm       = helm
-  }
-
-  # Services Configuration
-  did = {
-    port         = 3001,
-    country      = "BE"
-    state        = "BRUSSELS"
-    locality     = "Brussels"
-    organization = "Fancy Marketplace Co."
-    common_name  = "www.fancy-marketplace.biz"
   }
 }

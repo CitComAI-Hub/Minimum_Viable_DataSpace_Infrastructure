@@ -1,0 +1,9 @@
+# Configuration to be shared between the authentication components
+# (mysql databases).
+authentication:
+  # should a password for the database connection of authentication components
+  # be generated in the cluster
+  generatePasswords:
+    enabled: ${services_enabled.generate_passwords}
+    # name of the secret to put the generated password into
+    secretName: ${mysql_config.secret}

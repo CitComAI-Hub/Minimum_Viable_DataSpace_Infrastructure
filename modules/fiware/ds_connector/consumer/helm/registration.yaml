@@ -1,0 +1,11 @@
+#! should only be used for demonstrational deployments:
+
+# Register the consumer at the til. Only possible if it runs in the same
+# environment and recommendable for demo deployments.
+# -> Creates init.sh used in the keycloak initContainer (register-at-til), mount: consumer-til-registration
+registration:
+  enabled: ${services_enabled.registration}
+  configMap: consumer-til-registration
+  til: http://${til_provider_domain}:8080
+  did: $${DID}
+  credentialsType: UserCredential

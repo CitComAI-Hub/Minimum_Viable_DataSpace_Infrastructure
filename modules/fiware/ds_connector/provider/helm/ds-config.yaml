@@ -1,0 +1,13 @@
+dataSpaceConfig:
+  # host name: dsconfig
+  enabled: ${services_enabled.dsconfig}
+  serviceType: ClusterIP
+  port: ${ds_config.port}
+  supportedModels:
+    - "https://raw.githubusercontent.com/smart-data-models/dataModel.Consumption/master/ConsumptionPoint/schema.json"
+    - "https://raw.githubusercontent.com/smart-data-models/dataModel.Consumption/master/ConsumptionCost/schema.json"
+  supportedProtocols:
+    - http
+    - https
+  authenticationProtocols:
+    - oid4vp

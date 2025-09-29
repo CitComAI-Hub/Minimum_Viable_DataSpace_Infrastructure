@@ -1,0 +1,40 @@
+rainbow:
+  enabled: ${services_enabled.rainbow}
+  fullnameOverride: ${rainbow_host_name}
+  service:
+    serviceType: ClusterIP
+    port: ${rainbow_config.port}
+  db:
+    url: ${postgresql_host_name}
+    user: ${postgresql_config.user_name}
+    existingSecret: ${postgresql_config.secret}
+    passwordKey: ${postgresql_secrect_key_adminpass}
+    #TODO: To add DB name and port as a variable
+    # by default: rainbow and 5432
+    # https://github.com/FIWARE/data-space-connector/blob/84caaf72dc0a04c0435c88b967793e7911cfd2b0/charts/data-space-connector/templates/rainbow-deployment.yaml#L49
+    # https://github.com/FIWARE/data-space-connector/blob/84caaf72dc0a04c0435c88b967793e7911cfd2b0/charts/data-space-connector/templates/rainbow-deployment.yaml#L70
+  ingress:
+    enabled: ${ingress_enabled.rainbow}
+    host: ${rainbow_domain}
+    # no TLS option available.
+    annotations:
+      kubernetes.io/ingress.class: ${ingress_class}
+      # forcing everything to use ssl
+      ingress.kubernetes.io/ssl-redirect: "true"
+      # example annotations, allowing cert-manager to automatically create tls-certs
+      kubernetes.io/tls-acme: "true"
+  # PROVIDER:
+  # ccs:
+  #   enabled: true
+  #   endpoint: http://$/{ccs_host_name}:$/{ccs_config.port}
+  #   configMap: rainbow-registration
+  #   id: tpp-service #TODO: it's possible to change by a variable?
+  #   defaultOidcScope:
+  #     name: default
+  #   oidcScopes:
+  #     default:
+  #       - type: OperatorCredential
+  #         trustedParticipantsLists:
+  #           - http://$/{til_operator_domain}:8080
+  #         trustedIssuersLists:
+  #           - http://$/{til_host_name}:$/{til_config.port}
