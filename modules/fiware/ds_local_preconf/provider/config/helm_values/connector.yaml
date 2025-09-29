@@ -94,6 +94,11 @@ dataSpaceConfig:
 mysql:
   enabled: ${services_enabled.mysql}
   fullnameOverride: ${mysql_host_name}
+  global:
+    security:
+      allowInsecureImages: true
+  image:
+    repository: bitnamilegacy/mysql
   containerPort:
     mysql: ${mysql_config.port}
   primary:
@@ -288,7 +293,11 @@ vcverifier:
 postgresql:
   enabled: ${services_enabled.postgresql}
   fullnameOverride: ${postgresql_host_name}
-  # image < default
+  global:
+    security:
+      allowInsecureImages: true
+  image:
+    repository: bitnamilegacy/postgresql
   generatePasswords:
     enabled: ${services_enabled.generate_passwords}
     secretName: ${postgresql_config.secret}
@@ -414,8 +423,15 @@ apisix:
   fullnameOverride: ${apisix_host_name}
   # service:
   #   type: ClusterIP
+  global:
+    security:
+      allowInsecureImages: true
   image:
     debug: true
+    repository: bitnamilegacy/apisix
+  waitContainer:
+    image:
+      repository: bitnamilegacy/os-shell
   # autoscaling:
   #   enabled: true
   #   version: v2
@@ -611,6 +627,11 @@ postgis:
   # image < default
   fullnameOverride: ${postgis_host_name}
   nameOverride: ${postgis_host_name}
+  global:
+    security:
+      allowInsecureImages: true
+  image:
+    repository: bitnamilegacy/postgresql
   auth:
     existingSecret: ${postgis_config.secret}
     secretKeys:
