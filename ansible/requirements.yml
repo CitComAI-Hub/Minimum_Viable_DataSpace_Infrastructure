@@ -1,0 +1,11 @@
+- name: fiware_dsc_trust_anchor
+  src: git+https://github.com/sermars/ansible-fiware_data-space-connector
+  path: roles/trust-anchor
+
+- name: fiware_dsc_provider
+  src: git+https://github.com/sermars/ansible-fiware_data-space-connector
+  path: roles/connector-provider
+
+- name: fiware_dsc_consumer
+  src: git+https://github.com/sermars/ansible-fiware_data-space-connector
+  path: roles/connector-consumer
