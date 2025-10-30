@@ -145,6 +145,11 @@ postgresql:
 keycloak:
   enabled: ${services_enabled.keycloak}
   fullnameOverride: ${keycloak_host_name}
+  global:
+    security:
+      allowInsecureImages: true
+  image:
+    repository: bitnamilegacy/keycloak
   resourcesPreset: "medium"
   service:
     ports:
