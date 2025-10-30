@@ -443,7 +443,10 @@ apisix:
     enabled: true
     resourcesPreset: ${apisix_config.resource_preset}
   # ingressController > default
-  # etcd > default
+  etcd:
+    enabled: true
+    image:
+      repository: bitnamilegacy/etcd
   dataPlane:
     enabled: true
     resourcesPreset: ${apisix_config.resource_preset}
