@@ -1,5 +1,5 @@
 module "local_k8s_cluster" {
-  source = "../../modules_new/kind_new"
+  source = "../../modules/kind_new"
 
   cluster_name    = var.cluster_name
   kubeconfig_path = pathexpand(var.kubernetes_local_path)
