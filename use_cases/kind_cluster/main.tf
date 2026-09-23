@@ -1,5 +1,5 @@
 module "local_k8s_cluster" {
-  source = "../../modules/kind_new"
+  source = "../../modules/kind"
 
   cluster_name    = var.cluster_name
   kubeconfig_path = pathexpand(var.kubernetes_local_path)
@@ -17,3 +17,4 @@ module "local_k8s_cluster" {
     }
   ]
 }
+
