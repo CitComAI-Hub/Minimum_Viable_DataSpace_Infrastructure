@@ -1,4 +1,0 @@
-dataplane:
-  generatePasswords:
-    enabled: ${services_enabled.generate_passwords}
-    secretName: ${postgis_config.secret}
