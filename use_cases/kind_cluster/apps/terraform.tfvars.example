@@ -1,0 +1,7 @@
+# Tailscale OAuth Client credentials
+# Genera estas credenciales en: https://login.tailscale.com/admin/settings/oauth
+# Scopes necesarios: Devices (Read & Write), Auth Keys (Read & Write)
+# Tags: tag:k8s-operator
+
+tailscale_oauth_client_id     = "kxxxxxxCNTRL"
+tailscale_oauth_client_secret = "tskey-client-kxxxxxxCNTRL-xxxxxxxxxxxxxxxxxxxxxxxx"

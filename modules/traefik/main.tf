@@ -93,16 +93,15 @@ resource "helm_release" "traefik" {
   }
 
   # --- Dashboard ---
-  # Expone el dashboard vía IngressRoute en http://<dashboard_host>/dashboard/
-  # No requiere modificar /etc/hosts porque *.localhost resuelve a 127.0.0.1
-  # automáticamente en Linux (nss-myhostname).
+  # Expone el dashboard vía IngressRoute; el acceso externo se gestiona
+  # mediante el Ingress de Tailscale del caso de uso.
   set {
     name  = "ingressRoute.dashboard.enabled"
     value = tostring(var.dashboard_enabled)
   }
   set {
     name  = "ingressRoute.dashboard.matchRule"
-    value = "Host(`${var.dashboard_host}`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))"
+    value = "PathPrefix(`/dashboard`) || PathPrefix(`/api`)"
   }
   set {
     name  = "ingressRoute.dashboard.entryPoints[0]"

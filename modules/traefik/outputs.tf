@@ -3,11 +3,6 @@ output "namespace" {
   value       = kubernetes_namespace.traefik.metadata[0].name
 }
 
-output "dashboard_url" {
-  description = "URL del dashboard de Traefik"
-  value       = var.dashboard_enabled ? "http://${var.dashboard_host}/dashboard/" : "Dashboard deshabilitado"
-}
-
 output "chart_version" {
   description = "Versión del Helm chart de Traefik instalada"
   value       = helm_release.traefik.version

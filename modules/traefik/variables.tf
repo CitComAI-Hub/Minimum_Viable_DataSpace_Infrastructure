@@ -16,12 +16,6 @@ variable "dashboard_enabled" {
   default     = true
 }
 
-variable "dashboard_host" {
-  description = "Host donde se expondrá el dashboard (sin tocar /etc/hosts, usa .localhost)"
-  type        = string
-  default     = "traefik.localhost"
-}
-
 variable "node_selector" {
   description = "NodeSelector para asignar Traefik al nodo control-plane etiquetado como ingress-ready"
   type        = map(string)
