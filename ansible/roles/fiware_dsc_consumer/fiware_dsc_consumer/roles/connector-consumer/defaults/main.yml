@@ -1,0 +1,42 @@
+---
+kubeconfig_path: ./cluster-config.yaml
+# connector_role: provider
+
+# Services domains
+domain:
+  base: "example.com"
+
+ingress_kubernetes:
+  class: "traefik"
+  ssl_redirect: true # forcing everything to use ssl
+  tls_acme: true # example annotations, allowing cert-manager to automatically create tls-certs
+
+services_enabled:
+  generate_passwords: true
+
+trust_anchor:
+  til_domain: "trusted-issuers-list.fiware-trust-anchor.svc.cluster.local"
+provider:
+  did_domain: "did-helper.fiware-dataspace.svc.cluster.local"
+
+# Connector services configuration
+keycloak:
+  name: "keycloak"
+ccs:
+  name: "credentials-config-service"
+til:
+  name: "trusted-issuers-list"
+vcv:
+  name: "vc-verifier"
+pap:
+  name: "pap-odrl"
+apisix:
+  name:
+    service: "apisix-proxy"
+    api: "apisix-api"
+scorpio:
+  name: "scorpio-broker"
+tmforum_api:
+  name: "tm-forum-api"
+
+tls_no_set: "not-set"

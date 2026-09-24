@@ -1,0 +1,83 @@
+# Configuration to be shared between the authentication components
+# (mysql databases).
+authentication:
+  # should a password for the database connection of authentication components
+  # be generated in the cluster
+  generatePasswords:
+    enabled: {{ trust_anchor_services.authentication.enabled }}
+    # name of the secret to put the generated password into
+    secretName: {{ trust_anchor_services.mysql.secret.name }}
+
+# Configuration for the mysql to be deployed as part of the connector,
+# see https://github.com/bitnami/charts/tree/main/bitnami/mysql for all options.
+mysql:
+  enabled: {{ trust_anchor_services.mysql.enabled }}
+  fullnameOverride: {{ trust_anchor_services.mysql.name }}
+  global:
+    security:
+      allowInsecureImages: {{ helm_trust_anchor.image.allowInsecure }}
+  image:
+    repository: {{ helm_trust_anchor.image.repository }}/mysql
+  containerPort:
+    mysql: {{ trust_anchor_services.mysql.port }}
+  primary:
+    containerPorts:
+      mysql: {{ trust_anchor_services.mysql.port }}
+    service:
+      type: ClusterIP
+      ports:
+        mysql: {{ trust_anchor_services.mysql.port }}
+    persistence:
+      enabled: false
+  secondary:
+    containerPorts:
+      mysql: {{ trust_anchor_services.mysql.port }}
+    service:
+      type: ClusterIP
+      ports:
+        mysql: {{ trust_anchor_services.mysql.port }}
+    persistence:
+      enabled: false
+  auth:
+    existingSecret: {{ trust_anchor_services.mysql.secret.name }}
+    #TODO: Key names for the secrets inside the secret
+  initdbScripts:
+    # scripts to be executed on db startup
+    create.sql: |
+      CREATE DATABASE {{ trust_anchor_services.til.mysql.db }};
+
+# Configuration for the trusted-issuers-list to be deployed as part of the
+# connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/trusted-issuers-list
+# for all options.
+trusted-issuers-list:
+  enabled: {{ trust_anchor_services.til.enabled }}
+  fullnameOverride: {{ trust_anchor_services.til.name }}
+  service:
+    type: ClusterIP
+    port: {{ trust_anchor_services.til.port }}
+  ingress:
+    til: # only open for clean up in the tests.
+      enabled: {{ trust_anchor_services.til.ingress.enabled }}
+      annotations:
+        kubernetes.io/ingress.class: "{{ ingress_kubernetes.class }}"
+        # forcing everything to use ssl
+        ingress.kubernetes.io/ssl-redirect: "{{ ingress_kubernetes.ssl_redirect }}"
+        # example annotations, allowing cert-manager to automatically create tls-certs
+        kubernetes.io/tls-acme: "{{ ingress_kubernetes.tls_acme }}"
+      hosts:
+        - host: {{ trust_anchor_services.til.ingress.host }}
+          paths:
+            - /
+      # tls:
+      #   - secretName: {{ tls_no_set }}
+      #     hosts:
+      #       - {{ trust_anchor_services.til.ingress.host }}
+  database:
+    persistence: true
+    host: {{ trust_anchor_services.mysql.name }}
+    username: {{ trust_anchor_services.mysql.user_config.root }}
+    name: {{ trust_anchor_services.til.mysql.db }}
+    existingSecret:
+      enabled: {{ services_enabled.generate_passwords }}
+      name: {{ trust_anchor_services.mysql.secret.name }}
+      key: {{ trust_anchor_services.mysql.secret.key }}

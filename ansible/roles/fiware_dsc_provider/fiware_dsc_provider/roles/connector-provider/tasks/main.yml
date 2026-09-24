@@ -1,0 +1,43 @@
+- name: Check if Helm exists in the cluster.
+  ansible.builtin.command: >
+    helm list --kubeconfig {{ kubeconfig_path }} --all-namespaces
+  register: helm_cluster_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Add Fiware helm repository.
+  kubernetes.core.helm_repository:
+    name: "{{ helm_connector.repo_name }}"
+    repo_url: "{{ helm_connector.repository }}"
+    kubeconfig: "{{ kubeconfig_path }}"
+  register: add_repo_result
+
+- name: Update helm repositories.
+  kubernetes.core.helm_repository:
+    name: "{{ helm_connector.repo_name }}"
+    repo_url: "{{ helm_connector.repository }}"
+    kubeconfig: "{{ kubeconfig_path }}"
+    force_update: true
+
+- name: Generate connector values file from template.
+  template:
+    src: "values.yaml"
+    dest: "./roles/connector-provider/tmp/values.yaml"
+  register: values_file
+
+- name: Deploy FIWARE Data Space Connector (Provider).
+  kubernetes.core.helm:
+    name: "{{ helm_connector.releasename }}"
+    chart_repo_url: "{{ helm_connector.repository }}"
+    update_repo_cache: true
+    chart_ref: "{{ helm_connector.chart_name }}"
+    chart_version: "{{ helm_connector.version }}"
+    release_namespace: "{{ helm_connector.namespace }}"
+    create_namespace: true
+    values_files:
+      - "./roles/connector-provider/tmp/values.yaml"
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    wait: true
+  register: deploy_result
+  ignore_errors: true

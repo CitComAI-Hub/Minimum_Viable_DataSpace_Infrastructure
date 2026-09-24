@@ -1,0 +1,76 @@
+---
+helm_connector:
+  repository: "https://fiware.github.io/data-space-connector/"
+  repo_name: "fiware"
+  chart_name: "data-space-connector"
+  releasename: "fiware-ds-connector"
+  version: "7.29.0"
+  namespace: "fiware-ds-consumer"
+  image:
+    allowInsecure: true
+    repository: "bitnamilegacy"
+
+connector_services:
+  issuance:
+    enabled: true
+    secret:
+      name: "issuance-secret"
+
+  did:
+    enabled: true
+    name: "did-helper" # NOT editable
+    ingress:
+      enabled: false # only for development purposes
+    port: 3002
+    config:
+      country: "ES"
+      state: "Valencia"
+      locality: "Valencia"
+      organization: "Valencia City Hall"
+      common_name: "www.valencia.es"
+
+  postgresql:
+    enabled: true
+    name: "postgresql-db"
+    port: 5432
+    user_config:
+      name: "postgres"
+    secret:
+      name: "postgresql-database-secret"
+      key_admin: "postgres-admin-password" #TODO not editable
+      pass_user: "postgres-user-password" #TODO not editable
+
+  rainbow:
+    enabled: true
+    name: "rainbow-dsp"
+    port: 8080
+    ingress:
+      enabled: false # only for development purposes
+    postgresql:
+      db: "rainbow"
+
+  fds_connector:
+    name: "fiware-data-space-connector"
+
+  ##############################################################################
+  # CONSUMER                                                                   #
+  ##############################################################################
+  registration:
+    # Registration service for the consumer role. Registers the consumer
+    # DID in the Trusted Issuers List (TIL) of the provider.
+    # !! > This can only be used in a development environment where you have
+    # !! access to the provider.
+    enabled: true
+
+  keycloak:
+    enabled: true
+    name: "{{ keycloak.name }}"
+    port: 8080
+    ingress:
+      enabled: false # only for development purposes
+      host: "{{ keycloak.name }}.{{ domain.base }}"
+    credentials:
+      username: "keycloak-admin"
+      password: "keycloak-admin"
+    postgresql:
+      db: "keycloak"

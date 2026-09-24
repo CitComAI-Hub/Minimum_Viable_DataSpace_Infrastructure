@@ -1,0 +1,37 @@
+---
+helm_trust_anchor:
+  repository: "https://fiware.github.io/data-space-connector/"
+  repo_name: "fiware"
+  chart_name: "trust-anchor"
+  version: "0.2.0"
+  namespace: "fiware-trust-anchor"
+  releasename: "fiware-ds-trust-anchor"
+  image:
+    allowInsecure: true
+    repository: "bitnamilegacy"
+
+trust_anchor_services:
+  authentication:
+    # Configuration to be shared between the authentication components
+    # (mysql databases)
+    enabled: true
+
+  mysql:
+    enabled: true
+    name: "mysql-db" # pod name
+    port: 3306
+    user_config:
+      root: "root"
+    secret:
+      name: "mysql-database-secret"
+      key: "mysql-root-password"
+
+  til:
+    enabled: true
+    name: "{{ til.name }}"
+    port: 8080
+    ingress:
+      enabled: false # only for development purposes
+      host: "{{ til.name }}.{{ domain.base }}"
+    mysql:
+      db: "tildb"

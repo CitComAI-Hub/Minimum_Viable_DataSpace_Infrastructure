@@ -1,0 +1,20 @@
+---
+kubeconfig_path: ./cluster-config.yaml
+# connector_role: provider
+
+ingress_kubernetes:
+  class: "traefik"
+  ssl_redirect: true # forcing everything to use ssl
+  tls_acme: true # example annotations, allowing cert-manager to automatically create tls-certs
+
+tls_no_set: "not-set"
+
+services_enabled:
+  generate_passwords: true
+
+# Services domains
+domain:
+  base: "example.com"
+
+til:
+  name: "trusted-issuers-list"

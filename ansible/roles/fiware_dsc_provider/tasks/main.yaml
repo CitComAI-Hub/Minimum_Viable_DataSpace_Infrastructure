@@ -1,0 +1,42 @@
+- name: Check if Helm exists in the cluster.
+  ansible.builtin.command: >
+    helm list --kubeconfig {{ kubeconfig_path }} --all-namespaces
+  register: helm_cluster_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Add Fiware helm repository.
+  kubernetes.core.helm_repository:
+    name: "{{ helm_trust_anchor.repo_name }}"
+    repo_url: "{{ helm_trust_anchor.repository }}"
+    kubeconfig: "{{ kubeconfig_path }}"
+  register: add_repo_result
+
+- name: Update helm repositories.
+  kubernetes.core.helm_repository:
+    name: "{{ helm_trust_anchor.repo_name }}"
+    repo_url: "{{ helm_trust_anchor.repository }}"
+    kubeconfig: "{{ kubeconfig_path }}"
+    force_update: true
+
+- name: Generate trust anchor values file from template.
+  template:
+    src: "values.yaml"
+    dest: "./roles/connector-provider/tmp/values.yaml"
+  register: values_file
+
+- name: Deploy FIWARE Trust Anchor.
+  kubernetes.core.helm:
+    name: "{{ helm_trust_anchor.releasename }}"
+    chart_repo_url: "{{ helm_trust_anchor.repository }}"
+    chart_ref: "{{ helm_trust_anchor.chart_name }}"
+    chart_version: "{{ helm_trust_anchor.version }}"
+    release_namespace: "{{ helm_trust_anchor.namespace }}"
+    create_namespace: true
+    values_files:
+      - "./roles/connector-provider/tmp/values.yaml"
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    wait: true
+  register: deploy_result
+  ignore_errors: true

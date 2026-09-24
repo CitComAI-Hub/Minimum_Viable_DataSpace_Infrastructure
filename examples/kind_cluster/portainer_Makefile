@@ -5,13 +5,14 @@ include ./config/deployment.mk
 ## Init & apply ALL Terraform resources for Kind cluster.
 init_apply:
 	$(call up_kind,./,../config/cluster.tfvars)
-	cd ./portainer_ce && \
-	terraform init -upgrade && \
-	terraform apply -auto-approve -var-file=../config/cluster.tfvars
+# cd ./portainer_ce && \
+# terraform init -upgrade && \
+# terraform apply -auto-approve -var-file=../config/cluster.tfvars
 	
 ## Destroy ALL Terraform resources for Kind cluster.
 destroy:
 	$(call down_kind,./,../config/cluster.tfvars)
-	-cd ./portainer_ce && \
-	terraform destroy -auto-approve -var-file=../config/cluster.tfvars && \
-	$(remove_tmp_tf)
+# -cd ./portainer_ce && \
+# terraform destroy -auto-approve -var-file=../config/cluster.tfvars && \
+# $(remove_tmp_tf)
+	

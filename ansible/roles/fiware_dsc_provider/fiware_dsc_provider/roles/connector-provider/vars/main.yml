@@ -1,0 +1,217 @@
+---
+helm_connector:
+  repository: "https://fiware.github.io/data-space-connector/"
+  repo_name: "fiware"
+  chart_name: "data-space-connector"
+  version: "7.29.0"
+  namespace: "fiware-dataspace"
+  releasename: "fiware-ds-connector"
+  image:
+    allowInsecure: true
+    repository: "bitnamilegacy"
+
+connector_services:
+  issuance:
+    enabled: true
+    secret:
+      name: "issuance-secret"
+
+  did:
+    enabled: true
+    name: "did-helper" # NOT editable
+    ingress:
+      enabled: false # only for development purposes
+    port: 3002
+    config:
+      country: "ES"
+      state: "Valencia"
+      locality: "Valencia"
+      organization: "VRAIN"
+      common_name: "www.vrain.upv.es"
+
+  postgresql:
+    enabled: true
+    name: "postgresql-db"
+    port: 5432
+    user_config:
+      name: "postgres"
+    secret:
+      name: "postgresql-database-secret"
+      key_admin: "postgres-admin-password" #TODO not editable
+      pass_user: "postgres-user-password" #TODO not editable
+
+  rainbow:
+    enabled: true
+    name: "rainbow-dsp"
+    port: 8080
+    ingress:
+      enabled: false # only for development purposes
+    postgresql:
+      db: "rainbow"
+
+  dss:
+    enabled: false
+  elsi:
+    enabled: false
+
+  fds_connector:
+    name: "fiware-data-space-connector"
+
+  ##############################################################################
+  # CONSUMER                                                                   #
+  ##############################################################################
+  registration:
+    # Registration service for the consumer role. Registers the consumer
+    # DID in the Trusted Issuers List (TIL) of the provider.
+    # !! > This can only be used in a development environment where you have
+    # !! access to the provider.
+    enabled: false
+
+  keycloak:
+    enabled: true
+    name: "{{ keycloak.name }}"
+    port: 8080
+    ingress:
+      enabled: false # only for development purposes
+      host: "{{ keycloak.name }}.{{ domain.base }}"
+    credentials:
+      username: "keycloak-admin"
+      password: "keycloak-admin"
+    postgresql:
+      db: "keycloak"
+
+  ##############################################################################
+  # PROVIDER                                                                   #
+  ##############################################################################
+  authentication:
+    # Configuration to be shared between the authentication components
+    # (mysql databases)
+    enabled: true
+
+  dataplane:
+    enabled: true
+
+  dataspace_config:
+    enabled: true
+    name: "dsconfig" # default name, not editable
+    port: 3002
+    supported_models:
+      - "https://raw.githubusercontent.com/smart-data-models/dataModel.Consumption/master/ConsumptionPoint/schema.json"
+      - "https://raw.githubusercontent.com/smart-data-models/dataModel.Consumption/master/ConsumptionCost/schema.json"
+    supported_protocols:
+      - "http"
+      - "https"
+    authentication_protocols:
+      - "oid4vp"
+
+  mysql:
+    enabled: true
+    name: "mysql-db" # pod name
+    port: 3306
+    user_config:
+      root: "root"
+    secret:
+      name: "mysql-database-secret"
+      key: "mysql-root-password"
+
+  ccs:
+    enabled: true
+    name: "{{ ccs.name }}"
+    port: 8080
+    ingress:
+      enabled: false # only for development purposes
+      host: "{{ ccs.name }}.{{ domain.base }}"
+    mysql:
+      db: "ccsdb"
+
+  til:
+    enabled: true
+    name: "{{ til.name }}"
+    port: 8080
+    ingress:
+      enabled: false # only for development purposes
+      host: "{{ til.name }}.{{ domain.base }}"
+    mysql:
+      db: "tildb"
+
+  vcv:
+    enabled: true
+    name: "{{ vcv.name }}"
+    port: 3000
+    ingress:
+      enabled: false # only for development purposes
+      host: "{{ vcv.name }}.{{ domain.base }}"
+
+  pap:
+    enabled: true
+    name: "{{ pap.name }}"
+    port: 8080
+    ingress:
+      enabled: false # only for development purposes
+      host: "{{ pap.name }}.{{ domain.base }}"
+    postgresql:
+      db: "pap"
+
+  opa:
+    enabled: true
+    port: 8181
+
+  apisix:
+    enabled: true
+    name:
+      service: "{{ apisix.name.service }}"
+      api: "{{ apisix.name.api }}"
+    port: 9080
+    ingress:
+      enabled: true
+      host: "{{ apisix.name.service }}.{{ domain.base }}"
+      api_domain: "{{ apisix.name.api }}.{{ domain.base }}"
+      rainbow:
+        data_domain: "tpp-data.{{ domain.base }}"
+        service_domain: "tpp-service.{{ domain.base }}"
+        catalog_domain: "tpp-catalog.{{ domain.base }}"
+    resource_preset: "small"
+
+  postgis:
+    enabled: true
+    name: "postgis-db"
+    port: 5432
+    user_config:
+      name: "postgres"
+    secret:
+      name: "postgis-database-secret"
+      key_admin: "postgres-admin-password" #not editable
+      key_user: "postgres-user-password" # not editable
+    database: "ngb"
+
+  scorpio:
+    enabled: true
+    name: "{{ scorpio.name }}"
+    port: 9090
+    ingress:
+      enabled: false # only for development purposes
+      host: "{{ scorpio.name }}.{{ domain.base }}"
+
+  tmforum_api:
+    enabled: true
+    name: "{{ tmforum_api.name }}"
+    port: 8080
+    ingress:
+      enabled: false # only for development purposes
+      host: "{{ tmforum_api.name }}.{{ domain.base }}"
+
+  cm:
+    enabled: true
+    name: "contract-management"
+    port: 8080
+    ingress:
+      enabled: false # only for development purposes
+
+  tpp:
+    enabled: true
+    name:
+      data: "tpp-rainbow-data"
+      service: "tpp-rainbow-service"
+      catalog: "tpp-rainbow-catalog"
+    ingress:
+      enabled: false # only for development purposes

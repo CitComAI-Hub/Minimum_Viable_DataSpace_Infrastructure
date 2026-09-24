@@ -1,0 +1,456 @@
+# Source code:
+# https://github.com/FIWARE/data-space-connector/blob/main/charts/data-space-connector/values.yaml
+
+## Only for provider role
+
+dataSpaceConfig:
+  enabled: false
+
+authentication:
+  generatePasswords:
+    enabled: false
+
+mysql:
+  enabled: false
+
+credentials-config-service:
+  enabled: false
+
+trusted-issuers-list:
+  enabled: false
+
+vcverifier:
+  enabled: false
+
+odrl-pap:
+  enabled: false
+
+opa:
+  enabled: false
+
+apisix:
+  enabled: false
+
+dataplane:
+  generatePasswords:
+    enabled: false
+
+postgis:
+  enabled: false
+
+scorpio:
+  enabled: false
+
+tm-forum-api:
+  enabled: false
+
+contract-management:
+  enabled: false
+
+tpp:
+  enabled: false
+
+dss:
+  enabled: false
+
+elsi:
+  enabled: false
+
+#! should only be used for demonstrational deployments:
+
+# Register the consumer at the til. Only possible if it runs in the same
+# environment and recommendable for demo deployments.
+# -> Creates init.sh used in the keycloak initContainer (register-at-til), mount: consumer-til-registration
+registration:
+  enabled: {{ connector_services.registration.enabled }}
+  configMap: consumer-til-registration
+  til: http://{{ trust_anchor.til_domain }}:8080
+  did: ${DID}
+  credentialsType: UserCredential
+
+# Configuration to be shared between the issuance components.
+issuance:
+  generatePasswords:
+    enabled: {{ connector_services.issuance.enabled }}
+    secretName: {{ connector_services.issuance.secret.name }}
+
+# Configuration for the did-helper, should only be used for demonstrational
+# deployments, see https://github.com/wistefan/did-helper
+did:
+  enabled: {{ connector_services.did.enabled }}
+  # fullnameOverride: {{ connector_services.did.name }} NOT AVAILABLE, default name: did-helper
+  secret: {{ connector_services.issuance.secret.name }}
+  serviceType: ClusterIP
+  port: {{ connector_services.did.port }}
+  # INGRESS: only open for clean up in the tests.
+  ingress:
+    enabled: {{ connector_services.did.ingress.enabled }}
+    annotations:
+      kubernetes.io/ingress.class: "{{ ingress_kubernetes.class }}"
+      ingress.kubernetes.io/ssl-redirect: "{{ ingress_kubernetes.ssl_redirect }}"
+      kubernetes.io/tls-acme: "{{ ingress_kubernetes.tls_acme }}"
+    host: "did-helper.{{ domain.base }}"
+    # tls:
+    #   - secretName: {{ tls_no_set }}
+    #     hosts:
+    #       - "did-helper.{{ domain.base }}"
+  cert:
+    country: "{{ connector_services.did.config.country }}"
+    state: "{{ connector_services.did.config.state }}"
+    locality: "{{ connector_services.did.config.locality }}"
+    organization: "{{ connector_services.did.config.organization }}"
+    commonName: "{{ connector_services.did.config.common_name }}"
+
+# Main configuration for the consumer
+
+postgresql:
+  enabled: {{ connector_services.postgresql.enabled }}
+  fullnameOverride: {{ connector_services.postgresql.name }}
+  global:
+    security:
+      allowInsecureImages: {{ helm_connector.image.allowInsecure }}
+  image:
+    repository: {{ helm_connector.image.repository }}/postgresql
+  generatePasswords:
+    enabled: {{ services_enabled.generate_passwords }}
+    secretName: {{ connector_services.postgresql.secret.name }}
+  # configure authentication to mysql
+  auth:
+    # name of the secret to take the passowrds from
+    existingSecret: {{ connector_services.postgresql.secret.name }}
+    # key of the secrets inside the secret
+    secretKeys:
+      adminPasswordKey: {{ connector_services.postgresql.secret.key_admin }}
+      userPasswordKey: {{ connector_services.postgresql.secret.pass_user }}
+  containerPorts:
+    postgresql: {{ connector_services.postgresql.port }}
+  # configuration for the primary of the db
+  primary:
+    service:
+      type: ClusterIP
+      ports:
+        postgresql: {{ connector_services.postgresql.port }}
+    persistence:
+      enabled: false
+    # scripts to be run on intialization
+    initdb:
+      scripts:
+        create.sh: |
+          psql postgresql://{{ connector_services.postgresql.user_config.name }}:${POSTGRES_PASSWORD}@localhost:{{ connector_services.postgresql.port }} -c "CREATE DATABASE {{ connector_services.keycloak.postgresql.db }};"
+          psql postgresql://{{ connector_services.postgresql.user_config.name }}:${POSTGRES_PASSWORD}@localhost:{{ connector_services.postgresql.port }} -c "CREATE DATABASE {{ connector_services.rainbow.postgresql.db }};"
+  readReplicas:
+    service:
+      type: ClusterIP
+      ports:
+        postgresql: {{ connector_services.postgresql.port }}
+    persistence:
+      enabled: false
+
+
+keycloak:
+  enabled: {{ connector_services.keycloak.enabled }}
+  fullnameOverride: {{ connector_services.keycloak.name  }}
+  global:
+    security:
+      allowInsecureImages: {{ helm_connector.image.allowInsecure }}
+  image:
+    repository: {{ helm_connector.image.repository }}/keycloak
+  resourcesPreset: "medium"
+  service:
+    ports:
+      http: {{ connector_services.keycloak.port }}
+  ingress:
+    # only to make it available for the test initialization
+    enabled: {{ connector_services.keycloak.ingress.enabled }}
+    hostname: "{{ connector_services.keycloak.name }}.{{ domain.base }}"
+    # tls:
+    #   - secretName: ${keycloak_secret_tls}
+    #     hosts:
+    #       - ${keycloak_domain}
+    annotations:
+      kubernetes.io/ingress.class: "{{ ingress_kubernetes.class }}"
+      ingress.kubernetes.io/ssl-redirect: "{{ ingress_kubernetes.ssl_redirect }}"
+      kubernetes.io/tls-acme: "{{ ingress_kubernetes.tls_acme }}"
+  # authentication config for keycloak
+  auth:
+    existingSecret: {{ connector_services.issuance.secret.name }}
+    adminUser: {{ connector_services.keycloak.credentials.username }}
+    passwordSecretKey: {{ connector_services.keycloak.credentials.password }}
+  # should the db be deployed as part of the keycloak chart
+  postgresql:
+    enabled: false
+  # host of the external db to be used
+  externalDatabase:
+    host: {{ connector_services.postgresql.name }}
+    user: {{ connector_services.postgresql.user_config.name }}
+    database: {{ connector_services.keycloak.postgresql.db }}
+    existingSecret: {{ connector_services.postgresql.secret.name }}
+    existingSecretPasswordKey: {{ connector_services.postgresql.secret.key_admin }}
+
+  # the default init container is deactivated, since it conflicts with the n
+  # on-bitnami image.
+  # enableDefaultInitContainers: false
+
+  extraVolumeMounts:
+    - name: realms
+      mountPath: /opt/bitnami/keycloak/data/import
+    - name: did-material
+      mountPath: /did-material
+    - name: did-material
+      mountPath: "/etc/env"
+      readOnly: true
+
+  extraVolumes:
+    - name: did-material
+      emptyDir: {}
+    - name: realms
+      configMap:
+        name: test-realm-realm
+    - name: consumer-til-registration
+      configMap:
+        name: consumer-til-registration
+        defaultMode: 0755
+
+  command:
+    - /bin/bash
+  args:
+    - -ec
+    - |
+      #!/bin/sh
+      export $(cat /did-material/did.env)
+      export KC_HOSTNAME={{ connector_services.keycloak.name }}.{{ domain.base }}
+      /opt/bitnami/scripts/keycloak/entrypoint.sh
+      /opt/bitnami/scripts/keycloak/run.sh
+
+    # extra env vars to be set. we require them at the moment, since some of the
+  # chart config mechanisms only work with the bitnami-image
+  extraEnvVars:
+    - name: KEYCLOAK_EXTRA_ARGS
+      value: "--import-realm"
+    - name: KC_FEATURES
+      value: "oid4vc-vci"
+    - name: KC_PROXY
+      value: "edge" # indicates ssl is terminated at the edge
+    - name: STORE_PASS
+      valueFrom: # password for reading the key store connected to the did
+        secretKeyRef:
+          name: {{ connector_services.issuance.secret.name }}
+          key: store-pass
+    - name: KC_ADMIN_PASSWORD
+      valueFrom: # keycloak admin password
+        secretKeyRef:
+          name: {{ connector_services.issuance.secret.name }}
+          key: {{ connector_services.keycloak.credentials.password }}
+
+  initContainers:
+    - name: get-did
+      image: ubuntu
+      command:
+        - /bin/bash
+      args:
+        - -ec
+        - |
+          #!/bin/bash
+          apt-get -y update; apt-get -y install wget; apt-get -y install sed;
+
+          cd /did-material
+          wget http://{{ connector_services.did.name }}:{{ connector_services.did.port }}/did-material/cert.pfx
+          wget http://{{ connector_services.did.name }}:{{ connector_services.did.port }}/did-material/did.env
+          mkdir -p /did-material/client
+          cd /did-material/client
+          wget http://{{ provider.did_domain }}:3002/did-material/did.env
+          sed -i -e 's/DID/CLIENT_DID/g' /did-material/client/did.env
+          echo "" >> /did-material/did.env
+          echo $(cat /did-material/client/did.env) >> /did-material/did.env
+          echo $(cat /did-material/did.env)
+      volumeMounts:
+        - name: did-material
+          mountPath: /did-material
+
+    - name: register-at-tir
+      image: ubuntu
+      command:
+        - /bin/bash
+      args:
+        - -ec
+        - |
+          #!/bin/bash
+          source /did-material/did.env
+          apt-get -y update; apt-get -y install curl
+          curl -X 'POST' 'http://{{ trust_anchor.til_domain }}:8080/issuer' -H 'Content-Type: application/json' -d "{\"did\": \"${DID}\", \"credentials\": []}"
+      volumeMounts:
+        - name: did-material
+          mountPath: /did-material
+
+    - name: register-at-til
+      image: quay.io/curl/curl:8.1.2
+      command:
+        - /bin/sh
+      args:
+        - -ec
+        - |
+          #!/bin/sh
+          export $(cat /did-material/did.env)
+          /bin/init.sh
+      volumeMounts:
+        - name: consumer-til-registration
+          mountPath: /bin/init.sh
+          subPath: init.sh
+        - name: did-material
+          mountPath: /did-material
+
+  realm:
+    import: true
+    name: test-realm
+    frontendUrl: http://{{ connector_services.keycloak.name }}.{{ domain.base }} #:8080
+    clientRoles: |
+      "${CLIENT_DID}": [
+        {
+          "name": "READER",
+          "description": "Is allowed to see offers etc.",
+          "clientRole": true
+        },
+        {
+          "name": "OPERATOR",
+          "description": "Is allowed to operate clusters.",
+          "clientRole": true
+        }
+      ]
+    users: |
+      {
+        "username": "test-user",
+        "enabled": true,
+        "email": "test@user.org",
+        "firstName": "Test",
+        "lastName": "Reader",
+        "credentials": [
+          {
+            "type": "password",
+            "value": "test"
+          }
+        ],
+        "clientRoles": {
+          "${CLIENT_DID}": [
+            "OPERATOR"
+          ],
+          "account": [
+            "view-profile",
+            "manage-account"
+          ]
+        },
+        "groups": [
+        ]
+      }
+    clients: |
+      {
+        "clientId": "${CLIENT_DID}",
+        "enabled": true,
+        "description": "Client to connect test.org",
+        "surrogateAuthRequired": false,
+        "alwaysDisplayInConsole": false,
+        "clientAuthenticatorType": "client-secret",
+        "defaultRoles": [],
+        "redirectUris": [],
+        "webOrigins": [],
+        "notBefore": 0,
+        "bearerOnly": false,
+        "consentRequired": false,
+        "standardFlowEnabled": true,
+        "implicitFlowEnabled": false,
+        "directAccessGrantsEnabled": false,
+        "serviceAccountsEnabled": false,
+        "publicClient": false,
+        "frontchannelLogout": false,
+        "protocol": "oid4vc",
+        "attributes": {
+          "client.secret.creation.time": "1675260539",
+          "vc.user-credential.format": "jwt_vc",
+          "vc.user-credential.scope": "UserCredential",
+          "vc.verifiable-credential.format": "jwt_vc",
+          "vc.verifiable-credential.scope": "VerifiableCredential",
+          "vc.operator-credential.format": "jwt_vc",
+          "vc.operator-credential.scope": "OperatorCredential"
+        },
+        "protocolMappers": [
+          {
+            "name": "target-role-mapper",
+            "protocol": "oid4vc",
+            "protocolMapper": "oid4vc-target-role-mapper",
+            "config": {
+              "subjectProperty": "roles",
+              "clientId": "${CLIENT_DID}",
+              "supportedCredentialTypes": "OperatorCredential"
+            }
+          },
+          {
+            "name": "context-mapper",
+            "protocol": "oid4vc",
+            "protocolMapper": "oid4vc-context-mapper",
+            "config": {
+              "context": "https://www.w3.org/2018/credentials/v1",
+              "supportedCredentialTypes": "VerifiableCredential,UserCredential,OperatorCredential"
+            }
+          },
+          {
+            "name": "email-mapper",
+            "protocol": "oid4vc",
+            "protocolMapper": "oid4vc-user-attribute-mapper",
+            "config": {
+              "subjectProperty": "email",
+              "userAttribute": "email",
+              "supportedCredentialTypes": "UserCredential,OperatorCredential"
+            }
+          },
+          {
+            "name": "firstName-mapper",
+            "protocol": "oid4vc",
+            "protocolMapper": "oid4vc-user-attribute-mapper",
+            "config": {
+              "subjectProperty": "firstName",
+              "userAttribute": "firstName",
+              "supportedCredentialTypes": "UserCredential,OperatorCredential"
+            }
+          },
+          {
+            "name": "lastName-mapper",
+            "protocol": "oid4vc",
+            "protocolMapper": "oid4vc-user-attribute-mapper",
+            "config": {
+              "subjectProperty": "lastName",
+              "userAttribute": "lastName",
+              "supportedCredentialTypes": "UserCredential,OperatorCredential"
+            }
+          }
+        ],
+        "authenticationFlowBindingOverrides": {},
+        "fullScopeAllowed": true,
+        "nodeReRegistrationTimeout": -1,
+        "defaultClientScopes": [],
+        "optionalClientScopes": []
+      }
+
+# INGRESS: only open for clean up in the tests
+rainbow:
+  enabled: {{ connector_services.rainbow.enabled }}
+  fullnameOverride: {{ connector_services.rainbow.name }}
+  service:
+    serviceType: ClusterIP
+    port: {{ connector_services.rainbow.port }}
+  ingress:
+    enabled: {{ connector_services.rainbow.ingress.enabled }}
+    host: "{{ connector_services.rainbow.name }}.{{ domain.base }}"
+    # no TLS option available.
+    annotations:
+      kubernetes.io/ingress.class: "{{ ingress_kubernetes.class }}"
+      ingress.kubernetes.io/ssl-redirect: "{{ ingress_kubernetes.ssl_redirect }}"
+      kubernetes.io/tls-acme: "{{ ingress_kubernetes.tls_acme }}"
+  db:
+    url: {{ connector_services.postgresql.name }}
+    user: {{ connector_services.postgresql.user_config.name }}
+    existingSecret: {{ connector_services.postgresql.secret.name }}
+    passwordKey: {{ connector_services.postgresql.secret.key_admin }}
+    #TODO: To add DB name and port as a variable
+    # by default: rainbow and 5432
+    # https://github.com/FIWARE/data-space-connector/blob/84caaf72dc0a04c0435c88b967793e7911cfd2b0/charts/data-space-connector/templates/rainbow-deployment.yaml#L49
+    # https://github.com/FIWARE/data-space-connector/blob/84caaf72dc0a04c0435c88b967793e7911cfd2b0/charts/data-space-connector/templates/rainbow-deployment.yaml#L70
+

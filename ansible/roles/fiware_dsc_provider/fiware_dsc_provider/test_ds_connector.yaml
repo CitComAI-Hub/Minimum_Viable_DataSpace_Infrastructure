@@ -1,0 +1,10 @@
+# deploy_data_space_connector.yml
+- name: Desplegar Data Space Connector
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    # - role: trust-anchor
+    - role: connector-provider
+  # vars:
+  #   kubeconfig_path: "/ruta/a/tu/kubeconfig.yaml"

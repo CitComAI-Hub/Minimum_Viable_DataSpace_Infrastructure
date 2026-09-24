@@ -1,0 +1,874 @@
+# Source code:
+# https://github.com/FIWARE/data-space-connector/blob/main/charts/data-space-connector/values.yaml
+
+dss:
+  enabled: false
+
+elsi:
+  enabled: false
+
+#! Enable is you want to use the connector as a consumer also:
+# - registration
+# - keycloak
+
+registration:
+  enabled: false
+
+keycloak:
+  enabled: false
+
+#! should only be used for demonstrational deployments:
+# - authentication
+# - issuance
+# - did-helper
+
+# Configuration to be shared between the authentication components
+# (mysql databases).
+authentication:
+  # should a password for the database connection of authentication components
+  # be generated in the cluster
+  generatePasswords:
+    enabled: {{ connector_services.authentication.enabled }}
+    # name of the secret to put the generated password into
+    secretName: {{ connector_services.mysql.secret.name }}
+
+# Configuration to be shared between the issuance components.
+issuance:
+  #! should only be used for demonstrational deployments
+  generatePasswords:
+    enabled: {{ connector_services.issuance.enabled }}
+    secretName: {{ connector_services.issuance.secret.name }}
+
+# Configuration for the did-helper, should only be used for demonstrational
+# deployments, see https://github.com/wistefan/did-helper.
+did:
+  enabled: {{ connector_services.did.enabled }}
+  # fullnameOverride: {{ connector_services.did.name }} NOT AVAILABLE, default name: did-helper
+  secret: {{ connector_services.issuance.secret.name }}
+  serviceType: ClusterIP
+  port: {{ connector_services.did.port }}
+  # INGRESS: only open for clean up in the tests.
+  ingress:
+    enabled: {{ connector_services.did.ingress.enabled }}
+    annotations:
+      kubernetes.io/ingress.class: "{{ ingress_kubernetes.class }}"
+      ingress.kubernetes.io/ssl-redirect: "{{ ingress_kubernetes.ssl_redirect }}"
+      kubernetes.io/tls-acme: "{{ ingress_kubernetes.tls_acme }}"
+    host: "did-helper.{{ domain.base }}"
+    # tls:
+    #   - secretName: {{ tls_no_set }}
+    #     hosts:
+    #       - "did-helper.{{ domain.base }}"
+  cert:
+    country: "{{ connector_services.did.config.country }}"
+    state: "{{ connector_services.did.config.state }}"
+    locality: "{{ connector_services.did.config.locality }}"
+    organization: "{{ connector_services.did.config.organization }}"
+    commonName: "{{ connector_services.did.config.common_name }}"
+
+dataplane:
+  generatePasswords:
+    enabled: {{ connector_services.dataplane.enabled }}
+    secretName: {{ connector_services.postgis.secret.name }}
+
+## General configuration:
+dataSpaceConfig:
+  # host name: dsconfig
+  enabled: {{ connector_services.dataspace_config.enabled }}
+  serviceType: ClusterIP
+  port: {{ connector_services.dataspace_config.port }}
+  supportedModels:
+  {% for model in connector_services.dataspace_config.supported_models %}
+    - "{{ model }}"
+  {% endfor %}
+supportedProtocols:
+  {% for protocol in connector_services.dataspace_config.supported_protocols %}
+    - "{{ protocol }}"
+  {% endfor %}
+authenticationProtocols:
+  {% for auth_protocol in connector_services.dataspace_config.authentication_protocols %}
+    - "{{ auth_protocol }}"
+  {% endfor %}
+
+################################################################################
+# PROVIDER                                                                     #
+################################################################################
+
+# Configuration for the mysql to be deployed as part of the connector,
+# see https://github.com/bitnami/charts/tree/main/bitnami/mysql for all options.
+mysql:
+  enabled: {{ connector_services.mysql.enabled }}
+  fullnameOverride: {{ connector_services.mysql.name }}
+  global:
+    security:
+      allowInsecureImages: {{ helm_connector.image.allowInsecure }}
+  image:
+    repository: {{ helm_connector.image.repository }}/mysql
+  containerPort:
+    mysql: {{ connector_services.mysql.port }}
+  primary:
+    containerPorts:
+      mysql: {{ connector_services.mysql.port }}
+    service:
+      type: ClusterIP
+      ports:
+        mysql: {{ connector_services.mysql.port }}
+    persistence:
+      enabled: false
+  secondary:
+    containerPorts:
+      mysql: {{ connector_services.mysql.port }}
+    service:
+      type: ClusterIP
+      ports:
+        mysql: {{ connector_services.mysql.port }}
+    persistence:
+      enabled: false
+  auth:
+    existingSecret: {{ connector_services.mysql.secret.name }}
+    #TODO: Key names for the secrets inside the secret
+  initdbScripts:
+    # scripts to be executed on db startup
+    create.sql: |
+      CREATE DATABASE {{ connector_services.til.mysql.db }};
+      CREATE DATABASE {{ connector_services.ccs.mysql.db }};
+
+postgresql:
+  enabled: {{ connector_services.postgresql.enabled }}
+  fullnameOverride: {{ connector_services.postgresql.name }}
+  global:
+    security:
+      allowInsecureImages: {{ helm_connector.image.allowInsecure }}
+  image:
+    repository: {{ helm_connector.image.repository }}/postgresql
+  # image < default
+  generatePasswords:
+    enabled: {{ services_enabled.generate_passwords }}
+    secretName: {{ connector_services.postgresql.secret.name }}
+  # configure authentication to mysql
+  auth:
+    # name of the secret to take the passowrds from
+    existingSecret: {{ connector_services.postgresql.secret.name }}
+    # key of the secrets inside the secret
+    secretKeys:
+      adminPasswordKey: {{ connector_services.postgresql.secret.key_admin }}
+      userPasswordKey: {{ connector_services.postgresql.secret.pass_user }}
+  containerPorts:
+    postgresql: {{ connector_services.postgresql.port }}
+  # configuration for the primary of the db
+  primary:
+    service:
+      type: ClusterIP
+      ports:
+        postgresql: {{ connector_services.postgresql.port }}
+    persistence:
+      enabled: false
+    # scripts to be run on intialization
+    initdb:
+      scripts:
+        create.sh: |
+          psql postgresql://{{ connector_services.postgresql.user_config.name }}:${POSTGRES_PASSWORD}@localhost:{{ connector_services.postgresql.port }} -c "CREATE DATABASE {{ connector_services.keycloak.postgresql.db }};"
+          psql postgresql://{{ connector_services.postgresql.user_config.name }}:${POSTGRES_PASSWORD}@localhost:{{ connector_services.postgresql.port }} -c "CREATE DATABASE {{ connector_services.pap.postgresql.db }};"
+          psql postgresql://{{ connector_services.postgresql.user_config.name }}:${POSTGRES_PASSWORD}@localhost:{{ connector_services.postgresql.port }} -c "CREATE DATABASE {{ connector_services.rainbow.postgresql.db }};"
+  readReplicas:
+    service:
+      type: ClusterIP
+      ports:
+        postgresql: {{ connector_services.postgresql.port }}
+    persistence:
+      enabled: false
+
+rainbow:
+  enabled: {{ connector_services.rainbow.enabled }}
+  fullnameOverride: {{ connector_services.rainbow.name }}
+  service:
+    serviceType: ClusterIP
+    port: {{ connector_services.rainbow.port }}
+  ingress:
+    enabled: {{ connector_services.rainbow.ingress.enabled }} # only open for clean up in the tests.
+    host: "{{ connector_services.rainbow.name }}.{{ domain.base }}"
+    # no TLS option available.
+    annotations:
+      kubernetes.io/ingress.class: "{{ ingress_kubernetes.class }}"
+      ingress.kubernetes.io/ssl-redirect: "{{ ingress_kubernetes.ssl_redirect }}"
+      kubernetes.io/tls-acme: "{{ ingress_kubernetes.tls_acme }}"
+  db:
+    url: {{ connector_services.postgresql.name }}
+    user: {{ connector_services.postgresql.user_config.name }}
+    existingSecret: {{ connector_services.postgresql.secret.name }}
+    passwordKey: {{ connector_services.postgresql.secret.key_admin }}
+    #FIXME: To add DB name and port as a variable
+    # by default: rainbow and 5432
+    # https://github.com/FIWARE/data-space-connector/blob/84caaf72dc0a04c0435c88b967793e7911cfd2b0/charts/data-space-connector/templates/rainbow-deployment.yaml#L49
+    # https://github.com/FIWARE/data-space-connector/blob/84caaf72dc0a04c0435c88b967793e7911cfd2b0/charts/data-space-connector/templates/rainbow-deployment.yaml#L70
+  ccs:
+    enabled: true
+    endpoint: http://{{ connector_services.ccs.name }}:{{ connector_services.ccs.port }}
+    configMap: rainbow-registration
+    id: tpp-service #TODO: it's possible to change by a variable?
+    defaultOidcScope:
+      name: default
+    oidcScopes:
+      default:
+        - type: OperatorCredential
+          trustedParticipantsLists:
+            - http://{{ trust_anchor.til_domain }}:8080
+          trustedIssuersLists:
+            - http://{{ connector_services.til.name }}:{{ connector_services.til.port }}
+
+# Configuration for the credentials-config-service to be deployed as part of the
+# connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/credentials-config-service
+# for all options.
+credentials-config-service:
+  enabled: {{ connector_services.ccs.enabled }}
+  fullnameOverride: {{ connector_services.ccs.name }}
+  service:
+    type: ClusterIP
+    port: {{ connector_services.ccs.port }}
+  ingress: # only open for clean up in the tests.
+    enabled: {{ connector_services.ccs.ingress.enabled }}
+    annotations:
+      kubernetes.io/ingress.class: "{{ ingress_kubernetes.class }}"
+      ingress.kubernetes.io/ssl-redirect: "{{ ingress_kubernetes.ssl_redirect }}"
+      kubernetes.io/tls-acme: "{{ ingress_kubernetes.tls_acme }}"
+    hosts:
+      - host: {{ connector_services.ccs.ingress.host }}
+        paths:
+          - /
+    # tls:
+    #   - secretName: {{ tls_no_set }}
+    #     hosts:
+    #       - {{ connector_services.ccs.ingress.host }}
+  database:
+    persistence: true
+    host: {{ connector_services.mysql.name }}
+    username: {{ connector_services.mysql.user_config.root }}
+    name: {{ connector_services.ccs.mysql.db }}
+    existingSecret:
+      enabled: {{ connector_services.authentication.enabled }}
+      name: {{ connector_services.mysql.secret.name }}
+      key: {{ connector_services.mysql.secret.key }}
+
+# Configuration for the trusted-issuers-list to be deployed as part of the
+# connector, see https://github.com/FIWARE/helm-charts/tree/main/charts/trusted-issuers-list
+# for all options.
+trusted-issuers-list:
+  enabled: {{ connector_services.til.enabled }}
+  fullnameOverride: {{ connector_services.til.name }}
+  service:
+    type: ClusterIP
+    port: {{ connector_services.til.port }}
+  ingress:
+    til: # only open for clean up in the tests.
+      enabled: {{ connector_services.til.ingress.enabled }}
+      annotations:
+        kubernetes.io/ingress.class: "{{ ingress_kubernetes.class }}"
+        ingress.kubernetes.io/ssl-redirect: "{{ ingress_kubernetes.ssl_redirect }}"
+        kubernetes.io/tls-acme: "{{ ingress_kubernetes.tls_acme }}"
+      hosts:
+        - host: {{ connector_services.til.ingress.host }}
+          paths:
+            - /
+      # tls:
+      #   - secretName: {{ tls_no_set }}
+      #     hosts:
+      #       - {{ connector_services.til.ingress.host }}
+  database:
+    persistence: true
+    host: {{ connector_services.mysql.name }}
+    username: {{ connector_services.mysql.user_config.root }}
+    name: {{ connector_services.til.mysql.db }}
+    existingSecret:
+      enabled: {{ services_enabled.generate_passwords }}
+      name: {{ connector_services.mysql.secret.name }}
+      key: {{ connector_services.mysql.secret.key }}
+
+# Configuration for the vcverifier to be deployed as part of the connector,
+# see https://github.com/FIWARE/helm-charts/tree/main/charts/vcverifier for all options.
+# INGRESS: only open for clean up in the tests.
+vcverifier:
+  enabled: {{ connector_services.vcv.enabled }}
+  fullnameOverride: {{ connector_services.vcv.name }}
+  service:
+    type: ClusterIP
+    annotations: {}
+    port: {{ connector_services.vcv.port }}
+  # m2m > default
+  ingress:
+    enabled: {{ connector_services.vcv.ingress.enabled }}
+    annotations:
+      kubernetes.io/ingress.class: "{{ ingress_kubernetes.class }}"
+      ingress.kubernetes.io/ssl-redirect: "{{ ingress_kubernetes.ssl_redirect }}"
+      kubernetes.io/tls-acme: "{{ ingress_kubernetes.tls_acme }}"
+    hosts:
+      - host: {{ connector_services.vcv.ingress.host }}
+        paths:
+          - /
+    # tls:
+    #   - secretName: {{ tls_no_set }}
+    #     hosts:
+    #       - {{ connector_services.vcv.ingress.host }}
+  deployment:
+    logging:
+      level: DEBUG
+    verifier:
+      tirAddress: http://{{ connector_services.til.name }} #:8080
+      did: ${DID}
+    server:
+      host: http://{{ connector_services.vcv.ingress.host }} #:8080
+    configRepo:
+      configEndpoint: http://{{ connector_services.ccs.name }}:{{ connector_services.ccs.port }}
+    alternativeConfig: /alternative-conf/server.yaml
+    additionalVolumes:
+      - name: did-material
+        emptyDir: {}
+      - name: alternative-conf
+        emptyDir: {}
+    additionalVolumeMounts:
+      - name: alternative-conf
+        mountPath: /alternative-conf
+    initContainers:
+      - name: get-did
+        image: ubuntu
+        command:
+          - /bin/bash
+        args:
+          - -ec
+          - |
+            #!/bin/bash
+            apt-get -y update; apt-get -y install wget; apt-get -y install gettext-base
+            cd /did-material
+            wget http://{{ connector_services.did.name }}:{{ connector_services.did.port }}/did-material/did.env
+            export $(cat /did-material/did.env)
+            cp /original-conf/server.yaml /alternative-conf/server.yaml
+            envsubst < /alternative-conf/server.yaml
+        volumeMounts:
+          - name: did-material
+            mountPath: /did-material
+          - name: config-volume
+            mountPath: /original-conf
+          - name: alternative-conf
+            mountPath: /alternative-conf
+
+# Configuration for the odrl-pap to be deployed as part of the connector,
+# see https://github.com/FIWARE/helm-charts/tree/main/charts/odrl-pap for all options.
+# INGRESS: only open for clean up in the tests.
+odrl-pap:
+  enabled: {{ connector_services.pap.enabled }}
+  fullnameOverride: {{ connector_services.pap.name }}
+  service:
+    type: ClusterIP
+    port: {{ connector_services.pap.port }}
+  ingress:
+    enabled: {{ connector_services.pap.ingress.enabled }}
+    annotations:
+      kubernetes.io/ingress.class: "{{ ingress_kubernetes.class }}"
+      ingress.kubernetes.io/ssl-redirect: "{{ ingress_kubernetes.ssl_redirect }}"
+      kubernetes.io/tls-acme: "{{ ingress_kubernetes.tls_acme }}"
+    hosts:
+      - host: {{ connector_services.pap.ingress.host }}
+        paths:
+          - /
+    # tls:
+    #   - secretName: {{ tls_no_set }}
+    #     hosts:
+    #       - {{ connector_services.pap.ingress.host }}
+  deployment:
+    initContainers:
+      - name: get-did
+        image: ubuntu
+        command:
+          - /bin/bash
+        args:
+          - -ec
+          - |
+            #!/bin/bash
+            apt-get -y update; apt-get -y install wget
+            cd /did-material
+            wget http://{{ connector_services.did.name }}:{{ connector_services.did.port }}/did-material/did.env
+        volumeMounts:
+          - name: did-material
+            mountPath: /did-material
+    additionalVolumes:
+      - name: did-material
+        emptyDir: {}
+    additionalVolumeMounts:
+      - name: did-material
+        mountPath: /did-material
+    command:
+      - /bin/sh
+    args:
+      - -ec
+      - |
+        #!/bin/sh
+        source /did-material/did.env
+        export GENERAL_ORGANIZATION_DID=$$DID
+        ./application -Dquarkus.http.host=0.0.0.0
+  database:
+    username: {{ connector_services.postgresql.user_config.name }}
+    url: jdbc:postgresql://{{ connector_services.postgresql.name }}:{{ connector_services.postgresql.port }}/{{ connector_services.pap.postgresql.db }}
+    existingSecret:
+      enabled: {{ connector_services.dataplane.enabled }}
+      name: {{ connector_services.postgresql.secret.name }}
+      key: {{ connector_services.postgresql.secret.key_admin }}
+
+# Configuration for the open-policy-agent to be deployed as part of the connector
+# fulfilling the role of the PDP, as a sidecar to apisix.
+opa:
+  enabled: {{ connector_services.opa.enabled }}
+  resourceUrl: http://{{ connector_services.pap.name }}:{{ connector_services.pap.port }}/bundles/service/v1
+  port: {{ connector_services.opa.port }}
+  # pull delays for the policies bundle
+  policies:
+    minDelay: 2
+    maxDelay: 4
+  # pull delays for the methods bundle
+  methods:
+    minDelay: 1
+    maxDelay: 3
+  # pull delays for the data bundle
+  data:
+    minDelay: 1
+    maxDelay: 15
+
+# etcd:
+#   enabled: false
+
+# Configuration for apisix to be deployed as part of the connector,
+# see https://github.com/bitnami/charts/tree/main/bitnami/apisix for all options.
+apisix:
+  enabled: {{ connector_services.apisix.enabled }}
+  fullnameOverride: {{ connector_services.apisix.name.service }}
+  # service:
+  #   type: ClusterIP
+  image:
+    debug: true
+    repository: {{ helm_connector.image.repository }}/apisix
+  waitContainer:
+    image:
+      repository: {{ helm_connector.image.repository }}/os-shell
+  # autoscaling:
+  #   enabled: true
+  #   version: v2
+  #   minReplicas: 2
+  #   maxReplicas: 5
+  #   targetCPUUtilizationPercentage: 80
+  #   targetMemoryUtilizationPercentage: 80
+  controlPlane:
+    enabled: true
+    resourcesPreset: {{ connector_services.apisix.resource_preset }}
+  # ingressController > default
+  etcd:
+    enabled: true
+    image:
+      repository: {{ helm_connector.image.repository }}/etcd
+  dataPlane:
+    enabled: true
+    resourcesPreset: {{ connector_services.apisix.resource_preset }}
+    # extraConfig > default
+    # extraVolumes > default
+    # extraVolumeMounts > default
+    # sidecars > default
+    ingress:
+      enabled: {{ connector_services.apisix.ingress.enabled }}
+      annotations:
+        kubernetes.io/ingress.class: "{{ ingress_kubernetes.class }}"
+        ingress.kubernetes.io/ssl-redirect: "{{ ingress_kubernetes.ssl_redirect }}"
+        kubernetes.io/tls-acme: "{{ ingress_kubernetes.tls_acme }}"
+      hostname: {{ connector_services.apisix.ingress.host }}
+      # tls:
+      #   - secretName: {{ tls_no_set }}
+      #     hosts:
+      #       - {{ connector_services.apisix.ingress.host }}
+      extraHosts:
+        - name: {{ connector_services.apisix.ingress.api_domain }}
+          path: /
+        - name: {{ connector_services.apisix.ingress.rainbow.data_domain }}
+          path: /
+        - name: {{ connector_services.apisix.ingress.rainbow.service_domain }}
+          path: /
+        - name: {{ connector_services.apisix.ingress.rainbow.catalog_domain }} #BUG: This is not configured in the original repo
+          path: /
+  dashboard:
+    enabled: false
+    resourcesPreset: {{ connector_services.apisix.resource_preset }}
+  catchAllRoute:
+    enabled: false
+  routes: |-
+    # (any endpoint) -> DSConfig
+    - uri: /.well-known/data-space-configuration
+      # no specific host, so it will match all
+      upstream:
+        nodes:
+          dsconfig:{{ connector_services.dataspace_config.port }}: 1
+        type: roundrobin
+      plugins:
+        proxy-rewrite:
+          uri: /.well-known/data-space-configuration/data-space-configuration.json
+        response-rewrite:
+          headers:
+            set:
+              content-type: application/json
+
+    # APISIX -> VCVERIFIER
+    - uri: /.well-known/openid-configuration
+      host: {{ connector_services.apisix.ingress.host }}
+      upstream:
+        nodes:
+          {{ connector_services.vcv.name }}:{{ connector_services.vcv.port }}: 1
+        type: roundrobin
+      plugins:
+        proxy-rewrite:
+          uri: /services/data-service/.well-known/openid-configuration
+
+    # APISIX -> SCORPIO
+    - uri: /*
+      host: {{ connector_services.apisix.ingress.host }}
+      upstream:
+        nodes:
+          {{ connector_services.scorpio.name }}:{{ connector_services.scorpio.port }}: 1
+        type: roundrobin
+      plugins:
+        openid-connect:
+          bearer_only: true
+          use_jwks: true
+          client_id: data-service
+          client_secret: unused
+          ssl_verify: false
+          discovery: http://{{ connector_services.vcv.name }}:{{ connector_services.vcv.port }}/services/data-service/.well-known/openid-configuration
+        opa:
+          host: "http://localhost:8181"
+          policy: policy/main
+          with_body: true
+
+    # APISIX API -> TMF-API
+    - uri: /*
+      host: {{ connector_services.apisix.ingress.api_domain }}
+      upstream:
+        nodes:
+          {{ connector_services.tmforum_api.name }}:{{ connector_services.tmforum_api.port }}: 1
+        type: roundrobin
+      plugins:
+        openid-connect:
+          bearer_only: true
+          use_jwks: true
+          client_id: {{ connector_services.cm.name }}
+          client_secret: unused
+          ssl_verify: false
+          discovery: http://{{ connector_services.vcv.name }}:{{ connector_services.vcv.port }}/services/tmf-api/.well-known/openid-configuration
+        opa:
+          host: "http://localhost:8181"
+          policy: policy/main
+          with_body: true
+
+    # APISIX API -> VCVERIFIER
+    - uri: /.well-known/openid-configuration
+      host: {{ connector_services.apisix.ingress.api_domain }}
+      upstream:
+        nodes:
+          {{ connector_services.vcv.name }}:{{ connector_services.vcv.port }}: 1
+        type: roundrobin
+      plugins:
+        proxy-rewrite:
+          uri: /services/tmf-api/.well-known/openid-configuration
+
+    # TPP (service) -> rainbow
+    - uri: /*
+      host: {{ connector_services.apisix.ingress.rainbow.service_domain }}
+      upstream:
+        nodes:
+          {{ connector_services.rainbow.name }}:{{ connector_services.rainbow.port }}: 1
+      plugins:
+        # Authentication with OpenID
+        openid-connect:
+          bearer_only: true
+          use_jwks: true
+          client_id: data-service
+          client_secret: unused
+          ssl_verify: false
+          discovery: http://{{ connector_services.vcv.name }}:{{ connector_services.vcv.port }}/services/data-service/.well-known/openid-configuration
+        opa:
+          host: "http://localhost:8181"
+          policy: policy/main
+          with_body: true
+
+    # TPP (service) -> VCVERIFIER
+    - uri: /.well-known/openid-configuration
+      host: {{ connector_services.apisix.ingress.rainbow.service_domain }}
+      upstream:
+        nodes:
+          {{ connector_services.vcv.name }}:{{ connector_services.vcv.port }}: 1
+        type: roundrobin
+      plugins:
+        proxy-rewrite:
+          uri: /services/tpp-service/.well-known/openid-configuration
+
+    # TPP (data) -> SCORPIO
+    - uri: /*
+      host: {{ connector_services.apisix.ingress.rainbow.data_domain }}
+      upstream:
+        nodes:
+          {{ connector_services.scorpio.name }}:{{ connector_services.scorpio.port }}: 1
+        type: roundrobin
+      plugins:
+        # Authentication with OpenID
+        openid-connect:
+          bearer_only: true
+          use_jwks: true
+          client_id: contract-management
+          client_secret: unused
+          ssl_verify: false
+          discovery: http://{{ connector_services.vcv.name }}:{{ connector_services.vcv.port }}/services/tmf-api/.well-known/openid-configuration
+        opa:
+          host: "http://localhost:8181"
+          policy: tpp
+
+    # TPP (catalog) -> rainbow
+    - uri: /api/v1/catalogs
+      host: {{ connector_services.apisix.ingress.rainbow.catalog_domain }}
+      upstream:
+        nodes:
+          {{ connector_services.rainbow.name }}:{{ connector_services.rainbow.port }}: 1
+
+# Configuration for the postgresql to be deployed as part of the connector, see
+# https://github.com/bitnami/charts/tree/main/bitnami/postgresql for all options.
+postgis:
+  enabled: {{ connector_services.postgis.enabled }}
+  # image < default
+  fullnameOverride: {{ connector_services.postgis.name }}
+  nameOverride: {{ connector_services.postgis.name }}
+  global:
+    security:
+      allowInsecureImages: {{ helm_connector.image.allowInsecure }}
+  image:
+    repository: {{ helm_connector.image.repository }}/postgresql
+  auth:
+    existingSecret: {{ connector_services.postgis.secret.name }}
+    secretKeys:
+      adminPasswordKey: {{ connector_services.postgis.secret.key_admin }}
+      userPasswordKey: {{ connector_services.postgis.secret.key_user }}
+  primary:
+    service:
+      type: ClusterIP
+      ports:
+        postgresql: {{ connector_services.postgis.port }}
+    persistence:
+      enabled: false
+    initdb:
+      scripts:
+        enable.sh: |
+          psql postgresql://{{ connector_services.postgis.user_config.name }}:${POSTGRES_PASSWORD}@localhost:{{ connector_services.postgis.port }} -c "CREATE EXTENSION postgis;"
+          psql postgresql://{{ connector_services.postgis.user_config.name }}:${POSTGRES_PASSWORD}@localhost:{{ connector_services.postgis.port }} -c "CREATE DATABASE {{ connector_services.postgis.database }};"
+  readReplicas:
+    service:
+      type: ClusterIP
+      ports:
+        postgresql: {{ connector_services.postgis.port }}
+    persistence:
+      enabled: false
+
+# Configuration of the context-broker
+# see https://github.com/FIWARE/helm-charts/tree/main/charts/scorpio-broker-aaio for details.
+scorpio:
+  enabled: {{ connector_services.scorpio.enabled }}
+  fullnameOverride: {{ connector_services.scorpio.name }}
+  # image < default
+  # readinessProbe < default
+  # livenessProbe < default
+  service:
+    type: ClusterIP # NodePort default
+    port: {{ connector_services.scorpio.port }}
+  ingress: # only open for clean up in the tests.
+    enabled: {{ connector_services.scorpio.ingress.enabled }}
+    annotations:
+      kubernetes.io/ingress.class: "{{ ingress_kubernetes.class }}"
+      ingress.kubernetes.io/ssl-redirect: "{{ ingress_kubernetes.ssl_redirect }}"
+      kubernetes.io/tls-acme: "{{ ingress_kubernetes.tls_acme }}"
+    hosts:
+      - host: {{ connector_services.scorpio.ingress.host }}
+        paths:
+          - /
+    # tls:
+    #   - secretName: {{ tls_no_set }}
+    #     hosts:
+    #       - {{ connector_services.scorpio.ingress.host }}
+  # configuration of the database to be used by broker
+  db:
+    dbhost: {{ connector_services.postgis.name }}
+    user: {{ connector_services.postgis.user_config.name }}
+    existingSecret:
+      enabled: {{ services_enabled.generate_passwords }}
+      name: {{ connector_services.postgis.secret.name }}
+      key: {{ connector_services.postgis.secret.key_admin }}
+  # initContainers < default
+  # additionalVolumes < default
+  # configuration to register the dataplane at the credentials-config-service
+  ccs:
+    endpoint: http://{{ connector_services.ccs.name }}:{{ connector_services.ccs.port }}
+    configMap: scorpio-registration
+    id: data-service
+    defaultOidcScope:
+      name: default
+    oidcScopes:
+      default:
+        - type: UserCredential
+          # TODO: port to variable?
+          trustedParticipantsLists:
+            - http://{{ trust_anchor.til_domain }}:8080
+          trustedIssuersLists:
+            - http://{{ connector_services.til.name }}:{{ connector_services.til.port }}
+      operator:
+        - type: OperatorCredential
+          # TODO: port to variable?
+          trustedParticipantsLists:
+            - http://{{ trust_anchor.til_domain }}:8080
+          trustedIssuersLists:
+            - http://{{ connector_services.til.name }}:{{ connector_services.til.port }}
+
+# Configuration of the tm-forum-api - see
+# https://github.com/FIWARE/helm-charts/tree/main/charts/tm-forum-api for details.
+# INGRESS: only open for clean up in the tests.
+tm-forum-api:
+  enabled: {{ connector_services.tmforum_api.enabled }}
+  fullnameOverride: {{ connector_services.tmforum_api.name }}
+  service:
+    type: ClusterIP
+    port: {{ connector_services.tmforum_api.port }}
+  defaultConfig:
+    ngsiLd:
+      url: http://{{ connector_services.scorpio.name }}:{{ connector_services.scorpio.port }}
+    contextUrl: https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld
+    additionalEnvVars:
+      - name: API_EXTENSION_ENABLED
+        value: "true"
+      - name: MICRONAUT_METRICS_ENABLED
+        value: "false"
+      - name: MICRONAUT_METRICS_BINDERS_PROCESSOR_ENABLED
+        value: "false"
+      - name: MICRONAUT_METRICS_BINDERS_JVM_ENABLED
+        value: "false"
+      - name: MICRONAUT_METRICS_BINDERS_SYSTEM_ENABLED
+        value: "false"
+      - name: JAVA_OPTS
+        value: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Dmicronaut.metrics.enabled=false -Djava.security.egd=file:/dev/./urandom"
+  ingress:
+    enabled: {{ connector_services.tmforum_api.ingress.enabled }}
+    annotations:
+      kubernetes.io/ingress.class: "{{ ingress_kubernetes.class }}"
+      ingress.kubernetes.io/ssl-redirect: "{{ ingress_kubernetes.ssl_redirect }}"
+      kubernetes.io/tls-acme: "{{ ingress_kubernetes.tls_acme }}"
+    hosts:
+      - host: {{ connector_services.tmforum_api.ingress.host }}
+        paths:
+          - /
+    # tls:
+    #   - secretName: {{ tls_no_set }}
+    #     hosts:
+    #       - {{ connector_services.tmforum_api.ingress.host }}
+  # enable the api proxy
+  apiProxy:
+    enabled: true
+    # image > default
+    service:
+      # name to be used for the proxy service.
+      nameOverride: {{ connector_services.tmforum_api.name }}-proxy
+  # redis caching
+  redis:
+    enabled: false
+  # List of apis to be deployed:
+  # - every api needs to define a name and image. Basepath is required when routes
+  #   or ingress will be enabled. Beside that, they can overwrite the default-config
+  #   by using the same keys.
+  # - be aware: when you change the image repositrory or the tag for an api, you
+  #   have to provide both values for the changes to take effect.
+  apis:
+    - name: party-catalog
+      image: tmforum-party-catalog
+      basePath: /tmf-api/party/v4
+
+    - name: customer-bill-management
+      image: tmforum-customer-bill-management
+      basePath: /tmf-api/customerBillManagement/v4
+
+    - name: customer-management
+      image: tmforum-customer-management
+      basePath: /tmf-api/customerManagement/v4
+
+    - name: product-catalog
+      image: tmforum-product-catalog
+      basePath: /tmf-api/productCatalogManagement/v4
+
+    - name: product-inventory
+      image: tmforum-product-inventory
+      basePath: /tmf-api/productInventory/v4
+
+    - name: product-ordering-management
+      image: tmforum-product-ordering-management
+      basePath: /tmf-api/productOrderingManagement/v4
+
+    - name: resource-catalog
+      image: tmforum-resource-catalog
+      basePath: /tmf-api/resourceCatalog/v4
+
+    - name: resource-function-activation
+      image: tmforum-resource-function-activation
+      basePath: /tmf-api/resourceFunctionActivation/v4
+
+    - name: resource-inventory
+      image: tmforum-resource-inventory
+      basePath: /tmf-api/resourceInventoryManagement/v4
+
+    - name: service-catalog
+      image: tmforum-service-catalog
+      basePath: /tmf-api/serviceCatalogManagement/v4
+  
+  registration:
+    enabled: true
+    # name to be used for the registration jobs
+    name: {{ connector_services.tmforum_api.name }}-registration
+    # configuration to register the dataplane at the credentials-config-service
+    ccs:
+      endpoint: http://{{ connector_services.ccs.name }}:{{ connector_services.ccs.port }}
+      # service id of the data-service to be used
+      id: tmf-api
+      # default scope to be created for the data plane
+      defaultOidcScope:
+        # name of the scope
+        name: default
+        # name of the default credential to be configured
+        credentialType: UserCredential
+        trustedParticipantsLists: http://{{ trust_anchor.til_domain }}:8080
+        trustedIssuersLists: http://{{ connector_services.til.name }}:{{ connector_services.til.port }}
+
+
+# Configuration of the tm-forum-api - see
+# https://github.com/FIWARE/helm-charts/tree/main/charts/contract-management for details.
+contract-management:
+  enabled: {{ connector_services.cm.enabled }}
+  fullnameOverride: {{ connector_services.cm.name }}
+  service:
+    type: ClusterIP
+    port: {{ connector_services.cm.port }}
+  til:
+    credentialType: OperatorCredential
+  services:
+    trusted-issuers-list:
+      url: http://{{ connector_services.til.name }}:{{ connector_services.til.port }}
+    product-order:
+      url: http://{{ connector_services.tmforum_api.name }}-proxy:{{ connector_services.tmforum_api.port }}
+    party:
+      url: http://{{ connector_services.tmforum_api.name }}-proxy:{{ connector_services.tmforum_api.port }}
+    product-catalog:
+      url: http://{{ connector_services.tmforum_api.name }}-proxy:{{ connector_services.tmforum_api.port }}
+    service-catalog:
+      url: http://{{ connector_services.tmforum_api.name }}-proxy:{{ connector_services.tmforum_api.port }}
+    tmforum-agreement-api:
+      url: http://{{ connector_services.tmforum_api.name }}-proxy:{{ connector_services.tmforum_api.port }}
+    rainbow:
+      url: http://{{ connector_services.rainbow.name }}:{{ connector_services.rainbow.port }}
+
+tpp:
+  enabled: {{ connector_services.tpp.enabled }}
+  transfers:
+    host: http://{{ connector_services.rainbow.name }}:{{ connector_services.rainbow.port }}
+    path: transfers

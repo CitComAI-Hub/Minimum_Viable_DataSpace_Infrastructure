@@ -38,3 +38,7 @@ The following diagram shows the main blocks of the architecture of the consumer 
 > [!WARNING]
 > By default the consumer DID issuer is not registered in the trust anchor. You can register it by running the service `registration` (only for test environments).
 
+## FDS Local Pre-Configured
+
+The FIWARE Data Space (FDS) Local Pre-Configured is a Helm chart that allows the deployment of a local pre-configured data space. The local pre-configured data space is a set of components that are pre-configured to work together. 
+

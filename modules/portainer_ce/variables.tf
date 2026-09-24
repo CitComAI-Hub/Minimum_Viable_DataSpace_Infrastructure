@@ -14,6 +14,7 @@ variable "img_version" {
   type        = string
   description = "Portainer docker image version"
   default     = "2.19.4"
+  # default     = "2.23.0-alpine"
 }
 
 variable "add_ports" {
