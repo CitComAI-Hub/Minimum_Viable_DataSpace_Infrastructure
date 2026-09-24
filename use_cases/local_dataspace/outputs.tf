@@ -3,7 +3,17 @@ output "tir_service" {
   value       = module.trust_anchor.tir_service
 }
 
-output "tailscale_hostname" {
+output "keycloak_base_url" {
+  description = "URL interna de Keycloak"
+  value       = module.onboarding_portal.keycloak_base_url
+}
+
+output "trust_anchor_tailscale_hostname" {
   description = "Hostname del TIR en la Tailnet"
   value       = module.trust_anchor.tailscale_hostname
+}
+
+output "onboarding_tailscale_hostname" {
+  description = "Hostname del portal de onboarding en la Tailnet"
+  value       = module.onboarding_portal.tailscale_hostname
 }
