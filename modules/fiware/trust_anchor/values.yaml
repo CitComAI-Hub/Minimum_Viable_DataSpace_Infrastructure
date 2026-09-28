@@ -1,0 +1,43 @@
+postgres-operator:
+  enabled: ${postgres_operator_enabled}
+
+managedPostgres:
+  enabled: ${managed_postgres_enabled}
+
+trusted-issuers-list:
+  enabled: true
+  fullnameOverride: "tir"
+  service:
+    port: 8080
+  database:
+    persistence: true
+    host: "postgres"
+    port: 5432
+    name: "tildb"
+    username: "til"
+  # database:
+  #   persistence: true
+  #   dialect: POSTGRES
+  #   username: postgres
+  #   existingSecret:
+  #     enabled: true
+  #     name: postgres.postgres.credentials.postgresql.acid.zalan.do
+  #     key: password
+  #   host: postgres
+  #   port: 5432
+  #   name: tildb
+
+  ingress:
+    tir:
+      enabled: ${tailscale_enabled}
+      className: "tailscale"
+      annotations:
+        tailscale.com/tags: "tag:k8s-operator"
+      hosts:
+        - host: ${tailscale_hostname}
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - hosts:
+            - ${tailscale_hostname}
