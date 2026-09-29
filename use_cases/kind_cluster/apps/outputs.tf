@@ -13,6 +13,11 @@ output "ingress_annotations" {
   value       = module.tailscale.ingress_annotations
 }
 
+output "egress_proxy_group_name" {
+  description = "Egress ProxyGroup that lets pods reach Tailnet names (for modules/tailscale/egress)"
+  value       = module.tailscale.egress_proxy_group_name
+}
+
 output "tailscale_letsencrypt_staging" {
   description = "Whether the HTTPS certificates of the Tailnet services come from Let's Encrypt staging (not publicly trusted)"
   value       = module.tailscale.letsencrypt_staging
@@ -20,7 +25,12 @@ output "tailscale_letsencrypt_staging" {
 
 output "vault_ui_url" {
   description = "Vault UI in the Tailnet"
-  value       = "https://${module.vault.hostname}.${var.tailnet_domain}"
+  value       = "https://${module.vault.hostname}.${module.tailscale.tailnet_domain}"
+}
+
+output "tailnet_domain" {
+  description = "MagicDNS domain of the Tailnet (also in the ConfigMap tailscale/tailnet)"
+  value       = module.tailscale.tailnet_domain
 }
 
 output "vault_internal_address" {

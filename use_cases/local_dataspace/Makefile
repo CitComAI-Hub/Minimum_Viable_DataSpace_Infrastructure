@@ -1,8 +1,8 @@
 .PHONY: init_apply destroy cleanup_tailscale
 
 ## Tailnet hostnames of the Ingresses in this use case
-## (must match the trust_anchor_*_hostname variables)
-TAILSCALE_HOSTNAMES ?= tir til
+## (must match the *_hostname variables)
+TAILSCALE_HOSTNAMES ?= tir til keycloak onboarding
 
 init_apply:
 	$(MAKE) -C ../kind_cluster init_apply

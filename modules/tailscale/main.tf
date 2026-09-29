@@ -67,9 +67,9 @@ resource "kubectl_manifest" "proxy_class" {
     metadata = {
       name = local.proxy_class_name
     }
-    spec = {
-      useLetsEncryptStagingEnvironment = var.letsencrypt_staging
-    }
+    # Only set when true: the API server drops the false default, which would
+    # otherwise show up as a change on every plan
+    spec = { for k, v in { useLetsEncryptStagingEnvironment = true } : k => v if var.letsencrypt_staging }
   })
 
   # The ProxyClass CRD is installed by the operator chart

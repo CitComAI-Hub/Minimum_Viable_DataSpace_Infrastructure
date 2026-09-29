@@ -8,6 +8,7 @@ module "tailscale" {
   oauth_client_secret         = var.tailscale_oauth_client_secret
   operator_hostname           = "${var.cluster_name}-ts-operator"
   proxy_group_hostname_prefix = "${var.cluster_name}-ingress"
+  egress_hostname_prefix      = "${var.cluster_name}-egress"
   letsencrypt_staging         = var.tailscale_letsencrypt_staging
 }
 

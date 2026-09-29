@@ -27,23 +27,9 @@ locals {
         storageClass = var.storage_class
       }
 
+      # Own Ingress below, so Terraform can wait for its Tailnet address
       ingress = {
-        enabled          = var.ingress_enabled
-        ingressClassName = var.ingress_class_name
-        annotations      = var.ingress_annotations
-        # The Tailscale name comes from tls.hosts. The rule has no host: an Ingress
-        # served by a ProxyGroup ignores rules whose host is not the full Tailnet FQDN
-        hosts = [
-          {
-            host  = ""
-            paths = [] # the chart defaults to "/"
-          }
-        ]
-        tls = [
-          {
-            hosts = [var.hostname]
-          }
-        ]
+        enabled = false
       }
     }
 
@@ -68,4 +54,44 @@ resource "helm_release" "vault" {
   timeout = 600
 
   values = [yamlencode(local.vault_values)]
+}
+
+# With the "tailscale" class the Tailnet name comes from tls.hosts, and the rule has no
+# host because an Ingress served by a ProxyGroup ignores rules whose host is not the
+# full Tailnet FQDN. The apply does not wait for its address: it only appears once the
+# TLS certificate is issued, which Let's Encrypt rate limits may delay for days.
+resource "kubernetes_ingress_v1" "vault" {
+  count = var.ingress_enabled ? 1 : 0
+
+  metadata {
+    name        = "vault"
+    namespace   = helm_release.vault.namespace
+    annotations = var.ingress_annotations
+  }
+
+  spec {
+    ingress_class_name = var.ingress_class_name
+
+    tls {
+      hosts = [var.hostname]
+    }
+
+    rule {
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+
+          backend {
+            service {
+              name = "vault"
+              port {
+                number = 8200
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }

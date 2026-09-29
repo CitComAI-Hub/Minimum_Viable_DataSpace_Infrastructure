@@ -12,7 +12,6 @@ output "hostname" {
   description = "Hostname of the Vault Ingress (null when there is no Ingress)"
   value       = var.ingress_enabled ? var.hostname : null
 }
-
 output "root_token_command" {
   description = "Command that prints the root token to log into the UI (created by the bootstrap)"
   value       = "kubectl -n ${helm_release.vault.namespace} get secret vault-init -o jsonpath='{.data.init_json}' | base64 -d | jq -r .root_token"

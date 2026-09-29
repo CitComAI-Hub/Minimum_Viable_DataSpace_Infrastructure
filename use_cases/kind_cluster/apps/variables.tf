@@ -22,12 +22,6 @@ variable "tailscale_oauth_client_secret" {
   sensitive   = true
 }
 
-variable "tailnet_domain" {
-  description = "MagicDNS domain of the Tailnet (e.g. tail1234.ts.net), only used to print full URLs in the outputs"
-  type        = string
-  default     = "<your-tailnet>.ts.net"
-}
-
 variable "vault_hostname" {
   description = "Tailnet hostname of the Vault UI and API"
   type        = string

@@ -6,9 +6,9 @@ CLUSTER_NAME ?= kind-cluster
 export TF_VAR_cluster_name := $(CLUSTER_NAME)
 
 ## Tailnet devices and Tailscale Services created by this use case: the operator,
-## the ProxyGroup replicas (<CLUSTER_NAME>-ingress-N) and the Vault service (must
-## match the vault_hostname variable)
-TAILSCALE_HOSTNAMES ?= $(CLUSTER_NAME)-ts-operator $(CLUSTER_NAME)-ingress vault
+## the ProxyGroup replicas (<CLUSTER_NAME>-ingress-N, <CLUSTER_NAME>-egress-N) and
+## the Vault service (must match the vault_hostname variable)
+TAILSCALE_HOSTNAMES ?= $(CLUSTER_NAME)-ts-operator $(CLUSTER_NAME)-ingress $(CLUSTER_NAME)-egress vault
 
 ## Deploys the whole infrastructure in two layers:
 ##   1. ./     → Kind cluster (writes the kubeconfig)

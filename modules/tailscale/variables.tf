@@ -63,3 +63,27 @@ variable "letsencrypt_staging" {
   type        = bool
   default     = false
 }
+
+variable "egress_enabled" {
+  description = "Lets pods reach Tailnet names (<host>.<tailnet>.ts.net) through an egress ProxyGroup and a cluster DNS zone for ts.net. Needed when a service must call another one by its public Tailnet URL (e.g. an OIDC issuer)"
+  type        = bool
+  default     = true
+}
+
+variable "egress_proxy_group_name" {
+  description = "Name of the egress ProxyGroup, referenced by the Services created with modules/tailscale/egress"
+  type        = string
+  default     = "egress"
+}
+
+variable "egress_hostname_prefix" {
+  description = "Prefix of the egress ProxyGroup device names in the Tailnet. Keep it unique per cluster"
+  type        = string
+  default     = "egress"
+}
+
+variable "egress_replicas" {
+  description = "Number of egress ProxyGroup replicas (one Tailnet device each)"
+  type        = number
+  default     = 1
+}

@@ -41,3 +41,15 @@ output "letsencrypt_staging" {
   description = "Whether Ingress certificates come from Let's Encrypt staging (not publicly trusted)"
   value       = var.letsencrypt_staging
 }
+
+output "egress_proxy_group_name" {
+  description = "Egress ProxyGroup for modules/tailscale/egress (null when egress is disabled)"
+  value       = var.egress_enabled ? var.egress_proxy_group_name : null
+  # Referencing this output waits for the egress proxies and the cluster DNS zone
+  depends_on = [kubernetes_config_map_v1_data.coredns]
+}
+
+output "tailnet_domain" {
+  description = "MagicDNS domain of the Tailnet (e.g. tail1234.ts.net), also published in the ConfigMap tailscale/tailnet (key domain)"
+  value       = kubernetes_config_map_v1.tailnet.data["domain"]
+}
