@@ -6,7 +6,7 @@ El módulo:
 
 - Instala el chart remoto y sus dependencias Helm.
 - Despliega el Trusted Issuers List (`tir`) con PostgreSQL gestionado por el chart.
-- Publica el endpoint TIR mediante un Ingress de Tailscale (`https://tir.<tu-tailnet>.ts.net`) por defecto.
+- Publica las APIs TIR (`https://tir.<tu-tailnet>.ts.net/v4/issuers`) y TIL (`https://til.<tu-tailnet>.ts.net/issuer`) con un Ingress de clase `tailscale` cada una. Se configuran con `ingress_class_name`, `tir_hostname` y `til_hostname`.
 - Expone el endpoint interno como `tir.<namespace>.svc.cluster.local:8080` para los servicios del clúster.
 
 ## Uso

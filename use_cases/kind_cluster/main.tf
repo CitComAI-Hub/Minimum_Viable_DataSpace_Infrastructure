@@ -4,17 +4,6 @@ module "local_k8s_cluster" {
   cluster_name    = var.cluster_name
   kubeconfig_path = pathexpand(var.kubernetes_local_path)
 
-  add_extra_ports = [
-    {
-      container_port = 80
-      host_port      = 80
-      protocol       = "TCP"
-    },
-    {
-      container_port = 443
-      host_port      = 443
-      protocol       = "TCP"
-    }
-  ]
+  # Sin puertos en el host: todo el tráfico entra por los Ingress de Tailscale
+  add_extra_ports = []
 }
-

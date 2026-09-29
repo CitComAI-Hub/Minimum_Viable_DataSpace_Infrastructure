@@ -5,6 +5,13 @@ set -e
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TFVARS_FILE="$DIR/apps/terraform.tfvars"
 
+# Dispositivos a eliminar: sus hostnames exactos (o con sufijo -N) en la Tailnet
+HOSTNAMES=("$@")
+if [[ ${#HOSTNAMES[@]} -eq 0 ]]; then
+  echo "Uso: $0 <hostname> [<hostname> ...]"
+  exit 1
+fi
+
 CLIENT_ID="${TF_VAR_tailscale_oauth_client_id:-$TAILSCALE_CLIENT_ID}"
 CLIENT_SECRET="${TF_VAR_tailscale_oauth_client_secret:-$TAILSCALE_CLIENT_SECRET}"
 
@@ -31,7 +38,7 @@ if [[ -z "$ACCESS_TOKEN" ]]; then
   exit 0
 fi
 
-echo "[Tailscale Cleanup] Buscando dispositivos asociados a tag:k8s-operator..."
+echo "[Tailscale Cleanup] Buscando dispositivos: ${HOSTNAMES[*]}..."
 DEVICES_JSON=$(curl -s -f -H "Authorization: Bearer $ACCESS_TOKEN" "https://api.tailscale.com/api/v2/tailnet/-/devices" 2>/dev/null || true)
 
 if [[ -z "$DEVICES_JSON" ]]; then
@@ -39,14 +46,16 @@ if [[ -z "$DEVICES_JSON" ]]; then
   exit 0
 fi
 
-# Filtra dispositivos que tengan tag:k8s-operator o cuyos nombres sean operadores/traefik del clúster
-TARGET_DEVICES=$(echo "$DEVICES_JSON" | jq -c '.devices[] | select(
-  (.tags != null and (.tags | index("tag:k8s-operator") != null)) or
-  (.name | test("^(tailscale-operator|traefik).*"))
+# Solo dispositivos con tag:k8s-operator cuyo nombre MagicDNS sea uno de HOSTNAMES,
+# con o sin el sufijo -N que añade Tailscale al registrar un nombre repetido
+HOSTNAMES_JSON=$(printf '%s\n' "${HOSTNAMES[@]}" | jq -R . | jq -s .)
+TARGET_DEVICES=$(echo "$DEVICES_JSON" | jq -c --argjson hosts "$HOSTNAMES_JSON" '.devices[] | select(
+  (.tags // [] | index("tag:k8s-operator") != null) and
+  ((.name | split(".")[0] | sub("-[0-9]+$"; "")) as $h | $hosts | index($h) != null)
 ) | {id: .id, name: .name}')
 
 if [[ -z "$TARGET_DEVICES" ]]; then
-  echo "[Tailscale Cleanup] No se encontraron dispositivos huérfanos de k8s en Tailscale."
+  echo "[Tailscale Cleanup] No hay dispositivos huérfanos que eliminar."
   exit 0
 fi
 

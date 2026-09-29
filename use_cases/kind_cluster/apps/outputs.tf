@@ -1,9 +1,9 @@
-output "tailscale_enabled" {
-  description = "Indica si el módulo de Tailscale se ha desplegado"
-  value       = length(module.tailscale) > 0
+output "tailscale_operator_hostname" {
+  description = "Nombre del operador en la Tailnet"
+  value       = module.tailscale.operator_hostname
 }
 
-output "tailscale_traefik_url" {
-  description = "URL en la Tailnet con TLS automático para Traefik"
-  value       = length(kubernetes_ingress_v1.traefik_tailscale) > 0 ? "https://${var.tailscale_traefik_hostname}.<tu-tailnet>.ts.net/dashboard/" : "Tailscale Ingress no habilitado"
+output "ingress_class_name" {
+  description = "IngressClass a usar para exponer servicios por HTTPS en la Tailnet"
+  value       = module.tailscale.ingress_class_name
 }

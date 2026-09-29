@@ -27,3 +27,9 @@ variable "default_tags" {
   type        = list(string)
   default     = ["tag:k8s-operator"]
 }
+
+variable "operator_hostname" {
+  description = "Nombre del dispositivo del operador en la Tailnet. Conviene que sea único por clúster para no chocar con otros clústeres de la misma Tailnet"
+  type        = string
+  default     = "tailscale-operator"
+}

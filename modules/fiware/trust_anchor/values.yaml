@@ -27,17 +27,23 @@ trusted-issuers-list:
   #   port: 5432
   #   name: tildb
 
+  # Con la clase "tailscale" el hostname de tls.hosts es el nombre del dispositivo
+  # en la Tailnet: https://<hostname>.<tailnet>.ts.net. El chart fija las rutas:
+  # TIR publica /v4/issuers (consulta) y TIL publica /issuer (registro).
   ingress:
     tir:
-      enabled: ${tailscale_enabled}
-      className: "tailscale"
-      annotations:
-        tailscale.com/tags: "tag:k8s-operator"
+      enabled: ${ingress_enabled}
+      className: "${ingress_class_name}"
       hosts:
-        - host: ${tailscale_hostname}
-          paths:
-            - path: /
-              pathType: Prefix
+        - host: ${tir_hostname}
       tls:
         - hosts:
-            - ${tailscale_hostname}
+            - ${tir_hostname}
+    til:
+      enabled: ${ingress_enabled}
+      className: "${ingress_class_name}"
+      hosts:
+        - host: ${til_hostname}
+      tls:
+        - hosts:
+            - ${til_hostname}

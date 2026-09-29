@@ -37,8 +37,11 @@ resource "helm_release" "tailscale_operator" {
   values = [
     yamlencode({
       operatorConfig = {
+        hostname    = var.operator_hostname
         defaultTags = join(",", var.default_tags)
       }
+      # Tags por defecto de los proxies de cada Ingress: los Ingress no necesitan
+      # la anotación tailscale.com/tags.
       proxyConfig = {
         defaultTags = join(",", var.default_tags)
       }

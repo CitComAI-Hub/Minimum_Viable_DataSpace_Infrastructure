@@ -1,19 +1,14 @@
 output "tir_service" {
-  description = "Service interno del Trusted Issuers List"
+  description = "Service interno del Trusted Issuers List, para llamadas desde otros pods"
   value       = module.trust_anchor.tir_service
 }
 
-output "keycloak_base_url" {
-  description = "URL interna de Keycloak"
-  value       = module.onboarding_portal.keycloak_base_url
+output "trust_anchor_tir_url" {
+  description = "API TIR (consulta de issuers) en la Tailnet"
+  value       = "https://${module.trust_anchor.tir_hostname}.${var.tailnet_domain}/v4/issuers"
 }
 
-output "trust_anchor_tailscale_hostname" {
-  description = "Hostname del TIR en la Tailnet"
-  value       = module.trust_anchor.tailscale_hostname
-}
-
-output "onboarding_tailscale_hostname" {
-  description = "Hostname del portal de onboarding en la Tailnet"
-  value       = module.onboarding_portal.tailscale_hostname
+output "trust_anchor_til_url" {
+  description = "API TIL (registro de issuers) en la Tailnet"
+  value       = "https://${module.trust_anchor.til_hostname}.${var.tailnet_domain}/issuer"
 }

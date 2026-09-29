@@ -4,10 +4,16 @@ variable "kubeconfig_path" {
   default     = "../kind_cluster/cluster-config.yaml"
 }
 
-variable "namespace" {
-  description = "Namespace compartido por Keycloak y el portal de onboarding"
+variable "ingress_class_name" {
+  description = "IngressClass con la que se exponen los servicios (la crea el Tailscale Operator de kind_cluster/apps)"
   type        = string
-  default     = "onboarding"
+  default     = "tailscale"
+}
+
+variable "tailnet_domain" {
+  description = "Dominio MagicDNS de la Tailnet (p. ej. tail1234.ts.net), solo para mostrar las URLs completas en los outputs"
+  type        = string
+  default     = "<tu-tailnet>.ts.net"
 }
 
 variable "trust_anchor_namespace" {
@@ -16,59 +22,14 @@ variable "trust_anchor_namespace" {
   default     = "trust-anchor"
 }
 
-variable "trust_anchor_tailscale_hostname" {
-  description = "Hostname del TIR en la Tailnet"
+variable "trust_anchor_tir_hostname" {
+  description = "Hostname de la API TIR (consulta de issuers) en la Tailnet"
   type        = string
   default     = "tir"
 }
 
-variable "onboarding_tailscale_hostname" {
-  description = "Hostname del portal de onboarding en la Tailnet"
+variable "trust_anchor_til_hostname" {
+  description = "Hostname de la API TIL (registro de issuers) en la Tailnet"
   type        = string
-  default     = "onboarding"
-}
-
-variable "keycloak_public_url" {
-  description = "URL pública de Keycloak para los redireccionamientos OIDC"
-  type        = string
-  default     = "https://keycloak.<tu-tailnet>.ts.net"
-}
-
-variable "onboarding_public_url" {
-  description = "URL pública del portal de onboarding en la Tailnet"
-  type        = string
-  default     = "https://onboarding.<tu-tailnet>.ts.net"
-}
-
-variable "keycloak_realm" {
-  description = "Realm de Keycloak importado para el portal"
-  type        = string
-  default     = "onboarding"
-}
-
-variable "document_to_sign_url" {
-  description = "URL pública del documento que el solicitante debe firmar"
-  type        = string
-  default     = ""
-}
-
-variable "keycloak_admin_password" {
-  description = "Password del administrador de Keycloak"
-  type        = string
-  sensitive   = true
-  default     = "change-me-keycloak-admin"
-}
-
-variable "onboarding_client_secret" {
-  description = "Secret del cliente OIDC del onboarding"
-  type        = string
-  sensitive   = true
-  default     = "change-me-onboarding-client"
-}
-
-variable "keycloak_store_password" {
-  description = "Password del almacén usado por Keycloak"
-  type        = string
-  sensitive   = true
-  default     = "change-me-keycloak-store"
+  default     = "til"
 }

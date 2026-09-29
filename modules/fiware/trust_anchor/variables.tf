@@ -23,20 +23,29 @@ variable "trust_anchor" {
   }
 }
 
-
-variable "tailscale_enabled" {
-  description = "Expone el TIR mediante un Ingress de Tailscale"
+variable "ingress_enabled" {
+  description = "Expone las APIs TIR y TIL mediante un Ingress cada una"
   type        = bool
   default     = true
 }
 
-variable "tailscale_hostname" {
-  description = "Hostname del Trust Anchor dentro de la Tailnet"
+variable "ingress_class_name" {
+  description = "IngressClass de los Ingress (\"tailscale\" para exponerlos por HTTPS en la Tailnet)"
+  type        = string
+  default     = "tailscale"
+}
+
+variable "tir_hostname" {
+  description = "Hostname de la API TIR (consulta de issuers). Con la clase \"tailscale\" es el nombre del dispositivo en la Tailnet"
   type        = string
   default     = "tir"
 }
 
-
+variable "til_hostname" {
+  description = "Hostname de la API TIL (registro de issuers). Con la clase \"tailscale\" es el nombre del dispositivo en la Tailnet"
+  type        = string
+  default     = "til"
+}
 
 variable "postgres_operator_enabled" {
   description = "Instala el PostgreSQL Operator requerido por el chart"

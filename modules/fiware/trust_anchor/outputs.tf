@@ -13,7 +13,12 @@ output "tir_service" {
   value       = "tir.${var.namespace}.svc.cluster.local:8080"
 }
 
-output "tailscale_hostname" {
-  description = "Hostname configurado para acceder al TIR desde Tailscale"
-  value       = var.tailscale_enabled ? var.tailscale_hostname : null
+output "tir_hostname" {
+  description = "Hostname del Ingress de la API TIR (null si no hay Ingress)"
+  value       = var.ingress_enabled ? var.tir_hostname : null
+}
+
+output "til_hostname" {
+  description = "Hostname del Ingress de la API TIL (null si no hay Ingress)"
+  value       = var.ingress_enabled ? var.til_hostname : null
 }

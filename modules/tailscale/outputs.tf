@@ -17,3 +17,8 @@ output "chart_version" {
   description = "Versión del Helm chart instalada"
   value       = helm_release.tailscale_operator.version
 }
+
+output "operator_hostname" {
+  description = "Nombre del dispositivo del operador en la Tailnet"
+  value       = var.operator_hostname
+}
