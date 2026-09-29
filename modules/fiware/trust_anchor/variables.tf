@@ -1,10 +1,10 @@
 variable "namespace" {
-  description = "Namespace donde se desplegará el Trust Anchor"
+  description = "Namespace where the Trust Anchor is deployed"
   type        = string
   default     = "trust-anchor"
 }
 variable "release_name" {
-  description = "Nombre del release Helm del Trust Anchor"
+  description = "Helm release name of the Trust Anchor"
   type        = string
   default     = "trust-anchor"
 }
@@ -24,43 +24,43 @@ variable "trust_anchor" {
 }
 
 variable "ingress_enabled" {
-  description = "Expone las APIs TIR y TIL mediante un Ingress cada una"
+  description = "Exposes the TIR and TIL APIs with one Ingress each"
   type        = bool
   default     = true
 }
 
 variable "ingress_class_name" {
-  description = "IngressClass de los Ingress (\"tailscale\" para exponerlos por HTTPS en la Tailnet)"
+  description = "IngressClass of the Ingresses (\"tailscale\" exposes them over HTTPS in the Tailnet)"
   type        = string
   default     = "tailscale"
 }
 
 variable "tir_hostname" {
-  description = "Hostname de la API TIR (consulta de issuers). Con la clase \"tailscale\" es el nombre del dispositivo en la Tailnet"
+  description = "Hostname of the TIR API (issuer lookup). With the \"tailscale\" class it is the device name in the Tailnet"
   type        = string
   default     = "tir"
 }
 
 variable "til_hostname" {
-  description = "Hostname de la API TIL (registro de issuers). Con la clase \"tailscale\" es el nombre del dispositivo en la Tailnet"
+  description = "Hostname of the TIL API (issuer registration). With the \"tailscale\" class it is the device name in the Tailnet"
   type        = string
   default     = "til"
 }
 
 variable "postgres_operator_enabled" {
-  description = "Instala el PostgreSQL Operator requerido por el chart"
+  description = "Installs the PostgreSQL Operator required by the chart"
   type        = bool
   default     = true
 }
 
 variable "managed_postgres_enabled" {
-  description = "Crea la instancia PostgreSQL gestionada para el TIR"
+  description = "Creates the managed PostgreSQL instance for the TIR"
   type        = bool
   default     = true
 }
 
 variable "extra_values" {
-  description = "Ficheros YAML adicionales para sobrescribir valores del chart"
+  description = "Additional YAML documents that override chart values"
   type        = list(string)
   default     = []
 }

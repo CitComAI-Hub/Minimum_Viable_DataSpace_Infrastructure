@@ -1,9 +1,9 @@
 output "tailscale_operator_hostname" {
-  description = "Nombre del operador en la Tailnet"
+  description = "Operator device name in the Tailnet"
   value       = module.tailscale.operator_hostname
 }
 
 output "ingress_class_name" {
-  description = "IngressClass a usar para exponer servicios por HTTPS en la Tailnet"
+  description = "IngressClass used to expose services over HTTPS in the Tailnet"
   value       = module.tailscale.ingress_class_name
 }

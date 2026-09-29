@@ -1,24 +1,24 @@
 output "namespace" {
-  description = "Namespace donde se ha desplegado el Tailscale Operator"
+  description = "Namespace where the Tailscale Operator is deployed"
   value       = kubernetes_namespace.tailscale.metadata[0].name
 }
 
 output "operator_name" {
-  description = "Nombre de la release de Helm del operador"
+  description = "Helm release name of the operator"
   value       = helm_release.tailscale_operator.name
 }
 
 output "ingress_class_name" {
-  description = "Clase de Ingress a usar en los recursos Ingress de Kubernetes para exponerlos vía Tailscale con TLS automático"
+  description = "IngressClass for Kubernetes Ingress resources exposed through Tailscale with automatic TLS"
   value       = "tailscale"
 }
 
 output "chart_version" {
-  description = "Versión del Helm chart instalada"
+  description = "Installed Helm chart version"
   value       = helm_release.tailscale_operator.version
 }
 
 output "operator_hostname" {
-  description = "Nombre del dispositivo del operador en la Tailnet"
+  description = "Device name of the operator in the Tailnet"
   value       = var.operator_hostname
 }

@@ -1,35 +1,35 @@
 variable "cluster_name" {
-  description = "Nombre del clúster kind"
+  description = "Name of the kind cluster"
   type        = string
   default     = "multi-nodo"
 }
 
 variable "node_image" {
-  description = "Imagen de nodo de kind (controla la versión de Kubernetes). Déjalo en null para usar la versión por defecto de kind."
+  description = "kind node image (sets the Kubernetes version). Leave null to use the kind default."
   type        = string
   default     = null
 }
 
 variable "worker_count" {
-  description = "Número de nodos worker a crear, aparte del control-plane"
+  description = "Number of worker nodes to create, besides the control-plane"
   type        = number
   default     = 3
 }
 
 variable "kubeconfig_path" {
-  description = "Ruta donde se escribirá el kubeconfig de este clúster"
+  description = "Path where the kubeconfig of this cluster is written"
   type        = string
   default     = "~/.kube/kind-multi-nodo-config"
 }
 
 variable "zones" {
-  description = "Zonas simuladas entre las que se reparten los workers (round-robin), vía el label topology.kubernetes.io/zone"
+  description = "Simulated zones the workers are spread across (round-robin), via the topology.kubernetes.io/zone label"
   type        = list(string)
   default     = ["zone-a", "zone-b", "zone-c"]
 }
 
 variable "add_extra_ports" {
-  description = "Puertos del control-plane a mapear al host, para exponer un Ingress Controller u otros servicios"
+  description = "Control-plane ports mapped to the host, to expose an Ingress Controller or other services"
   type = list(
     object({
       container_port = number

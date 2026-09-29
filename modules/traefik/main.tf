@@ -14,28 +14,28 @@ resource "helm_release" "traefik" {
   chart      = "traefik"
   version    = var.chart_version
 
-  # Espera a que todos los pods estén ready antes de considerar el apply exitoso
+  # Wait for all pods to be ready before the apply is considered successful
   wait    = true
   timeout = 300
 
-  # --- Modo de despliegue ---
-  # DaemonSet garantiza que Traefik corre en el nodo control-plane de Kind
-  # que tiene los puertos 80/443 del contenedor mapeados al host.
+  # --- Deployment mode ---
+  # DaemonSet ensures Traefik runs on the Kind control-plane node,
+  # which has the container ports 80/443 mapped to the host.
   set {
     name  = "deployment.kind"
     value = "DaemonSet"
   }
 
   # --- Service ---
-  # ClusterIP: Kind no tiene LoadBalancer nativo. El tráfico llega
-  # directamente por hostPort desde el host.
+  # ClusterIP: Kind has no native LoadBalancer. Traffic arrives
+  # directly through hostPort from the host.
   set {
     name  = "service.type"
     value = "ClusterIP"
   }
 
-  # --- Puertos HTTP / HTTPS con hostPort ---
-  # Enlaza los puertos del contenedor a los del nodo, que Kind ya mapea al host.
+  # --- HTTP / HTTPS ports with hostPort ---
+  # Binds the container ports to the node ports, which Kind maps to the host.
   set {
     name  = "ports.web.hostPort"
     value = var.web_host_port
@@ -46,9 +46,9 @@ resource "helm_release" "traefik" {
   }
 
   # --- NodeSelector ---
-  # Apunta exclusivamente al nodo control-plane etiquetado por el módulo kind.
-  # type = "string" evita que Helm auto-castee "true" a booleano, lo que
-  # rompe el PodSpec que espera nodeSelector como map[string]string.
+  # Targets only the control-plane node labelled by the kind module.
+  # type = "string" stops Helm from casting "true" to a boolean, which
+  # breaks the PodSpec that expects nodeSelector as map[string]string.
   set {
     name  = "nodeSelector.ingress-ready"
     value = "true"
@@ -56,7 +56,7 @@ resource "helm_release" "traefik" {
   }
 
   # --- Tolerations ---
-  # El control-plane tiene el taint NoSchedule; hay que tolerarlo explícitamente.
+  # The control-plane has the NoSchedule taint; it must be tolerated explicitly.
   set {
     name  = "tolerations[0].key"
     value = "node-role.kubernetes.io/control-plane"
@@ -93,8 +93,8 @@ resource "helm_release" "traefik" {
   }
 
   # --- Dashboard ---
-  # Expone el dashboard vía IngressRoute; el acceso externo se gestiona
-  # mediante el Ingress de Tailscale del caso de uso.
+  # Exposes the dashboard through an IngressRoute; external access is handled
+  # by the use case.
   set {
     name  = "ingressRoute.dashboard.enabled"
     value = tostring(var.dashboard_enabled)
@@ -108,7 +108,7 @@ resource "helm_release" "traefik" {
     value = "web"
   }
 
-  # Logs en formato JSON para facilitar integración futura con herramientas de observabilidad
+  # JSON logs to ease a future integration with observability tools
   set {
     name  = "logs.general.format"
     value = "json"

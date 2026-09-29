@@ -1,6 +1,6 @@
-# Esta capa se aplica DESPUÉS de que la capa cluster haya escrito el kubeconfig.
-# El fichero ../cluster-config.yaml ya existe cuando se ejecuta este terraform,
-# por lo que los providers se inicializan correctamente sin necesidad de -target.
+# This layer is applied AFTER the cluster layer has written the kubeconfig.
+# ../cluster-config.yaml already exists when this configuration runs, so the
+# providers initialise correctly without -target.
 
 provider "helm" {
   kubernetes {

@@ -40,8 +40,8 @@ resource "helm_release" "tailscale_operator" {
         hostname    = var.operator_hostname
         defaultTags = join(",", var.default_tags)
       }
-      # Tags por defecto de los proxies de cada Ingress: los Ingress no necesitan
-      # la anotación tailscale.com/tags.
+      # Default tags for each Ingress proxy, so Ingresses do not need the
+      # tailscale.com/tags annotation.
       proxyConfig = {
         defaultTags = join(",", var.default_tags)
       }

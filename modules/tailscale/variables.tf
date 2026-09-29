@@ -1,35 +1,35 @@
 variable "namespace" {
-  description = "Namespace de Kubernetes donde se desplegará el Tailscale Operator"
+  description = "Kubernetes namespace where the Tailscale Operator is deployed"
   type        = string
   default     = "tailscale"
 }
 
 variable "chart_version" {
-  description = "Versión del Helm chart de tailscale-operator"
+  description = "tailscale-operator Helm chart version (null = latest)"
   type        = string
   default     = null
 }
 
 variable "oauth_client_id" {
-  description = "OAuth Client ID generado en Tailscale Admin Console (Settings > OAuth clients)"
+  description = "OAuth Client ID generated in the Tailscale Admin Console (Settings > OAuth clients)"
   type        = string
   sensitive   = true
 }
 
 variable "oauth_client_secret" {
-  description = "OAuth Client Secret generado en Tailscale Admin Console"
+  description = "OAuth Client Secret generated in the Tailscale Admin Console"
   type        = string
   sensitive   = true
 }
 
 variable "default_tags" {
-  description = "Tags que el operador asignará a los nodos creados en la tailnet"
+  description = "Tags the operator assigns to itself and to the devices it creates in the Tailnet"
   type        = list(string)
   default     = ["tag:k8s-operator"]
 }
 
 variable "operator_hostname" {
-  description = "Nombre del dispositivo del operador en la Tailnet. Conviene que sea único por clúster para no chocar con otros clústeres de la misma Tailnet"
+  description = "Device name of the operator in the Tailnet. Keep it unique per cluster to avoid clashes with other clusters in the same Tailnet"
   type        = string
   default     = "tailscale-operator"
 }

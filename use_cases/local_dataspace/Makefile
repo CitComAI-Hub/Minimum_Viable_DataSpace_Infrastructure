@@ -1,7 +1,7 @@
 .PHONY: init_apply destroy cleanup_tailscale
 
-## Hostnames de los Ingress de este caso de uso en la Tailnet
-## (deben coincidir con las variables trust_anchor_*_hostname)
+## Tailnet hostnames of the Ingresses in this use case
+## (must match the trust_anchor_*_hostname variables)
 TAILSCALE_HOSTNAMES ?= tir til
 
 init_apply:
@@ -14,7 +14,7 @@ destroy:
 	terraform destroy -auto-approve
 	$(MAKE) -C ../kind_cluster destroy
 
-## Elimina dispositivos huérfanos de un clúster anterior borrado sin "make destroy",
-## para que los Ingress no se registren como <hostname>-1 y cambien sus URLs
+## Removes orphaned devices from a previous cluster deleted without "make destroy",
+## so the Ingresses do not register as <hostname>-1 and change their URLs
 cleanup_tailscale:
 	@bash ../kind_cluster/cleanup_tailscale.sh $(TAILSCALE_HOSTNAMES) || true

@@ -1,11 +1,11 @@
 variable "kubeconfig_path" {
-  description = "Ruta al kubeconfig generado por la capa de cluster (kind_cluster/cluster-config.yaml)"
+  description = "Path to the kubeconfig written by the cluster layer (kind_cluster/cluster-config.yaml)"
   type        = string
   default     = "../cluster-config.yaml"
 }
 
 variable "cluster_name" {
-  description = "Nombre del clúster kind. Se usa para nombrar el operador en la Tailnet (<cluster_name>-ts-operator)"
+  description = "Name of the kind cluster. Used to name the operator in the Tailnet (<cluster_name>-ts-operator)"
   type        = string
   default     = "kind-cluster"
 }

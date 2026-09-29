@@ -1,6 +1,6 @@
-# Tailscale es el único punto de entrada al clúster: cada servicio se expone con
-# su propio Ingress de clase "tailscale", que le da un dispositivo en la Tailnet
-# (https://<hostname>.<tailnet>.ts.net) con certificado TLS automático.
+# Tailscale is the only entry point to the cluster: each service is exposed with
+# its own Ingress of class "tailscale", which gives it a Tailnet device
+# (https://<hostname>.<tailnet>.ts.net) with an automatic TLS certificate.
 module "tailscale" {
   source = "../../../modules/tailscale"
 

@@ -1,5 +1,5 @@
 locals {
-  # Reparte los workers entre var.zones, round-robin
+  # Spread workers across var.zones, round-robin
   workers = [
     for i in range(var.worker_count) : {
       index = i
@@ -18,8 +18,8 @@ resource "kind_cluster" "default" {
     kind        = "Cluster"
     api_version = "kind.x-k8s.io/v1alpha4"
 
-    # Control-plane: preparado para un Ingress Controller (nginx) y
-    # con los puertos 80/443 del contenedor mapeados al host.
+    # Control-plane: labelled for an Ingress Controller and with the
+    # container ports from var.add_extra_ports mapped to the host.
     node {
       role = "control-plane"
 
@@ -37,7 +37,7 @@ resource "kind_cluster" "default" {
       }
     }
 
-    # Workers, cada uno etiquetado con una "zona" simulada
+    # Workers, each labelled with a simulated "zone"
     dynamic "node" {
       for_each = local.workers
       content {

@@ -4,6 +4,6 @@ module "local_k8s_cluster" {
   cluster_name    = var.cluster_name
   kubeconfig_path = pathexpand(var.kubernetes_local_path)
 
-  # Sin puertos en el host: todo el tráfico entra por los Ingress de Tailscale
+  # No host ports: all traffic comes in through the Tailscale Ingresses
   add_extra_ports = []
 }

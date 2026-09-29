@@ -1,19 +1,19 @@
 output "cluster_name" {
-  description = "Nombre del clúster kind creado"
+  description = "Name of the created kind cluster"
   value       = kind_cluster.default.name
 }
 
 output "kubeconfig_path" {
-  description = "Ruta local del kubeconfig generado"
+  description = "Local path of the generated kubeconfig"
   value       = pathexpand(var.kubeconfig_path)
 }
 
 output "endpoint" {
-  description = "Endpoint del API server de Kubernetes"
+  description = "Kubernetes API server endpoint"
   value       = kind_cluster.default.endpoint
 }
 
 output "kubectl_context_hint" {
-  description = "Comando para usar este clúster con kubectl"
+  description = "Command to use this cluster with kubectl"
   value       = "export KUBECONFIG=${pathexpand(var.kubeconfig_path)} && kubectl get nodes -o wide"
 }
