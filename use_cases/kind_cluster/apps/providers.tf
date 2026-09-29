@@ -11,3 +11,9 @@ provider "helm" {
 provider "kubernetes" {
   config_path = var.kubeconfig_path
 }
+
+# Applies custom resources (SecretStore, ExternalSecret) whose CRDs are installed in this same apply
+provider "kubectl" {
+  config_path      = var.kubeconfig_path
+  load_config_file = true
+}

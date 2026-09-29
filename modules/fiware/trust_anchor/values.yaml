@@ -1,8 +1,10 @@
+# The chart's own PostgreSQL (operator + managed instance) is not used: the TIL
+# connects to an external database, the shared instance of modules/postgres.
 postgres-operator:
-  enabled: ${postgres_operator_enabled}
+  enabled: false
 
 managedPostgres:
-  enabled: ${managed_postgres_enabled}
+  enabled: false
 
 trusted-issuers-list:
   enabled: true
@@ -11,39 +13,37 @@ trusted-issuers-list:
     port: 8080
   database:
     persistence: true
-    host: "postgres"
-    port: 5432
-    name: "tildb"
-    username: "til"
-  # database:
-  #   persistence: true
-  #   dialect: POSTGRES
-  #   username: postgres
-  #   existingSecret:
-  #     enabled: true
-  #     name: postgres.postgres.credentials.postgresql.acid.zalan.do
-  #     key: password
-  #   host: postgres
-  #   port: 5432
-  #   name: tildb
+    dialect: POSTGRES
+    host: "${database.host}"
+    port: ${database.port}
+    name: "${database.name}"
+    username: "${database.username}"
+    existingSecret:
+      enabled: true
+      name: "${database.secret_name}"
+      key: "${database.password_key}"
 
-  # With the "tailscale" class, the tls.hosts hostname is the device name in the
-  # Tailnet: https://<hostname>.<tailnet>.ts.net. The chart hardcodes the paths:
-  # TIR serves /v4/issuers (lookup) and TIL serves /issuer (registration).
+  # With the "tailscale" class, the tls.hosts hostname is the Tailnet name:
+  # https://<hostname>.<tailnet>.ts.net. The rules have no host: an Ingress served
+  # by a ProxyGroup ignores rules whose host is not the full Tailnet FQDN.
+  # The chart hardcodes the paths: TIR serves /v4/issuers (lookup) and TIL
+  # serves /issuer (registration).
   ingress:
     tir:
       enabled: ${ingress_enabled}
       className: "${ingress_class_name}"
+      annotations: ${jsonencode(ingress_annotations)}
       hosts:
-        - host: ${tir_hostname}
+        - host: ""
       tls:
         - hosts:
             - ${tir_hostname}
     til:
       enabled: ${ingress_enabled}
       className: "${ingress_class_name}"
+      annotations: ${jsonencode(ingress_annotations)}
       hosts:
-        - host: ${til_hostname}
+        - host: ""
       tls:
         - hosts:
             - ${til_hostname}

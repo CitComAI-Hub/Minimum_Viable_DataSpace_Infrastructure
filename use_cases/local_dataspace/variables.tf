@@ -10,6 +10,14 @@ variable "ingress_class_name" {
   default     = "tailscale"
 }
 
+variable "ingress_annotations" {
+  description = "Annotations every Ingress must carry to be served by the Tailscale ProxyGroup (output ingress_annotations of kind_cluster/apps)"
+  type        = map(string)
+  default = {
+    "tailscale.com/proxy-group" = "ingress"
+  }
+}
+
 variable "tailnet_domain" {
   description = "MagicDNS domain of the Tailnet (e.g. tail1234.ts.net), only used to print full URLs in the outputs"
   type        = string

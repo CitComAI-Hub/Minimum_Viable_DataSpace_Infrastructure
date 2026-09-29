@@ -35,28 +35,46 @@ variable "ingress_class_name" {
   default     = "tailscale"
 }
 
+variable "ingress_annotations" {
+  description = "Annotations of both Ingresses (e.g. the ingress_annotations output of modules/tailscale)"
+  type        = map(string)
+  default     = {}
+}
+
 variable "tir_hostname" {
-  description = "Hostname of the TIR API (issuer lookup). With the \"tailscale\" class it is the device name in the Tailnet"
+  description = "Hostname of the TIR API (issuer lookup). With the \"tailscale\" class it is its Tailnet name (<hostname>.<tailnet>.ts.net)"
   type        = string
   default     = "tir"
 }
 
 variable "til_hostname" {
-  description = "Hostname of the TIL API (issuer registration). With the \"tailscale\" class it is the device name in the Tailnet"
+  description = "Hostname of the TIL API (issuer registration). With the \"tailscale\" class it is its Tailnet name (<hostname>.<tailnet>.ts.net)"
   type        = string
   default     = "til"
 }
 
-variable "postgres_operator_enabled" {
-  description = "Installs the PostgreSQL Operator required by the chart"
-  type        = bool
-  default     = true
-}
-
-variable "managed_postgres_enabled" {
-  description = "Creates the managed PostgreSQL instance for the TIR"
-  type        = bool
-  default     = true
+variable "database" {
+  description = <<-EOT
+    PostgreSQL database of the Trusted Issuers List (e.g. the outputs of modules/postgres/database):
+    - secret_name: Secret in the Trust Anchor namespace that holds the password
+    - password_key: key of the password in that Secret
+  EOT
+  type = object({
+    host         = string
+    port         = optional(number, 5432)
+    name         = string
+    username     = string
+    secret_name  = string
+    password_key = optional(string, "password")
+  })
+  default = {
+    host         = "postgresql"
+    port         = 5432
+    name         = "trust_anchor"
+    username     = "trust_anchor"
+    secret_name  = "trust-anchor-db-password"
+    password_key = "password"
+  }
 }
 
 variable "extra_values" {

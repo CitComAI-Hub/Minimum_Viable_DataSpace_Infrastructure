@@ -12,12 +12,12 @@ resource "helm_release" "trust_anchor" {
 
   values = concat([
     templatefile("${path.module}/values.yaml", {
-      postgres_operator_enabled = var.postgres_operator_enabled
-      managed_postgres_enabled  = var.managed_postgres_enabled
-      ingress_enabled           = var.ingress_enabled
-      ingress_class_name        = var.ingress_class_name
-      tir_hostname              = var.tir_hostname
-      til_hostname              = var.til_hostname
+      database            = var.database
+      ingress_enabled     = var.ingress_enabled
+      ingress_class_name  = var.ingress_class_name
+      ingress_annotations = var.ingress_annotations
+      tir_hostname        = var.tir_hostname
+      til_hostname        = var.til_hostname
     })
   ], var.extra_values)
 }

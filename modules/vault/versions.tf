@@ -4,15 +4,11 @@ terraform {
   required_providers {
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 2.16"
+      version = "~> 2.16" # `kubernetes {}` block syntax (3.x uses an attribute)
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
       version = "~> 2.33"
-    }
-    kubectl = {
-      source  = "alekc/kubectl"
-      version = "~> 2.1"
     }
   }
 }

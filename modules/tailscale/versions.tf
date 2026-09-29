@@ -10,5 +10,10 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 2.33"
     }
+    # Applies the ProxyClass and ProxyGroup, whose CRDs are installed in the same apply
+    kubectl = {
+      source  = "alekc/kubectl"
+      version = "~> 2.1"
+    }
   }
 }

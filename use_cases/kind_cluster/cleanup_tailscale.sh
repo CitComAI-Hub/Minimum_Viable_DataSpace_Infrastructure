@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
+# Removes orphaned Tailnet devices and Tailscale Services left by a previous cluster,
+# so new ones do not register as <name>-1, <name>-2, etc.
+# Only touches resources tagged with one of K8S_TAGS whose name is one of the
+# given hostnames (with or without the -N suffixes Tailscale adds to repeated names).
 set -e
 
 # Script base directory
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TFVARS_FILE="$DIR/apps/terraform.tfvars"
+API="https://api.tailscale.com/api/v2"
+K8S_TAGS='["tag:k8s-operator", "tag:k8s"]'
 
-# Devices to remove: their exact Tailnet hostnames (with or without a -N suffix)
 HOSTNAMES=("$@")
 if [[ ${#HOSTNAMES[@]} -eq 0 ]]; then
   echo "Usage: $0 <hostname> [<hostname> ...]"
@@ -27,7 +32,7 @@ if [[ -z "$CLIENT_ID" || -z "$CLIENT_SECRET" || "$CLIENT_ID" == *"xxxxxx"* ]]; t
 fi
 
 echo "[Tailscale Cleanup] Requesting an access token from the Tailscale API..."
-TOKEN_RESPONSE=$(curl -s -f -X POST "https://api.tailscale.com/api/v2/oauth/token" \
+TOKEN_RESPONSE=$(curl -s -f -X POST "$API/oauth/token" \
   -d "client_id=$CLIENT_ID" \
   -d "client_secret=$CLIENT_SECRET" 2>/dev/null || true)
 
@@ -38,41 +43,53 @@ if [[ -z "$ACCESS_TOKEN" ]]; then
   exit 0
 fi
 
-echo "[Tailscale Cleanup] Looking for devices: ${HOSTNAMES[*]}..."
-DEVICES_JSON=$(curl -s -f -H "Authorization: Bearer $ACCESS_TOKEN" "https://api.tailscale.com/api/v2/tailnet/-/devices" 2>/dev/null || true)
-
-if [[ -z "$DEVICES_JSON" ]]; then
-  echo "[Tailscale Cleanup] Could not list devices."
-  exit 0
-fi
-
-# Only devices tagged tag:k8s-operator whose MagicDNS name is one of HOSTNAMES,
-# with or without the -N suffix Tailscale adds when a name is registered twice
 HOSTNAMES_JSON=$(printf '%s\n' "${HOSTNAMES[@]}" | jq -R . | jq -s .)
-TARGET_DEVICES=$(echo "$DEVICES_JSON" | jq -c --argjson hosts "$HOSTNAMES_JSON" '.devices[] | select(
-  (.tags // [] | index("tag:k8s-operator") != null) and
-  ((.name | split(".")[0] | sub("-[0-9]+$"; "")) as $h | $hosts | index($h) != null)
-) | {id: .id, name: .name}')
 
-if [[ -z "$TARGET_DEVICES" ]]; then
-  echo "[Tailscale Cleanup] No orphaned devices to remove."
-  exit 0
+# jq filter: tagged with one of K8S_TAGS and named after one of HOSTNAMES
+MATCH='(((.tags // []) as $t | $k8s | any(. as $k | $t | index($k) != null))
+  and (($name | sub("(-[0-9]+)+$"; "")) as $h | $hosts | index($h) != null))'
+
+# delete_resource KIND NAME URL
+delete_resource() {
+  local status
+  status=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+    -H "Authorization: Bearer $ACCESS_TOKEN" "$3" || true)
+  if [[ "$status" == "200" || "$status" == "204" ]]; then
+    echo "[Tailscale Cleanup] ✓ $1 $2 removed."
+  else
+    echo "[Tailscale Cleanup] ✗ Could not remove $1 $2 (HTTP $status)."
+  fi
+}
+
+echo "[Tailscale Cleanup] Looking for devices and services: ${HOSTNAMES[*]}..."
+FOUND=0
+
+DEVICES_JSON=$(curl -s -f -H "Authorization: Bearer $ACCESS_TOKEN" "$API/tailnet/-/devices" 2>/dev/null || true)
+if [[ -n "$DEVICES_JSON" ]]; then
+  while IFS=$'\t' read -r id name; do
+    [[ -z "$id" ]] && continue
+    FOUND=1
+    delete_resource "Device" "$name" "$API/device/$id"
+  done < <(echo "$DEVICES_JSON" | jq -r --argjson hosts "$HOSTNAMES_JSON" --argjson k8s "$K8S_TAGS" \
+    ".devices[] | (.name | split(\".\")[0]) as \$name | select($MATCH) | [.id, .name] | @tsv")
+else
+  echo "[Tailscale Cleanup] Could not list devices."
 fi
 
-while IFS= read -r dev; do
-  DEV_ID=$(echo "$dev" | jq -r '.id')
-  DEV_NAME=$(echo "$dev" | jq -r '.name')
+SERVICES_JSON=$(curl -s -f -H "Authorization: Bearer $ACCESS_TOKEN" "$API/tailnet/-/vip-services" 2>/dev/null || true)
+if [[ -n "$SERVICES_JSON" ]]; then
+  while IFS= read -r name; do
+    [[ -z "$name" ]] && continue
+    FOUND=1
+    delete_resource "Service" "$name" "$API/tailnet/-/vip-services/$name"
+  done < <(echo "$SERVICES_JSON" | jq -r --argjson hosts "$HOSTNAMES_JSON" --argjson k8s "$K8S_TAGS" \
+    ".vipServices[]? | (.name | sub(\"^svc:\"; \"\")) as \$name | select($MATCH) | .name")
+else
+  echo "[Tailscale Cleanup] Could not list services."
+fi
 
-  echo "[Tailscale Cleanup] Removing Tailnet device: $DEV_NAME (ID: $DEV_ID)..."
-  DELETE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
-    -H "Authorization: Bearer $ACCESS_TOKEN" \
-    "https://api.tailscale.com/api/v2/device/$DEV_ID" || true)
-
-  if [[ "$DELETE_STATUS" == "200" || "$DELETE_STATUS" == "204" ]]; then
-    echo "[Tailscale Cleanup] ✓ $DEV_NAME removed from Tailscale."
-  else
-    echo "[Tailscale Cleanup] ✗ Could not remove $DEV_NAME (HTTP $DELETE_STATUS)."
-  fi
-done <<< "$TARGET_DEVICES"
-
-echo "[Tailscale Cleanup] Cleanup completed."
+if [[ "$FOUND" == "0" ]]; then
+  echo "[Tailscale Cleanup] No orphaned devices or services to remove."
+else
+  echo "[Tailscale Cleanup] Cleanup completed."
+fi
