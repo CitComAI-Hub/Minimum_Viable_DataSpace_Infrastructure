@@ -67,7 +67,7 @@ resource "kubectl_manifest" "dns_config" {
   depends_on = [helm_release.tailscale_operator]
 }
 
-data "kubernetes_service_v1" "nameserver" {
+data "kubernetes_service" "nameserver" {
   count = var.egress_enabled ? 1 : 0
 
   metadata {
@@ -78,7 +78,7 @@ data "kubernetes_service_v1" "nameserver" {
   depends_on = [kubectl_manifest.dns_config]
 }
 
-data "kubernetes_config_map_v1" "coredns" {
+data "kubernetes_config_map" "coredns" {
   count = var.egress_enabled ? 1 : 0
 
   metadata {
@@ -90,7 +90,7 @@ data "kubernetes_config_map_v1" "coredns" {
 locals {
   # Current Corefile without the ts.net zone, so the result is stable across applies
   corefile_base = var.egress_enabled ? trimspace(replace(
-    data.kubernetes_config_map_v1.coredns[0].data["Corefile"],
+    data.kubernetes_config_map.coredns[0].data["Corefile"],
     "/\\n*ts\\.net:53 \\{[^}]*\\}/", ""
   )) : ""
 }
@@ -112,7 +112,7 @@ resource "kubernetes_config_map_v1_data" "coredns" {
       ts.net:53 {
           errors
           cache 30
-          forward . ${data.kubernetes_service_v1.nameserver[0].spec[0].cluster_ip}
+          forward . ${data.kubernetes_service.nameserver[0].spec[0].cluster_ip}
       }
     EOT
   }

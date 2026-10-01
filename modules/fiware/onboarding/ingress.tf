@@ -67,7 +67,7 @@ resource "kubernetes_ingress_v1" "onboarding" {
 
             backend {
               service {
-                name = kubernetes_service_v1.documents[0].metadata[0].name
+                name = kubernetes_service.documents[0].metadata[0].name
                 port {
                   number = local.documents_service_port
                 }

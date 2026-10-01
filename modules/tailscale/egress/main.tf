@@ -1,7 +1,7 @@
 # Makes a Tailnet name reachable from every pod in the cluster: the operator routes
 # this Service through the egress ProxyGroup and its nameserver resolves the name,
 # so pods use the same https://<fqdn> URL (and certificate) as any Tailnet device.
-resource "kubernetes_service_v1" "this" {
+resource "kubernetes_service" "this" {
   metadata {
     name      = var.name
     namespace = var.namespace

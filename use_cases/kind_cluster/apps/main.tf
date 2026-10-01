@@ -30,7 +30,7 @@ module "postgres_operator" {
   source = "../../../modules/postgres/operator"
 }
 
-resource "kubernetes_namespace_v1" "databases" {
+resource "kubernetes_namespace" "databases" {
   metadata {
     name = "databases"
   }
@@ -43,7 +43,7 @@ module "dataspace_postgres" {
   source = "../../../modules/postgres"
 
   name      = "dataspace"
-  namespace = kubernetes_namespace_v1.databases.metadata[0].name
+  namespace = kubernetes_namespace.databases.metadata[0].name
   type      = "postgresql"
 
   vault_namespace = module.vault.namespace

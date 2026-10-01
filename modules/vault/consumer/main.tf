@@ -14,14 +14,14 @@ locals {
   store_name      = "vault-${var.name}"
 }
 
-resource "kubernetes_service_account_v1" "this" {
+resource "kubernetes_service_account" "this" {
   metadata {
     name      = "eso-${var.name}"
     namespace = var.namespace
   }
 }
 
-resource "kubernetes_config_map_v1" "registration" {
+resource "kubernetes_config_map" "registration" {
   metadata {
     name      = "consumer-${var.name}"
     namespace = var.vault_namespace
@@ -34,7 +34,7 @@ resource "kubernetes_config_map_v1" "registration" {
     "consumer.json" = jsonencode({
       name            = var.name
       namespace       = var.namespace
-      service_account = kubernetes_service_account_v1.this.metadata[0].name
+      service_account = kubernetes_service_account.this.metadata[0].name
       secrets         = values(var.secrets)
     })
   }
@@ -59,7 +59,7 @@ resource "kubectl_manifest" "secret_store" {
               mountPath = "kubernetes"
               role      = "eso-${var.name}"
               serviceAccountRef = {
-                name = kubernetes_service_account_v1.this.metadata[0].name
+                name = kubernetes_service_account.this.metadata[0].name
               }
             }
           }
@@ -68,7 +68,7 @@ resource "kubectl_manifest" "secret_store" {
     }
   })
 
-  depends_on = [kubernetes_config_map_v1.registration]
+  depends_on = [kubernetes_config_map.registration]
 }
 
 resource "kubectl_manifest" "external_secret" {

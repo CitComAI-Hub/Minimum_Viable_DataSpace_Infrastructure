@@ -7,14 +7,14 @@ locals {
   vault_ns = helm_release.vault.namespace # referencing it creates the dependency on the helm_release
 }
 
-resource "kubernetes_service_account_v1" "bootstrap" {
+resource "kubernetes_service_account" "bootstrap" {
   metadata {
     name      = "vault-bootstrap"
     namespace = local.vault_ns
   }
 }
 
-resource "kubernetes_role_v1" "bootstrap" {
+resource "kubernetes_role" "bootstrap" {
   metadata {
     name      = "vault-bootstrap"
     namespace = local.vault_ns
@@ -43,7 +43,7 @@ resource "kubernetes_role_v1" "bootstrap" {
   }
 }
 
-resource "kubernetes_role_binding_v1" "bootstrap" {
+resource "kubernetes_role_binding" "bootstrap" {
   metadata {
     name      = "vault-bootstrap"
     namespace = local.vault_ns
@@ -52,17 +52,17 @@ resource "kubernetes_role_binding_v1" "bootstrap" {
   role_ref {
     api_group = "rbac.authorization.k8s.io"
     kind      = "Role"
-    name      = kubernetes_role_v1.bootstrap.metadata[0].name
+    name      = kubernetes_role.bootstrap.metadata[0].name
   }
 
   subject {
     kind      = "ServiceAccount"
-    name      = kubernetes_service_account_v1.bootstrap.metadata[0].name
+    name      = kubernetes_service_account.bootstrap.metadata[0].name
     namespace = local.vault_ns
   }
 }
 
-resource "kubernetes_config_map_v1" "bootstrap" {
+resource "kubernetes_config_map" "bootstrap" {
   metadata {
     name      = "vault-bootstrap"
     namespace = local.vault_ns
@@ -73,7 +73,7 @@ resource "kubernetes_config_map_v1" "bootstrap" {
   }
 }
 
-resource "kubernetes_deployment_v1" "bootstrap" {
+resource "kubernetes_deployment" "bootstrap" {
   metadata {
     name      = "vault-bootstrap"
     namespace = local.vault_ns
@@ -99,12 +99,12 @@ resource "kubernetes_deployment_v1" "bootstrap" {
         labels = { app = "vault-bootstrap" }
         annotations = {
           # restart the pod when the script changes
-          "checksum/script" = sha256(kubernetes_config_map_v1.bootstrap.data["bootstrap.sh"])
+          "checksum/script" = sha256(kubernetes_config_map.bootstrap.data["bootstrap.sh"])
         }
       }
 
       spec {
-        service_account_name = kubernetes_service_account_v1.bootstrap.metadata[0].name
+        service_account_name = kubernetes_service_account.bootstrap.metadata[0].name
 
         security_context {
           run_as_non_root = true
@@ -161,12 +161,12 @@ resource "kubernetes_deployment_v1" "bootstrap" {
         volume {
           name = "bootstrap"
           config_map {
-            name = kubernetes_config_map_v1.bootstrap.metadata[0].name
+            name = kubernetes_config_map.bootstrap.metadata[0].name
           }
         }
       }
     }
   }
 
-  depends_on = [kubernetes_role_binding_v1.bootstrap]
+  depends_on = [kubernetes_role_binding.bootstrap]
 }

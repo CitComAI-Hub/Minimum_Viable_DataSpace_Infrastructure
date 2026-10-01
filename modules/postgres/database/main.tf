@@ -44,7 +44,7 @@ module "client_credentials" {
   }
 }
 
-resource "kubernetes_job_v1" "provision" {
+resource "kubernetes_job" "provision" {
   metadata {
     name      = "pg-${var.name}"
     namespace = var.postgres_namespace

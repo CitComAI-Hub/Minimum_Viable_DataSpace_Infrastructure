@@ -23,7 +23,7 @@ output "agreement_document_url" {
 output "portal_admin_username" {
   description = "Administrator of the onboarding portal (user of the onboarding realm)"
   value       = var.portal_admin_username
-  depends_on  = [kubernetes_job_v1.portal_admin]
+  depends_on  = [kubernetes_job.portal_admin]
 }
 
 output "portal_admin_secret" {

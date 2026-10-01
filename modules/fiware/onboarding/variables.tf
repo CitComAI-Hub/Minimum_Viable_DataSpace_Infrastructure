@@ -156,7 +156,7 @@ variable "onboarding_chart" {
   default = {
     repository = "oci://ghcr.io/citcomai-hub/helm"
     name       = "onboarding-citcom"
-    version    = "0.1.3"
+    version    = "1.1.0"
   }
 }
 

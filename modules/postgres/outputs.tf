@@ -19,13 +19,13 @@ output "type" {
 output "host" {
   description = "In-cluster hostname of the read-write Service"
   value       = local.host
-  depends_on  = [kubernetes_job_v1.wait_ready]
+  depends_on  = [kubernetes_job.wait_ready]
 }
 
 output "port" {
   description = "PostgreSQL port"
   value       = 5432
-  depends_on  = [kubernetes_job_v1.wait_ready]
+  depends_on  = [kubernetes_job.wait_ready]
 }
 
 output "admin_secret_name" {

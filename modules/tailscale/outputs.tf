@@ -51,5 +51,5 @@ output "egress_proxy_group_name" {
 
 output "tailnet_domain" {
   description = "MagicDNS domain of the Tailnet (e.g. tail1234.ts.net), also published in the ConfigMap tailscale/tailnet (key domain)"
-  value       = kubernetes_config_map_v1.tailnet.data["domain"]
+  value       = kubernetes_config_map.tailnet.data["domain"]
 }

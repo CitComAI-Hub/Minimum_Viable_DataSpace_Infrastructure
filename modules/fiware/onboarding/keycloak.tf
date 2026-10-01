@@ -1,6 +1,6 @@
 # Realm imported on startup. The OIDC client secret stays as ${ONBOARDING_CLIENT_SECRET}:
 # Keycloak replaces it with the environment variable, so it never goes through Terraform.
-resource "kubernetes_config_map_v1" "realm" {
+resource "kubernetes_config_map" "realm" {
   metadata {
     name      = "keycloak-realm"
     namespace = var.namespace
@@ -77,7 +77,7 @@ locals {
       {
         name = "realm"
         configMap = {
-          name = kubernetes_config_map_v1.realm.metadata[0].name
+          name = kubernetes_config_map.realm.metadata[0].name
         }
       },
     ]

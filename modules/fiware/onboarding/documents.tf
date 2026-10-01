@@ -6,7 +6,7 @@ locals {
   documents_labels = { app = "onboarding-documents" }
 }
 
-resource "kubernetes_config_map_v1" "documents" {
+resource "kubernetes_config_map" "documents" {
   count = local.documents_enabled ? 1 : 0
 
   metadata {
@@ -19,7 +19,7 @@ resource "kubernetes_config_map_v1" "documents" {
   }
 }
 
-resource "kubernetes_deployment_v1" "documents" {
+resource "kubernetes_deployment" "documents" {
   count = local.documents_enabled ? 1 : 0
 
   metadata {
@@ -40,7 +40,7 @@ resource "kubernetes_deployment_v1" "documents" {
         labels = local.documents_labels
         annotations = {
           # restart when the document changes
-          "checksum/documents" = sha256(kubernetes_config_map_v1.documents[0].binary_data["agreement.pdf"])
+          "checksum/documents" = sha256(kubernetes_config_map.documents[0].binary_data["agreement.pdf"])
         }
       }
 
@@ -81,7 +81,7 @@ resource "kubernetes_deployment_v1" "documents" {
         volume {
           name = "documents"
           config_map {
-            name = kubernetes_config_map_v1.documents[0].metadata[0].name
+            name = kubernetes_config_map.documents[0].metadata[0].name
           }
         }
       }
@@ -89,7 +89,7 @@ resource "kubernetes_deployment_v1" "documents" {
   }
 }
 
-resource "kubernetes_service_v1" "documents" {
+resource "kubernetes_service" "documents" {
   count = local.documents_enabled ? 1 : 0
 
   metadata {

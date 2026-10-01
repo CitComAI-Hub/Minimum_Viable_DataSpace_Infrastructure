@@ -2,7 +2,7 @@
 # onboarding realm, which the imported JSON ships without users, so this Job creates
 # the user (or resets it) with the password generated in Vault, through the Keycloak
 # admin API. It also works on an existing realm, which Keycloak never re-imports.
-resource "kubernetes_job_v1" "portal_admin" {
+resource "kubernetes_job" "portal_admin" {
   metadata {
     name      = "onboarding-portal-admin"
     namespace = var.namespace

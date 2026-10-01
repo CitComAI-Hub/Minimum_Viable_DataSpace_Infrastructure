@@ -21,5 +21,5 @@ output "root_token_command" {
 # depending on this output means depending on a usable Vault.
 output "ready" {
   description = "Id of the bootstrap Deployment; depend on it to wait for a usable Vault"
-  value       = kubernetes_deployment_v1.bootstrap.id
+  value       = kubernetes_deployment.bootstrap.id
 }

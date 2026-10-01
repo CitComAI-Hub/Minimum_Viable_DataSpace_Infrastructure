@@ -5,5 +5,5 @@ output "secret_names" {
 
 output "service_account_name" {
   description = "ServiceAccount used by External Secrets to authenticate against Vault"
-  value       = kubernetes_service_account_v1.this.metadata[0].name
+  value       = kubernetes_service_account.this.metadata[0].name
 }

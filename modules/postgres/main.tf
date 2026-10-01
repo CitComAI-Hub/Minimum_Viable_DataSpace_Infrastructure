@@ -76,7 +76,7 @@ resource "helm_release" "cluster" {
 
 # Helm does not wait for the pods the operator creates, so this Job waits until the
 # instance accepts connections: applying the module means a usable instance.
-resource "kubernetes_job_v1" "wait_ready" {
+resource "kubernetes_job" "wait_ready" {
   metadata {
     name      = "${var.name}-wait-ready"
     namespace = var.namespace
