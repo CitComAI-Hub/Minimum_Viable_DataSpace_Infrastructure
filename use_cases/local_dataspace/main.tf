@@ -96,4 +96,9 @@ module "onboarding" {
 
   tir_url                 = "http://${module.trust_anchor.tir_service}"
   agreement_document_path = coalesce(var.agreement_document_path, "${path.module}/../../modules/fiware/onboarding/resources/agreement.pdf")
+
+  app = {
+    # Provisional: the marketplace is not deployed yet
+    marketplace_url = "https://marketplace.${local.tailnet_domain}/"
+  }
 }
