@@ -10,17 +10,17 @@ locals {
   keycloak_url    = "https://${local.keycloak_fqdn}"
   onboarding_fqdn = "${var.onboarding_hostname}.${var.tailnet_domain}"
   onboarding_url  = "https://${local.onboarding_fqdn}"
+  did_web_host    = "did:web:${var.did_hostname}.${var.tailnet_domain}"
 
-  keycloak_admin_secret     = "keycloak-admin"
-  portal_admin_secret       = "portal-admin"
-  onboarding_client_secret  = "onboarding-client"
-  onboarding_client_id      = "onboarding-client"
-  documents_enabled         = var.agreement_document_path != null
-  agreement_document_url    = local.documents_enabled ? "${local.onboarding_url}/documents/agreement.pdf" : ""
-  keycloak_service_port     = 8080
-  onboarding_service_port   = 80
-  documents_service_port    = 80
-  keycloak_import_directory = "/opt/bitnami/keycloak/data/import"
+  keycloak_admin_secret    = "keycloak-admin"
+  portal_admin_secret      = "portal-admin"
+  onboarding_client_secret = "onboarding-client"
+  onboarding_client_id     = "onboarding-client"
+  documents_enabled        = var.agreement_document_path != null
+  agreement_document_url   = local.documents_enabled ? "${local.onboarding_url}/documents/agreement.pdf" : ""
+  keycloak_service_port    = 8080
+  onboarding_service_port  = 80
+  documents_service_port   = 80
 }
 
 # Keycloak administrator, portal administrator and OIDC client secret of the portal,

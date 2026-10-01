@@ -28,7 +28,8 @@ locals {
           openIdUrl = "${local.keycloak_url}/realms/${var.realm}"
         }
         keycloak = {
-          baseUrl = local.keycloak_url
+          baseUrl            = local.keycloak_url
+          didCreationEnabled = var.did_creation_enabled
         }
         tir = {
           url = var.tir_url
@@ -41,6 +42,10 @@ locals {
       }
       email = {
         enabled = false
+      }
+      # Base of the generated DIDs: each provisioned realm gets <didWebHost>:<realm>
+      didGenerator = {
+        didWebHost = var.did_creation_enabled ? local.did_web_host : ""
       }
     }
 

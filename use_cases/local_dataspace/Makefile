@@ -2,7 +2,7 @@
 
 ## Tailnet hostnames of the Ingresses in this use case
 ## (must match the *_hostname variables)
-TAILSCALE_HOSTNAMES ?= tir til onboarding-admin onboarding
+TAILSCALE_HOSTNAMES ?= tir til onboarding-admin onboarding onboarding-did
 
 init_apply:
 	$(MAKE) -C ../kind_cluster init_apply

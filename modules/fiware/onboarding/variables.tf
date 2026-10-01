@@ -38,6 +38,19 @@ variable "egress_proxy_group" {
   default     = "egress"
 }
 
+variable "did_creation_enabled" {
+  description = "Applicants register without a DID: the portal generates did:web:<did_hostname>.<tailnet>:<realm> for the realm it provisions, and a did-helper resolves it"
+  type        = bool
+  default     = true
+}
+
+variable "did_hostname" {
+  description = "Tailnet hostname of the did-helper, part of every generated DID (did:web:<did_hostname>.<tailnet>:<realm>). Changing it invalidates the DIDs already issued"
+  type        = string
+  default     = "onboarding-did"
+}
+
+
 variable "realm" {
   description = "Keycloak realm of the onboarding, imported from resources/keycloak-realm-onboarding.json"
   type        = string
@@ -120,29 +133,17 @@ variable "storage_class" {
   default     = null
 }
 
-variable "keycloak_chart" {
-  description = "Keycloak Helm chart (the configuration follows the Bitnami chart)"
+variable "dsc_chart" {
+  description = "FIWARE Data Space Connector chart, used only for its Keycloak and did-helper"
   type = object({
     repository = string
     name       = string
     version    = string
   })
   default = {
-    repository = "oci://registry-1.docker.io/bitnamicharts"
-    name       = "keycloak"
-    version    = "25.2.0"
-  }
-}
-
-variable "keycloak_image" {
-  description = "Keycloak image. Bitnami only publishes free images under bitnamilegacy, frozen and without updates"
-  type = object({
-    repository = string
-    tag        = string
-  })
-  default = {
-    repository = "bitnamilegacy/keycloak"
-    tag        = "26.3.3-debian-12-r0"
+    repository = "https://fiware.github.io/data-space-connector/"
+    name       = "data-space-connector"
+    version    = "10.10.1"
   }
 }
 

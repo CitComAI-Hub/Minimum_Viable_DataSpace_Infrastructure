@@ -35,3 +35,8 @@ output "keycloak_admin_secret" {
   description = "Secret in the namespace with the Keycloak administrator credentials (keys username and password)"
   value       = local.keycloak_admin_secret
 }
+
+output "did_web_host" {
+  description = "Base of the DIDs generated for the onboarded organisations (did:web:<host>:<realm>), null when DID generation is disabled"
+  value       = var.did_creation_enabled ? local.did_web_host : null
+}
