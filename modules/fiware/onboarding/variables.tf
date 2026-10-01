@@ -9,9 +9,9 @@ variable "tailnet_domain" {
 }
 
 variable "keycloak_hostname" {
-  description = "Tailnet hostname of Keycloak (OIDC issuer of the portal)"
+  description = "Tailnet hostname of the Keycloak of the onboarding (OIDC issuer of the portal). Other Keycloaks of the data space get their own hostnames"
   type        = string
-  default     = "keycloak"
+  default     = "onboarding-admin"
 }
 
 variable "onboarding_hostname" {

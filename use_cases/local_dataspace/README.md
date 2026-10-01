@@ -29,7 +29,7 @@ El dominio de la Tailnet se obtiene automáticamente del ConfigMap `tailscale/ta
 ## Onboarding
 
 - Portal: `https://onboarding.<tu-tailnet>.ts.net` (documento del acuerdo en `/documents/agreement.pdf`).
-- Consola de Keycloak: `https://keycloak.<tu-tailnet>.ts.net/admin/`, usuario `keycloak-admin`. La contraseña la da el output `keycloak_admin_password_command`.
+- Consola de Keycloak del onboarding: `https://onboarding-admin.<tu-tailnet>.ts.net/admin/`, usuario `keycloak-admin`. La contraseña la da el output `keycloak_admin_password_command`.
 
 ## Espacio de datos
 

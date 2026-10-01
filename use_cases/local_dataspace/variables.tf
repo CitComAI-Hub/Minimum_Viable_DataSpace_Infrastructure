@@ -57,7 +57,7 @@ variable "onboarding_namespace" {
 variable "keycloak_hostname" {
   description = "Tailnet hostname of the Keycloak of the onboarding"
   type        = string
-  default     = "keycloak"
+  default     = "onboarding-admin"
 }
 
 variable "onboarding_hostname" {
